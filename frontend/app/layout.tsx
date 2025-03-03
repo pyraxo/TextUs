@@ -5,9 +5,11 @@ import type React from "react";
 const inter = Inter({ subsets: ["latin"] });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
+import { ClientSideNav } from "@/components/client-side-nav";
 import Header from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import "./globals.css";
+
 export const metadata = {
   title: "CPF Simulator",
   description: "Training simulator for CPF Board CCU Officers",
@@ -28,10 +30,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          <SidebarProvider>
-            <div className="flex min-h-screen w-full bg-gray-50/50">
-              {/* <ClientSideNav /> */}
+          <SidebarProvider className="flex flex-col h-full">
+            <Header />
+            <div className="flex min-h-screen w-full bg-gray-50/50 pt-16">
+              <ClientSideNav />
               <SidebarInset className="flex-1">{children}</SidebarInset>
             </div>
           </SidebarProvider>

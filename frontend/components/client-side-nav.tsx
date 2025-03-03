@@ -7,7 +7,7 @@ export function ClientSideNav() {
   const pathname = usePathname();
 
   // Don't show the sidebar on the landing page (root path)
-  if (pathname === "/" || pathname === "/404") {
+  if (pathname === "/" || pathname === "/login") {
     return null;
   }
 
