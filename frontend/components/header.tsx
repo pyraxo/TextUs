@@ -2,14 +2,13 @@
 
 import { SidebarIcon } from "lucide-react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -17,9 +16,54 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import Link from "next/link";
+
+// Helper function to get page title based on pathname and search params
+function getPageInfo(pathname: string, searchParams: URLSearchParams) {
+  // Extract the main route (first segment after /)
+  const mainRoute = pathname.split("/")[1];
+
+  // Default values
+  let mainTitle = mainRoute
+    ? mainRoute.charAt(0).toUpperCase() + mainRoute.slice(1)
+    : "Home";
+  let subTitle = "";
+  let mainPath = `/${mainRoute}`;
+  let subPath = "";
+
+  // Handle specific routes
+  if (mainRoute === "dashboard") {
+    mainTitle = "Dashboard";
+    mainPath = "/dashboard";
+
+    // Get the tab parameter for dashboard
+    const tab = searchParams.get("tab");
+    // Define valid tabs
+    const validTabs = ["overview", "practice", "schemes"];
+
+    if (tab && validTabs.includes(tab)) {
+      // Valid tab
+      subTitle = tab.charAt(0).toUpperCase() + tab.slice(1);
+      subPath = `/dashboard?tab=${tab}`;
+    } else {
+      // Invalid or missing tab, default to overview
+      subTitle = "Overview";
+      subPath = "/dashboard?tab=overview";
+    }
+  }
+
+  return { mainTitle, subTitle, mainPath, subPath };
+}
+
 export default function Header() {
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Get page information for breadcrumbs
+  const { mainTitle, subTitle, mainPath, subPath } = getPageInfo(
+    pathname,
+    searchParams
+  );
 
   // Check if we're on the home or login route
   const isSimpleHeader = pathname === "/" || pathname === "/login";
@@ -77,19 +121,30 @@ export default function Header() {
         <Breadcrumb className="hidden md:block ml-4">
           <BreadcrumbList className="text-white">
             <BreadcrumbItem>
-              <BreadcrumbLink
-                href="#"
-                className="text-white hover:text-white/80"
-              >
-                Dashboard
+              <BreadcrumbLink asChild>
+                <Link
+                  href={mainPath}
+                  className="text-white hover:text-white/80"
+                >
+                  {mainTitle}
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-white/60" />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="text-white/90">
-                Current Page
-              </BreadcrumbPage>
-            </BreadcrumbItem>
+            {subTitle && (
+              <>
+                <BreadcrumbSeparator className="text-white/60" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link
+                      href={subPath}
+                      className="text-white/90 hover:text-white"
+                    >
+                      {subTitle}
+                    </Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </>
+            )}
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex items-center gap-2 ml-auto">

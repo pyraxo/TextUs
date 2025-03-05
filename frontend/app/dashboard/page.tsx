@@ -1,20 +1,70 @@
+"use client";
+
 import CircularProgress from "@/components/circular-progress";
 import PracticeTable from "@/components/practice-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useSidebar } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+// Define valid tab values
+const VALID_TABS = ["overview", "practice", "schemes"];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    tabParam && VALID_TABS.includes(tabParam) ? tabParam : "overview"
+  );
+  const { state, setOpen } = useSidebar();
+
+  // Update the URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", value);
+    router.push(`/dashboard?${params.toString()}`, { scroll: false });
+  };
+
+  // Sync tab state with URL on initial load and URL changes
+  // Also handle invalid tab parameters
+  useEffect(() => {
+    if (tabParam) {
+      if (VALID_TABS.includes(tabParam)) {
+        // Valid tab parameter
+        if (tabParam !== activeTab) {
+          setActiveTab(tabParam);
+        }
+      } else {
+        // Invalid tab parameter, redirect to overview
+        const params = new URLSearchParams(searchParams);
+        params.set("tab", "overview");
+        router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+      }
+    } else if (activeTab !== "overview") {
+      // No tab parameter, set to overview
+      setActiveTab("overview");
+    }
+  }, [tabParam, activeTab, router, searchParams]);
+
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className="container mx-auto py-6 space-y-8 pl-4 pr-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Welcome, Jenny</h1>
         <Button variant="outline">View Profile</Button>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="practice">Practice</TabsTrigger>
