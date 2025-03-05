@@ -25,7 +25,7 @@ export default function Home() {
         <div className="w-full max-w-xl bg-muted rounded-lg overflow-hidden shadow-md">
           <div className="bg-background m-4 rounded-lg p-4">
             <div className="p-4">
-              <h2 className="text-lg font-medium mb-4">Welcome, Jenny</h2>
+              <h2 className="text-lg font-medium mb-4">Welcome, Brighton</h2>
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm text-muted-foreground">
