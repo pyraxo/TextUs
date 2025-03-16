@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, select
 
 from app.core.config import get_settings
-from app.core.db import Database
+from app.core.db import Database, get_session
+from app.models.user import User
 from app.routers import scenario_router
 
 settings = get_settings()
@@ -13,8 +15,10 @@ db = Database()
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    # Initialize database and create tables
     await db.start()
     yield
+    # Close database connections
     await db.close()
 
 
@@ -34,3 +38,13 @@ app.include_router(scenario_router.router)
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
+
+
+@app.get("/db-test")
+def db_test(session: Session = Depends(get_session)):
+    """Test database connection."""
+    try:
+        session.exec(select(User)).all()
+        return {"message": "Database connection successful!"}
+    except Exception as e:
+        return {"message": f"Database connection failed: {e}"}

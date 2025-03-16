@@ -1,35 +1,92 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from beanie import Document, Insert, Link, Update, before_event
-from pydantic import Field
+from sqlmodel import Field, Relationship, SQLModel
 
-from app.models.user import User
-from app.schema.customer import CustomerScenario
-from app.schema.scenario import ScenarioSettings
+if TYPE_CHECKING:
+    from .customer_scenario import CustomerScenario
+    from .user import User
 
 
-class Scenario(Document):
-    """Scenario model."""
+class ScenarioBase(SQLModel):
+    """Base Scenario model with common fields."""
 
     name: str
     description: Optional[str] = None
-    scenario_settings: ScenarioSettings
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[Link[User]] = None
+    is_pausable: bool = True
+    system_prompt: Optional[str] = "You are a confused customer."
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
-    is_pausable: bool
-    customers: List[Link[CustomerScenario]] = Field(default_factory=list)
 
-    @before_event(Insert)
-    def before_insert(self):
-        self.created_at = datetime.now()
+class Scenario(ScenarioBase, table=True):
+    """Scenario model for database storage."""
+
+    __tablename__ = "scenarios"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    temperature: Optional[float] = None
+
+    # Foreign keys
+    created_by_id: Optional[int] = Field(default=None, foreign_key="users.id")
+
+    # Relationships
+    created_by: Optional["User"] = Relationship()
+    customer_scenarios: List["CustomerScenario"] = Relationship(
+        back_populates="scenario"
+    )
+
+    def update_timestamp(self):
+        """Update the updated_at timestamp."""
         self.updated_at = datetime.now()
 
-    @before_event(Update)
-    def before_update(self):
-        self.updated_at = datetime.now()
 
-    class Settings:
-        name = "scenarios"
+class ScenarioRead(ScenarioBase):
+    """Scenario model for reading."""
+
+    id: int
+    created_by_id: Optional[int] = None
+    temperature: Optional[float] = None
+
+
+class ScenarioCreate(ScenarioBase):
+    """Scenario model for creation."""
+
+    created_by_id: Optional[int] = None
+
+
+class ScenarioUpdate(SQLModel):
+    """Scenario model for updating."""
+
+    name: Optional[str] = None
+    description: Optional[str] = None
+    system_prompt: Optional[str] = None
+    temperature: Optional[float] = None
+    is_pausable: Optional[bool] = None
+
+
+class ScenarioAddCustomer(SQLModel):
+    """Model for adding a customer to a scenario."""
+
+    customer_id: int
+
+
+class ScenarioRemoveCustomer(SQLModel):
+    """Model for removing a customer from a scenario."""
+
+    customer_id: int
+
+
+class ScenarioUpdateCustomer(SQLModel):
+    """Model for updating a customer in a scenario."""
+
+    customer_id: int
+    name: Optional[str] = None
+    profile_prompt: Optional[str] = None
+
+
+class ScenarioUpdateHistory(SQLModel):
+    """Model for updating scenario history."""
+
+    customer_id: int
+    history: List[str]

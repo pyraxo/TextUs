@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
-from beanie import Document
+from sqlmodel import Field, SQLModel
 
 
 class UserType(str, Enum):
@@ -10,21 +11,33 @@ class UserType(str, Enum):
     ADMIN = "admin"
 
 
-class User(Document):
-    """User model."""
+class UserBase(SQLModel):
+    """Base User model with common fields."""
 
     name: str
-    username: str
-    email: str
-    password: str
-    joined_at: datetime
-    last_login: datetime
-    user_type: UserType
+    username: str = Field(index=True, unique=True)
+    email: str = Field(index=True, unique=True)
+    user_type: UserType = Field(index=True)
+    joined_at: datetime = Field(default_factory=datetime.now)
+    last_login: datetime = Field(default_factory=datetime.now)
 
-    class Settings:
-        name = "users"
-        indexes = [
-            "user_type",
-            "username",
-            "email",
-        ]
+
+class User(UserBase, table=True):
+    """User model for database storage."""
+
+    __tablename__ = "users"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    password: str
+
+
+class UserRead(UserBase):
+    """User model for reading (without password)."""
+
+    id: int
+
+
+class UserCreate(UserBase):
+    """User model for creation."""
+
+    password: str

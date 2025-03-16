@@ -1,35 +1,59 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from beanie import Document, Insert, Link, Update, before_event
+from sqlmodel import Field, Relationship, SQLModel
 
-from app.models.user import User
+if TYPE_CHECKING:
+    from .customer_scenario import CustomerScenario
+    from .user import User
 
 
-class Customer(Document):
-    """AI customer profile model."""
+class CustomerBase(SQLModel):
+    """Base Customer model with common fields."""
 
     name: str
     description: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[Link[User]] = None
-    updated_by: Optional[Link[User]] = None
-
-    # TODO: Decide a system of customisation for each customer
     profile_prompt: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
-    @before_event(Insert)
-    def before_insert(self):
-        self.created_at = datetime.now()
+
+class Customer(CustomerBase, table=True):
+    """AI customer profile model for database storage."""
+
+    __tablename__ = "customers"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+    # Foreign keys
+    created_by_id: Optional[int] = Field(
+        default=None, foreign_key="users.id", index=True
+    )
+    updated_by_id: Optional[int] = Field(default=None, foreign_key="users.id")
+
+    # Relationships
+    created_by: Optional["User"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Customer.created_by_id]"}
+    )
+    updated_by: Optional["User"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Customer.updated_by_id]"}
+    )
+    scenarios: List["CustomerScenario"] = Relationship(back_populates="customer")
+
+    def update_timestamp(self):
+        """Update the updated_at timestamp."""
         self.updated_at = datetime.now()
 
-    @before_event(Update)
-    def before_update(self):
-        self.updated_at = datetime.now()
 
-    class Settings:
-        name = "customers"
-        indexes = [
-            "created_by",
-        ]
+class CustomerRead(CustomerBase):
+    """Customer model for reading."""
+
+    id: int
+    created_by_id: Optional[int] = None
+    updated_by_id: Optional[int] = None
+
+
+class CustomerCreate(CustomerBase):
+    """Customer model for creation."""
+
+    created_by_id: Optional[int] = None
