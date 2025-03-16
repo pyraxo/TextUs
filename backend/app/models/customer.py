@@ -1,26 +1,23 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from beanie import Document, Insert, Link, Update, before_event
-from pydantic import Field
 
 from app.models.user import User
-from app.schema.customer import CustomerScenario
-from app.schema.scenario import ScenarioSettings
 
 
-class Scenario(Document):
-    """Scenario model."""
+class Customer(Document):
+    """AI customer profile model."""
 
     name: str
     description: Optional[str] = None
-    scenario_settings: ScenarioSettings
     created_at: datetime
     updated_at: datetime
     created_by: Optional[Link[User]] = None
+    updated_by: Optional[Link[User]] = None
 
-    is_pausable: bool
-    customers: List[Link[CustomerScenario]] = Field(default_factory=list)
+    # TODO: Decide a system of customisation for each customer
+    profile_prompt: Optional[str] = None
 
     @before_event(Insert)
     def before_insert(self):
@@ -32,4 +29,7 @@ class Scenario(Document):
         self.updated_at = datetime.now()
 
     class Settings:
-        name = "scenarios"
+        name = "customers"
+        indexes = [
+            "created_by",
+        ]
