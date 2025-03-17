@@ -44,7 +44,7 @@ source .venv/bin/activate  # On Unix/macOS
 4. Install dependencies:
 
 ```sh
-uv pip install -r requirements.txt
+uv sync
 ```
 
 ### Running the Server
@@ -148,39 +148,6 @@ backend/
 └── pyproject.toml      # Project metadata
 ```
 
-## Testing
-
-Run the test suite:
-
-```sh
-uv run pytest
-```
-
-With coverage report:
-
-```sh
-uv run pytest --cov=app --cov-report=term-missing
-```
-
-## Development Guidelines
-
-1. **Code Style**
-
-   - Follow PEP 8 guidelines
-   - Use type hints
-   - Document functions and classes
-
-2. **Git Workflow**
-
-   - Create feature branches from `main`
-   - Write descriptive commit messages
-   - Update tests for new features
-
-3. **API Design**
-   - Follow REST principles
-   - Version APIs appropriately
-   - Document all endpoints
-
 ## Troubleshooting
 
 ### Common Issues
@@ -197,14 +164,4 @@ uv run pytest --cov=app --cov-report=term-missing
    - Compare local with `alembic history`
    - Clear migration history if needed
 
-3. **Dependencies Issues**
-   - Delete .venv and recreate
-   - Update uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-   - Check pyproject.toml for conflicts
-
-## Contributing
-
-1. Follow the project's coding style
-2. Add tests for new features
-3. Update documentation as needed
-4. Create detailed pull requests
+3. Create detailed pull requests
