@@ -17,6 +17,8 @@ The backend service for CPF Board TextUs, built with FastAPI and SQLModel.
 
 ### Local Development Setup
 
+Ensure that you are running commands in this `backend/` folder, i.e. `cd backend`.
+
 1. Install [uv](https://astral.sh/uv) package manager:
 
 ```sh
@@ -50,13 +52,13 @@ uv pip install -r requirements.txt
 #### Development Mode
 
 ```sh
-uv run uvicorn app.main:app --reload --port 8000
+uv run fastapi dev
 ```
 
 #### Production Mode
 
 ```sh
-uv run uvicorn app.main:app --workers 4 --port 8000
+uv run fastapi run app/main.py
 ```
 
 ## Database Management

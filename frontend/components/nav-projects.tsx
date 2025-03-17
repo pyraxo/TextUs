@@ -1,45 +1,89 @@
-"use client";
-
-import Link from "next/link";
-import * as React from "react";
+"use client"
 
 import {
+  Folder,
+  Forward,
+  MoreHorizontal,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+  useSidebar,
+} from "@/components/ui/sidebar"
 
-interface Project {
-  name: string;
-  url: string;
-  icon: React.ElementType;
-}
+export function NavProjects({
+  projects,
+}: {
+  projects: {
+    name: string
+    url: string
+    icon: LucideIcon
+  }[]
+}) {
+  const { isMobile } = useSidebar()
 
-interface NavProjectsProps {
-  projects: Project[];
-}
-
-export function NavProjects({ projects }: NavProjectsProps) {
   return (
-    <SidebarGroup>
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {projects.map((project) => (
-            <SidebarMenuItem key={project.name}>
-              <SidebarMenuButton asChild>
-                <Link href={project.url}>
-                  <project.icon className="h-4 w-4" />
-                  <span>{project.name}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
+      <SidebarMenu>
+        {projects.map((item) => (
+          <SidebarMenuItem key={item.name}>
+            <SidebarMenuButton asChild>
+              <a href={item.url}>
+                <item.icon />
+                <span>{item.name}</span>
+              </a>
+            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuAction showOnHover>
+                  <MoreHorizontal />
+                  <span className="sr-only">More</span>
+                </SidebarMenuAction>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-48 rounded-lg"
+                side={isMobile ? "bottom" : "right"}
+                align={isMobile ? "end" : "start"}
+              >
+                <DropdownMenuItem>
+                  <Folder className="text-muted-foreground" />
+                  <span>View Project</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Forward className="text-muted-foreground" />
+                  <span>Share Project</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Trash2 className="text-muted-foreground" />
+                  <span>Delete Project</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        ))}
+        <SidebarMenuItem>
+          <SidebarMenuButton className="text-sidebar-foreground/70">
+            <MoreHorizontal className="text-sidebar-foreground/70" />
+            <span>More</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
     </SidebarGroup>
-  );
+  )
 }

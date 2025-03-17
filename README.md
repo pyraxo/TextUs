@@ -84,7 +84,3 @@ See [frontend/README.md](./frontend/README.md) for detailed frontend setup and d
 2. Commit your changes (`git commit -m 'Add new feature'`)
 3. Push to the branch (`git push origin feature/new-feature`)
 4. Open a Pull Request
-
-## License
-
-[License Type] - See LICENSE file for details

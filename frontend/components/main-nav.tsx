@@ -124,8 +124,8 @@ export function MainNav({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
-      {...props}
       className="fixed top-16 !h-[calc(100vh-4rem)]"
+      {...props}
     >
       <SidebarContent>
         <NavMain items={data.navMain} />

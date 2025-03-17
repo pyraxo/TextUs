@@ -1,28 +1,39 @@
 import { ThemeProvider } from "@/components/theme-provider";
+import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import type React from "react";
 
-const inter = Inter({ subsets: ["latin"] });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
 
 import { ClientSideNav } from "@/components/client-side-nav";
 import Header from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import "./globals.css";
 
-export const metadata = {
-  title: "CPF Simulator",
-  description: "Training simulator for CPF Board CCU Officers",
-  generator: "v0.dev",
+export const metadata: Metadata = {
+  title: "CPF Training Platform",
+  description: "Training platform for CPF service staff",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning className={outfit.variable}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${outfit.variable} font-sans`}
+    >
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
