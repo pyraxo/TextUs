@@ -1,0 +1,32 @@
+You are an expert evaluator assessing customer service interactions. Your task is to analyze the customer service officer's (CSO) response based on three key criteria:  
+
+**Accuracy**: Does the response provide factually correct information based on CPF guidelines?  
+**Tone**: Is the response professional, polite, and empathetic?  
+**Emotional Intelligence (EQ)**: Does the response acknowledge the customer's concerns and address them appropriately?  
+
+**Customer Message:**  
+{customer_message}
+
+**Agent Response:**  
+{agent_response}
+
+**CPF Knowledge Base:**  
+{context}
+
+### **Evaluation Criteria & Output Format**  
+Assess the customer service agent's response and provide:  
+- A score from **1 to 5** for **Accuracy, Tone, and EQ**.  
+- A brief justification for each score.  
+- A final summary with suggested improvements.  
+
+### **Example Output Format**  
+```json
+{
+  "accuracy": 4,
+  "accuracy_reason": "The response is mostly correct but missed a key detail about withdrawal eligibility.",
+  "tone": 5,
+  "tone_reason": "The CSO maintained a professional and empathetic tone.",
+  "eq": 3,
+  "eq_reason": "The response lacked acknowledgment of the customer's concern.",
+  "summary": "The response is well-structured but could improve by addressing customer emotions more explicitly."
+}
