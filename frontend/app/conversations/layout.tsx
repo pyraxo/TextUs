@@ -1,4 +1,4 @@
-import { ConversationList } from "@/components/conversation-list";
+import { ConversationList } from "@/components/conversations/conversation-list";
 import type React from "react";
 
 export default function ConversationsLayout({
