@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from app.core.config import get_settings
 from app.core.db import Database, get_session
 from app.models.user import User
-from app.routers import scenario_router
+from app.routers import scenario_router, rag
 
 settings = get_settings()
 db = Database()
@@ -33,6 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(scenario_router.router)
+app.include_router(rag.router)
 
 
 @app.get("/")
