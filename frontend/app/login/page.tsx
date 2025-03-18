@@ -43,7 +43,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter>
           <Link href="/dashboard" className="w-full">
-            <Button className="w-full bg-primary hover:bg-primary/90">
+            <Button className="w-full bg-primary hover:bg-primary/90 text-white">
               Sign In
             </Button>
           </Link>

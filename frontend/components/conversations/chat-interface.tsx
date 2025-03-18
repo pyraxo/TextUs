@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { SendHorizontal, Paperclip, SmilePlus } from "lucide-react"
+import { Paperclip, SendHorizontal, SmilePlus } from "lucide-react";
+import * as React from "react";
 
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 // Separate conversation histories
 const conversationHistories = {
@@ -29,7 +30,8 @@ const conversationHistories = {
     {
       id: 3,
       sender: "Naomi",
-      content: "That's perfect, looking forward! My email is: naomi.austin@unity.com",
+      content:
+        "That's perfect, looking forward! My email is: naomi.austin@unity.com",
       timestamp: "12:01",
       type: "customer",
     },
@@ -54,40 +56,77 @@ const conversationHistories = {
     {
       id: 3,
       sender: "William",
-      content: "It's the authentication process. The tokens don't seem to be working as described in the docs.",
+      content:
+        "It's the authentication process. The tokens don't seem to be working as described in the docs.",
       timestamp: "09:45",
       type: "customer",
     },
   ],
-}
+};
 
 export function ChatInterface({ conversationId }: { conversationId: string }) {
-  const [message, setMessage] = React.useState("")
-  const messages = conversationHistories[conversationId as keyof typeof conversationHistories] || []
+  const [message, setMessage] = React.useState("");
+  const messages =
+    conversationHistories[
+      conversationId as keyof typeof conversationHistories
+    ] || [];
 
   return (
     <div className="flex h-full flex-col">
       <div className="p-4">
         <h2 className="font-semibold">Conversation #{conversationId}</h2>
         <p className="text-sm text-muted-foreground">
-          {conversationId === "1" ? "Demo Account Request" : "API Integration Support"}
+          {conversationId === "1"
+            ? "Demo Account Request"
+            : "API Integration Support"}
         </p>
       </div>
-
+      <Separator className="bg-muted" />
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.type === "agent" ? "justify-end" : "justify-start"}`}>
+            <div
+              key={msg.id}
+              className={`flex ${
+                msg.type === "agent" ? "justify-end" : "justify-start"
+              }`}
+            >
               <div
                 className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                  msg.type === "agent" ? "bg-primary text-primary-foreground" : "bg-muted"
+                  msg.type === "agent"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted"
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{msg.sender}</span>
-                  <span className="text-xs opacity-70">{msg.timestamp}</span>
+                <div className="flex items-baseline gap-2">
+                  <span
+                    className={`text-sm font-medium ${
+                      msg.type === "agent"
+                        ? "text-white"
+                        : "text-primary-foreground"
+                    }`}
+                  >
+                    {msg.sender}
+                  </span>
+                  <span
+                    className={`text-xs opacity-70 ${
+                      msg.type === "agent"
+                        ? "text-white"
+                        : "text-primary-foreground"
+                    }`}
+                  >
+                    {msg.timestamp}
+                  </span>
                 </div>
-                <p className="mt-1 text-sm">{msg.content}</p>
+                <p
+                  className={`mt-1 text-sm ${
+                    msg.type === "agent"
+                      ? "text-white"
+                      : "text-primary-foreground"
+                  }`}
+                >
+                  {msg.content}
+                </p>
               </div>
             </div>
           ))}
@@ -116,6 +155,5 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
