@@ -1,5 +1,5 @@
 "use client";
-import { BotMessageSquare, PieChart } from "lucide-react";
+import { BotMessageSquare, PieChart, Settings, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
@@ -22,6 +22,7 @@ const data = {
     name: "Brighton",
     email: "brighton@brighton.com",
     avatar: "/cpf_logo.png",
+    roles: ["user", "trainer", "admin"],
   },
   navMain: [
     {
@@ -40,6 +41,20 @@ const data = {
       icon: BotMessageSquare,
     },
   ],
+  navTrainer: [
+    {
+      title: "Manage Students",
+      url: "/trainer/students",
+      icon: Users,
+    },
+  ],
+  navAdmin: [
+    {
+      title: "Settings",
+      url: "/admin",
+      icon: Settings,
+    },
+  ],
 };
 
 export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -51,6 +66,9 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return pathname === url || (pathname?.startsWith(url) && url !== "/");
   };
 
+  const isTrainer = data.user.roles.includes("trainer");
+  const isAdmin = data.user.roles.includes("admin");
+
   return (
     <Sidebar
       collapsible="icon"
@@ -61,37 +79,6 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarMenu>
-            {/* {data.navMain.map((item) => (
-              <Collapsible
-                key={item.title}
-                asChild
-                defaultOpen={item.isActive}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.title}>
-                      {item.icon && <item.icon />}
-                      <span>{item.title}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            ))} */}
             {data.navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <Link href={item.url}>
@@ -107,6 +94,48 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ))}
           </SidebarMenu>
         </SidebarGroup>
+
+        {isTrainer && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Trainer</SidebarGroupLabel>
+            <SidebarMenu>
+              {data.navTrainer.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <Link href={item.url}>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      isActive={isActive(item.url)}
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarMenu>
+              {data.navAdmin.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <Link href={item.url}>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      isActive={isActive(item.url)}
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

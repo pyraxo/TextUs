@@ -1,68 +1,99 @@
 "use client";
 
 import ProtectedRoute from "@/components/auth/protected-route";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
+import { MessageSquare, Settings, Sliders, Users } from "lucide-react";
+import Link from "next/link";
+
+const adminOptions = [
+  {
+    title: "User Management",
+    description: "Manage system users",
+    href: "/admin/users",
+    icon: <Users className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Content Management",
+    description: "Manage scenarios and schemes",
+    href: "/admin/content",
+    icon: <MessageSquare className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "System Settings",
+    description: "Configure system settings",
+    href: "/admin/settings",
+    icon: <Settings className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Prompt Engineering Controls",
+    description: "Configure AI prompt engineering settings",
+    href: "/admin/prompt-engineering",
+    icon: <Sliders className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Question Bank Modifier",
+    description: "Manage the question bank for assessments",
+    href: "/admin/question-bank",
+    icon: <MessageSquare className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Customer Profile Configuration",
+    description: "Configure customer profile settings",
+    href: "/admin/customer-profile",
+    icon: <Users className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+];
 
 export default function AdminPage() {
   const { user } = useAuth();
 
   return (
     <ProtectedRoute adminOnly>
-      <div className="p-8">
-        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="min-h-screen bg-white">
+        {/* Header content area */}
+        <div className="bg-[#E8F6F4] pt-16 pb-12">
+          <div className="container mx-auto px-4 md:px-8">
+            {/* Main heading */}
+            <h1 className="text-5xl font-bold mb-6">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage system users</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View Users
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Management</CardTitle>
-              <CardDescription>Manage scenarios and schemes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View Content
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>System Settings</CardTitle>
-              <CardDescription>Configure system settings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View Settings
-              </Button>
-            </CardContent>
-          </Card>
+            {/* Subheading */}
+            <h2 className="text-xl font-normal">
+              What would you like to manage today?
+            </h2>
+          </div>
         </div>
 
+        {/* Admin options grid */}
+        <div className="container mx-auto px-4 md:px-8 py-12">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {adminOptions.map((option) => (
+              <Link href={option.href} key={option.title}>
+                <Card className="overflow-hidden border rounded-lg hover:shadow-md transition-shadow">
+                  <CardContent className="p-0 flex flex-col">
+                    <div className="px-6 py-6">
+                      <div className="flex items-center gap-4 mb-3">
+                        {option.icon}
+                        <h3 className="text-xl font-bold">{option.title}</h3>
+                      </div>
+                      <p className="text-sm">{option.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* User info section at the bottom */}
         {user && (
-          <div className="mt-8 p-4 bg-muted rounded-lg">
-            <p className="text-sm">
-              Logged in as: <span className="font-bold">{user.name}</span> (
-              {user.user_type})
-            </p>
+          <div className="container mx-auto px-4 md:px-8 pb-8">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm">
+                Logged in as: <span className="font-bold">{user.name}</span> (
+                {user.user_type})
+              </p>
+            </div>
           </div>
         )}
       </div>
