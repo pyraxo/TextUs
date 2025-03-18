@@ -1,7 +1,12 @@
 import json
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from .customer import Customer
+    from .scenario import Scenario
 
 
 class CustomerScenarioBase(SQLModel):
@@ -16,7 +21,7 @@ class CustomerScenario(CustomerScenarioBase, table=True):
 
     __tablename__ = "customer_scenarios"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Store chat history as JSON string
     chat_history_json: Optional[str] = Field(
@@ -24,8 +29,8 @@ class CustomerScenario(CustomerScenarioBase, table=True):
     )
 
     # Foreign keys
-    customer_id: int = Field(foreign_key="customers.id")
-    scenario_id: int = Field(foreign_key="scenarios.id")
+    customer_id: UUID = Field(foreign_key="customers.id")
+    scenario_id: UUID = Field(foreign_key="scenarios.id")
 
     # Relationships
     customer: Optional["Customer"] = Relationship()
@@ -50,9 +55,9 @@ class CustomerScenario(CustomerScenarioBase, table=True):
 class CustomerScenarioRead(CustomerScenarioBase):
     """Customer scenario model for reading."""
 
-    id: int
-    customer_id: int
-    scenario_id: int
+    id: UUID
+    customer_id: UUID
+    scenario_id: UUID
     chat_history: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
 
@@ -63,8 +68,8 @@ class CustomerScenarioRead(CustomerScenarioBase):
 class CustomerScenarioCreate(CustomerScenarioBase):
     """Customer scenario model for creation."""
 
-    customer_id: int
-    scenario_id: int
+    customer_id: UUID
+    scenario_id: UUID
 
 
 class CustomerScenarioUpdate(SQLModel):
@@ -79,11 +84,3 @@ class CustomerScenarioHistoryUpdate(SQLModel):
     """Customer scenario model for updating chat history."""
 
     chat_history: List[str]
-
-
-# Import these at the end to avoid circular imports
-from app.models.customer import Customer
-from app.models.scenario import Scenario
-
-# Update forward references
-CustomerScenario.update_forward_refs()

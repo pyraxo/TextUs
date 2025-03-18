@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -24,11 +25,11 @@ class Scenario(ScenarioBase, table=True):
 
     __tablename__ = "scenarios"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    temperature: Optional[float] = None
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    temperature: Optional[float] = 1.0
 
     # Foreign keys
-    created_by_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    created_by_id: Optional[UUID] = Field(default=None, foreign_key="users.id")
 
     # Relationships
     created_by: Optional["User"] = Relationship()
@@ -44,15 +45,15 @@ class Scenario(ScenarioBase, table=True):
 class ScenarioRead(ScenarioBase):
     """Scenario model for reading."""
 
-    id: int
-    created_by_id: Optional[int] = None
+    id: UUID
+    created_by_id: Optional[UUID] = None
     temperature: Optional[float] = None
 
 
 class ScenarioCreate(ScenarioBase):
     """Scenario model for creation."""
 
-    created_by_id: Optional[int] = None
+    created_by_id: Optional[UUID] = None
 
 
 class ScenarioUpdate(SQLModel):
@@ -68,19 +69,19 @@ class ScenarioUpdate(SQLModel):
 class ScenarioAddCustomer(SQLModel):
     """Model for adding a customer to a scenario."""
 
-    customer_id: int
+    customer_id: UUID
 
 
 class ScenarioRemoveCustomer(SQLModel):
     """Model for removing a customer from a scenario."""
 
-    customer_id: int
+    customer_id: UUID
 
 
 class ScenarioUpdateCustomer(SQLModel):
     """Model for updating a customer in a scenario."""
 
-    customer_id: int
+    customer_id: UUID
     name: Optional[str] = None
     profile_prompt: Optional[str] = None
 
@@ -88,5 +89,5 @@ class ScenarioUpdateCustomer(SQLModel):
 class ScenarioUpdateHistory(SQLModel):
     """Model for updating scenario history."""
 
-    customer_id: int
+    customer_id: UUID
     history: List[str]

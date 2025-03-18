@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel
 
@@ -27,14 +27,14 @@ class User(UserBase, table=True):
 
     __tablename__ = "users"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     password: str
 
 
 class UserRead(UserBase):
     """User model for reading (without password)."""
 
-    id: int
+    id: UUID
 
 
 class UserCreate(UserBase):
