@@ -10,7 +10,7 @@ const adminOptions = [
   {
     title: "User Management",
     description: "Manage system users",
-    href: "/admin/users",
+    href: "/admin/user-management",
     icon: <Users className="h-8 w-8 text-black stroke-[2px]" />,
   },
   {
