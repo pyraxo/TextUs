@@ -5,7 +5,8 @@ from sqlmodel import Session, select
 
 from app.core.db import get_session
 from app.core.security import get_current_admin
-from app.models.user import User, UserRead
+from app.models.user import User, UserCreate, UserRead
+from app.services.user_service import UserService
 
 router = APIRouter(
     prefix="/admin",
@@ -23,6 +24,15 @@ async def get_users(
     """Get all users (admin only)."""
     users = session.exec(select(User).offset(skip).limit(limit)).all()
     return users
+
+
+@router.post("/users", response_model=UserRead)
+async def create_user_route(
+    user: UserCreate,
+    user_service: Annotated[UserService, Depends()],
+):
+    """Create a new user (admin only)."""
+    return await user_service.create_user(user)
 
 
 @router.get("/users/{user_id}", response_model=UserRead)

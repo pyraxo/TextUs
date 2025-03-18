@@ -34,14 +34,14 @@ import {
   useDeleteUser,
   useUpdateUser,
   useUsers,
-} from "@/hooks/useUsers";
+} from "@/lib/hooks/use-users";
 import { User, UserCreateData, UserType } from "@/types/user";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export default function UserManagementPage() {
   // React Query hooks
-  const { data: users = [], isLoading } = useUsers();
+  const { data: users = [], isLoading, error } = useUsers();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
@@ -214,6 +214,19 @@ export default function UserManagementPage() {
     updateUserMutation.isPending ||
     deleteUserMutation.isPending;
 
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading users...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Error loading users:{" "}
+        {error instanceof Error ? error.message : "Unknown error"}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white">
       {/* Header content area */}
@@ -359,65 +372,59 @@ export default function UserManagementPage() {
 
         <Card className="border border-gray-200">
           <CardContent className="p-0">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-40">
-                <Loader2 className="h-8 w-8 animate-spin text-[#0B6160]" />
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Username</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>User Type</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead>Last Login</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.length === 0 ? (
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Username</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>User Type</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      No users found. Click "Add New User" to create one.
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
-                        No users found. Click "Add New User" to create one.
+                ) : (
+                  users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.username}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell className="capitalize">
+                        {getUserTypeDisplay(user.user_type as UserType)}
+                      </TableCell>
+                      <TableCell>{formatDate(user.joined_at)}</TableCell>
+                      <TableCell>{formatDate(user.last_login)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => startEditing(user as User)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={() => confirmDelete(user as User)}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.username}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell className="capitalize">
-                          {getUserTypeDisplay(user.user_type)}
-                        </TableCell>
-                        <TableCell>{formatDate(user.joined_at)}</TableCell>
-                        <TableCell>{formatDate(user.last_login)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => startEditing(user)}
-                              variant="outline"
-                              size="sm"
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              onClick={() => confirmDelete(user)}
-                              variant="destructive"
-                              size="sm"
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
@@ -486,7 +493,9 @@ export default function UserManagementPage() {
                   <SelectContent>
                     <SelectItem value={UserType.TRAINEE}>Trainee</SelectItem>
                     <SelectItem value={UserType.TRAINER}>Trainer</SelectItem>
-                    <SelectItem value={UserType.ADMIN}>Admin</SelectItem>
+                    <SelectItem value={UserType.ADMIN}>
+                      Administrator
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -514,7 +523,15 @@ export default function UserManagementPage() {
 
       {/* Delete Confirmation Dialog */}
       {userToDelete && (
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <Dialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            // Only allow closing if not actively submitting
+            if (!deleteUserMutation.isPending) {
+              setIsDeleteDialogOpen(open);
+            }
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirm Deletion</DialogTitle>
@@ -528,14 +545,14 @@ export default function UserManagementPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsDeleteDialogOpen(false)}
-                disabled={isSubmitting}
+                disabled={deleteUserMutation.isPending}
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleDeleteUser}
-                disabled={isSubmitting}
+                disabled={deleteUserMutation.isPending}
               >
                 {deleteUserMutation.isPending ? (
                   <>

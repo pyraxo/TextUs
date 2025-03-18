@@ -2,7 +2,7 @@
 
 import ProtectedRoute from "@/components/auth/protected-route";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/lib/hooks/use-auth";
 import { MessageSquare, Settings, Sliders, Users } from "lucide-react";
 import Link from "next/link";
 

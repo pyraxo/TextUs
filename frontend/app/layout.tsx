@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider } from "@/lib/hooks/use-auth";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";

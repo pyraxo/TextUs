@@ -8,7 +8,7 @@ from app.core.config import get_settings
 from app.core.db import Database, get_session
 from app.core.middleware import AuthCookieMiddleware
 from app.models.user import User
-from app.routers import admin, auth, conversations, rag, scenarios, schemes
+from app.routers import admin, auth, conversations, rag, scenarios, schemes, users
 
 settings = get_settings()
 db = Database()
@@ -38,8 +38,9 @@ app.add_middleware(
 app.add_middleware(AuthCookieMiddleware)
 
 # Include routers
-app.include_router(auth.router)  # Authentication router
-app.include_router(admin.router)  # Admin router
+app.include_router(auth.router)
+app.include_router(admin.router)
+app.include_router(users.router)
 app.include_router(scenarios.router)
 app.include_router(schemes.router)
 app.include_router(rag.router)
