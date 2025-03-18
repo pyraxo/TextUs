@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     db_password: str = ""
     db_name: str = "sds_cpf"
 
+    # JWT Authentication
+    secret_key: str = "supersecretkey"  # Should be set in .env for production
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
     # Database URL (will be constructed based on environment)
     @property
     def database_url(self) -> str:

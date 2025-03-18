@@ -58,3 +58,12 @@ class CustomerCreate(CustomerBase):
     """Customer model for creation."""
 
     created_by_id: Optional[UUID] = None
+
+
+class CustomerUpdate(SQLModel):
+    """Customer model for updating."""
+
+    name: Optional[str] = None
+    description: Optional[str] = None
+    profile_prompt: Optional[str] = None
+    updated_by_id: Optional[UUID] = None

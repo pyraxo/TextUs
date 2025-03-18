@@ -1,5 +1,5 @@
 "use client";
-import { BotMessageSquare, Frame, Map, PieChart } from "lucide-react";
+import { BotMessageSquare, PieChart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
@@ -28,52 +28,16 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: PieChart,
-      items: [
-        {
-          title: "Overview",
-          url: "/dashboard?tab=overview",
-        },
-        {
-          title: "Practice",
-          url: "/dashboard?tab=practice",
-        },
-        {
-          title: "Schemes",
-          url: "/dashboard?tab=schemes",
-        },
-      ],
     },
     {
       title: "Practice",
       url: "/practice",
       icon: BotMessageSquare,
-      items: [
-        {
-          title: "Overview",
-          url: "/practice",
-        },
-        {
-          title: "Conversations",
-          url: "/conversations",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      title: "Conversations",
+      url: "/conversations",
+      icon: BotMessageSquare,
     },
   ],
 };
