@@ -1,11 +1,6 @@
 "use client";
-import {
-  BotMessageSquare,
-  ChevronRight,
-  Frame,
-  Map,
-  PieChart,
-} from "lucide-react";
+import { BotMessageSquare, Frame, Map, PieChart } from "lucide-react";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { NavUser } from "@/components/nav-user";
@@ -18,17 +13,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@radix-ui/react-collapsible";
-
+import Link from "next/link";
 // This is sample data.
 const data = {
   user: {
@@ -41,7 +28,6 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: PieChart,
-      isActive: true,
       items: [
         {
           title: "Overview",
@@ -58,7 +44,7 @@ const data = {
       ],
     },
     {
-      title: "Simulator",
+      title: "Practice",
       url: "/practice",
       icon: BotMessageSquare,
       items: [
@@ -92,7 +78,15 @@ const data = {
   ],
 };
 
-export function MainNav({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
+  const isActive = (url: string) => {
+    // Check if the current path matches the item URL
+    // For exact matches or if the item URL is a prefix of the current path
+    return pathname === url || (pathname?.startsWith(url) && url !== "/");
+  };
+
   return (
     <Sidebar
       collapsible="icon"
@@ -103,7 +97,7 @@ export function MainNav({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarMenu>
-            {data.navMain.map((item) => (
+            {/* {data.navMain.map((item) => (
               <Collapsible
                 key={item.title}
                 asChild
@@ -133,6 +127,19 @@ export function MainNav({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
+            ))} */}
+            {data.navMain.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <Link href={item.url}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    isActive={isActive(item.url)}
+                  >
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarGroup>

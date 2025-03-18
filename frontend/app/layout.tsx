@@ -16,6 +16,7 @@ const outfit = Outfit({
 import { ClientSideNav } from "@/components/client-side-nav";
 import Header from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,6 +29,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
   return (
     <html
       lang="en"
@@ -41,11 +44,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider className="flex flex-col h-full">
+          <SidebarProvider
+            defaultOpen={defaultOpen}
+            className="flex flex-col h-full"
+          >
             <Header />
             <div className="flex min-h-screen w-full bg-gray-50/50 pt-16">
               <ClientSideNav />
-              <SidebarInset className="flex-1">{children}</SidebarInset>
+              <SidebarInset className="flex-1">
+                <div className="h-1 w-full bg-[rgba(165,207,76,0.8)]"></div>
+                {children}
+              </SidebarInset>
             </div>
           </SidebarProvider>
         </ThemeProvider>
