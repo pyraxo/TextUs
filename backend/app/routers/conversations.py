@@ -66,7 +66,9 @@ async def get_conversation(
             "conversation_id": msg.conversation_id,
             # "sender": f"Customer {conv.customer_id.hex[:8]}" if msg.message_type == MessageType.USER else "Agent",
             # "sender": conv.customer_scenario.name if msg.message_type == MessageType.USER else "Agent",
-            "sender": "Customer" if msg.message_type == MessageType.USER else "Agent",
+            "sender_id": "Customer"
+            if msg.message_type == MessageType.USER
+            else "Agent",
             "content": msg.message,
             "timestamp": msg.timestamp.isoformat(),
             "message_type": msg.message_type.value,
@@ -83,6 +85,7 @@ async def create_message(
     message: MessageCreate,
     session: Session = Depends(get_session),
 ):
+    print(message)
     msg = await conversations.create_message(
         conversation_id=conversation_id,
         message=message,

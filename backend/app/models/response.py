@@ -11,7 +11,7 @@ class MessageResponse(SQLModel):
 
     id: UUID
     conversation_id: UUID
-    sender: str
+    sender_id: str
     content: str
     timestamp: str
     message_type: MessageType
@@ -21,7 +21,7 @@ class MessageCreate(SQLModel):
     """Request model for creating a new message."""
 
     content: str
-    sender: str
+    sender_id: str
     message_type: MessageType
 
 
@@ -41,3 +41,12 @@ class ConversationDetailResponse(SQLModel):
 
     conversation: ConversationResponse
     messages: List[MessageResponse]
+
+
+class SubscriptionRequest(SQLModel):
+    conversation_ids: List[str]
+
+
+class SubscriptionResponse(SQLModel):
+    subscription_id: str
+    conversation_ids: List[str]

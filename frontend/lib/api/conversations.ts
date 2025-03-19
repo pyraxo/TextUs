@@ -129,8 +129,8 @@ export async function createMessage(
   const payload = {
     conversation_id: conversationId,
     content,
-    sender,
-    message_type: 'bot'
+    sender_id: sender,
+    message_type: 'user'
   };
   console.log('Sending message payload:', payload);
 

@@ -144,12 +144,12 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
               <div
                 key={msg.id}
                 className={`flex ${
-                  msg.message_type === "bot" ? "justify-end" : "justify-start"
+                  msg.message_type === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                    msg.message_type === "bot"
+                    msg.message_type === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
                   }`}
@@ -157,16 +157,16 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
                   <div className="flex items-baseline gap-2">
                     <span
                       className={`text-sm font-medium ${
-                        msg.message_type === "bot"
+                        msg.message_type === "user"
                           ? "text-white"
                           : "text-primary-foreground"
                       }`}
                     >
-                      {msg.sender}
+                      {msg.message_type === "user" ? "You" : "Customer"}
                     </span>
                     <span
                       className={`text-xs opacity-70 ${
-                        msg.message_type === "bot"
+                        msg.message_type === "user"
                           ? "text-white"
                           : "text-primary-foreground"
                       }`}
@@ -176,7 +176,7 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
                   </div>
                   <p
                     className={`mt-1 text-sm ${
-                      msg.message_type === "bot"
+                      msg.message_type === "user"
                         ? "text-white"
                         : "text-primary-foreground"
                     }`}

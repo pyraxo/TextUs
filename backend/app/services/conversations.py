@@ -43,7 +43,7 @@ async def create_message(
     message = ChatMessage(
         conversation_id=conversation_id,
         message=message.content,
-        sender_id=message.sender,
+        sender_id=message.sender_id,
         message_type=message.message_type,
     )
     session.add(message)
@@ -54,7 +54,7 @@ async def create_message(
     return {
         "id": message.id,
         "conversation_id": message.conversation_id,
-        "sender": "Customer",
+        "sender_id": message.sender_id,
         "content": message.message,
         "timestamp": str(message.timestamp),
         "message_type": message.message_type.value,
