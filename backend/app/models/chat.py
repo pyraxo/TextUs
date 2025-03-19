@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -23,11 +24,11 @@ class ChatMessage(ChatMessageBase, table=True):
 
     __tablename__ = "chat_messages"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     timestamp: datetime = Field(default_factory=datetime.now)
 
     # Foreign keys
-    conversation_id: int = Field(foreign_key="chat_conversations.id")
+    conversation_id: UUID = Field(foreign_key="chat_conversations.id")
 
     # Relationships
     conversation: Optional["ChatConversation"] = Relationship(back_populates="messages")
@@ -36,21 +37,21 @@ class ChatMessage(ChatMessageBase, table=True):
 class ChatMessageRead(ChatMessageBase):
     """Chat message model for reading."""
 
-    id: int
+    id: UUID
     timestamp: datetime
-    conversation_id: int
+    conversation_id: UUID
 
 
 class ChatMessageCreate(ChatMessageBase):
     """Chat message model for creation."""
 
-    conversation_id: Optional[int] = None
+    conversation_id: Optional[UUID] = None
 
 
 class ChatConversationBase(SQLModel):
     """Base Chat conversation model with common fields."""
 
-    scenario_id: str
+    scenario_id: UUID
 
 
 class ChatConversation(ChatConversationBase, table=True):
@@ -58,7 +59,7 @@ class ChatConversation(ChatConversationBase, table=True):
 
     __tablename__ = "chat_conversations"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     started_at: datetime = Field(default_factory=datetime.now)
     ended_at: Optional[datetime] = None
 
@@ -69,7 +70,7 @@ class ChatConversation(ChatConversationBase, table=True):
 class ChatConversationRead(ChatConversationBase):
     """Chat conversation model for reading."""
 
-    id: int
+    id: UUID
     started_at: datetime
     ended_at: Optional[datetime] = None
     messages: List[ChatMessageRead]

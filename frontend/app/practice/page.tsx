@@ -1,77 +1,89 @@
-import CircularProgress from "@/components/circular-progress";
-import PracticeTable from "@/components/practice-table";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  BookOpen,
+  Briefcase,
+  GraduationCap,
+  HeartPulse,
+  Home,
+  HomeIcon,
+} from "lucide-react";
+import Link from "next/link";
+
+const schemes = [
+  {
+    title: "Home Ownership",
+    description: "Understand the essentials of home ownership",
+    href: "/practice/home-ownership",
+    icon: <Home className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Retirement",
+    description: "Retirement income with CPF",
+    href: "/practice/retirement",
+    icon: <BookOpen className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Healthcare",
+    description: "Peace of mind for your healthcare needs",
+    href: "/practice/healthcare",
+    icon: <HeartPulse className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Education",
+    description: "Support for lifelong learning",
+    href: "/practice/education",
+    icon: <GraduationCap className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Employer Services",
+    description: "Managing CPF contributions for employees",
+    href: "/practice/employer-services",
+    icon: <Briefcase className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+  {
+    title: "Housing Protection Scheme",
+    description: "Protection for your housing loan",
+    href: "/practice/housing-protection",
+    icon: <HomeIcon className="h-8 w-8 text-black stroke-[2px]" />,
+  },
+];
 
 export default function PracticePage() {
   return (
-    <div className="container mx-auto py-6 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Practice Questions</h1>
-        <p className="text-muted-foreground">
-          Refine your skills with real-world scenarios
-        </p>
+    <div className="min-h-screen bg-white">
+      {/* Header content area */}
+      <div className="bg-[#E8F6F4] pt-16 pb-12">
+        <div className="container mx-auto px-4 md:px-8">
+          {/* Main heading */}
+          <h1 className="text-5xl font-bold mb-6">Schemes</h1>
+
+          {/* Subheading */}
+          <h2 className="text-xl font-normal">
+            Which scheme would you like to practice today?
+          </h2>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-xl mx-auto">
-            <CircularProgress value={25} label="Comprehension" />
-            <CircularProgress value={60} label="Tone" />
-            <CircularProgress value={90} label="Accuracy" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Practice Sessions</CardTitle>
-          <Button className="bg-primary hover:bg-primary/90">
-            Start New Practice
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <PracticeTable showRecommended={true} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommended Practice</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              "Account Information",
-              "Dependent Protection Scheme",
-              "Education",
-            ].map((scheme) => (
-              <Card key={scheme} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="bg-muted h-32 flex items-center justify-center">
-                    <div className="text-primary text-lg font-medium">
-                      {scheme.split(" ")[0]}
+      {/* Schemes grid */}
+      <div className="container mx-auto px-4 md:px-8 py-12">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {schemes.map((scheme) => (
+            <Link href={scheme.href} key={scheme.title}>
+              <Card className="overflow-hidden border rounded-lg hover:shadow-md transition-shadow">
+                <CardContent className="p-0 flex flex-col">
+                  <div className="px-6 py-6">
+                    <div className="flex items-center gap-4 mb-3">
+                      {scheme.icon}
+                      <h3 className="text-xl font-bold">{scheme.title}</h3>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-sm mb-2">{scheme}</h3>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Practice scenarios related to {scheme.toLowerCase()}{" "}
-                      inquiries.
-                    </p>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Start Practice
-                    </Button>
+                    <p className="text-sm">{scheme.description}</p>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

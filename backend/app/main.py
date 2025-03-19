@@ -6,8 +6,9 @@ from sqlmodel import Session, select
 
 from app.core.config import get_settings
 from app.core.db import Database, get_session
+from app.core.middleware import AuthCookieMiddleware
 from app.models.user import User
-from app.routers import scenario_router, rag
+from app.routers import admin, auth, conversations, rag, scenarios, schemes
 
 settings = get_settings()
 db = Database()
@@ -24,6 +25,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allow_origins,
@@ -32,8 +34,16 @@ app.add_middleware(
     allow_headers=settings.allow_headers,
 )
 
-app.include_router(scenario_router.router)
+# Add authentication cookie middleware
+app.add_middleware(AuthCookieMiddleware)
+
+# Include routers
+app.include_router(auth.router)  # Authentication router
+app.include_router(admin.router)  # Admin router
+app.include_router(scenarios.router)
+app.include_router(schemes.router)
 app.include_router(rag.router)
+app.include_router(conversations.router)
 
 
 @app.get("/")

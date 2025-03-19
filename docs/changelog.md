@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [2024-03-16] - PRD Creation
+## [2025-03-6] PRD Creation
 
 ### Added
 
@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Proposed future enhancements
   - Added glossary and references
 
-## [2024-03-16] - Initial Project Setup
+## [2025-03-16] - Initial Project Setup
 
 ### Added
 

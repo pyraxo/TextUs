@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -23,13 +24,13 @@ class Customer(CustomerBase, table=True):
 
     __tablename__ = "customers"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Foreign keys
-    created_by_id: Optional[int] = Field(
+    created_by_id: Optional[UUID] = Field(
         default=None, foreign_key="users.id", index=True
     )
-    updated_by_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    updated_by_id: Optional[UUID] = Field(default=None, foreign_key="users.id")
 
     # Relationships
     created_by: Optional["User"] = Relationship(
@@ -48,12 +49,21 @@ class Customer(CustomerBase, table=True):
 class CustomerRead(CustomerBase):
     """Customer model for reading."""
 
-    id: int
-    created_by_id: Optional[int] = None
-    updated_by_id: Optional[int] = None
+    id: UUID
+    created_by_id: Optional[UUID] = None
+    updated_by_id: Optional[UUID] = None
 
 
 class CustomerCreate(CustomerBase):
     """Customer model for creation."""
 
-    created_by_id: Optional[int] = None
+    created_by_id: Optional[UUID] = None
+
+
+class CustomerUpdate(SQLModel):
+    """Customer model for updating."""
+
+    name: Optional[str] = None
+    description: Optional[str] = None
+    profile_prompt: Optional[str] = None
+    updated_by_id: Optional[UUID] = None

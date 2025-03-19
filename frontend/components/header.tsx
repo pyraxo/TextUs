@@ -31,25 +31,24 @@ function getPageInfo(pathname: string, searchParams: URLSearchParams) {
   let subPath = "";
 
   // Handle specific routes
-  if (mainRoute === "dashboard") {
-    mainTitle = "Dashboard";
-    mainPath = "/dashboard";
+  // if (mainRoute === "dashboard") {
+  //   mainTitle = "Dashboard";
+  //   mainPath = "/dashboard";
 
-    // Get the tab parameter for dashboard
-    const tab = searchParams.get("tab");
-    // Define valid tabs
-    const validTabs = ["overview", "practice", "schemes"];
+  //   // Get the tab parameter for dashboard
+  //   const tab = searchParams.get("tab");
+  //   // Define valid tabs
+  //   const validTabs = ["overview", "practice", "schemes"];
 
-    if (tab && validTabs.includes(tab)) {
-      // Valid tab
-      subTitle = tab.charAt(0).toUpperCase() + tab.slice(1);
-      subPath = `/dashboard?tab=${tab}`;
-    } else {
-      // Invalid or missing tab, default to overview
-      subTitle = "Overview";
-      subPath = "/dashboard?tab=overview";
-    }
-  }
+  //   if (tab && validTabs.includes(tab) && tab !== "overview") {
+  //     // Valid tab (except overview)
+  //     subTitle = tab.charAt(0).toUpperCase() + tab.slice(1);
+  //     subPath = `/dashboard?tab=${tab}`;
+  //   } else {
+  //     // Invalid or missing tab, or tab is "overview" - don't set subtitle
+  //     subPath = "/dashboard?tab=overview";
+  //   }
+  // }
 
   return { mainTitle, subTitle, mainPath, subPath };
 }

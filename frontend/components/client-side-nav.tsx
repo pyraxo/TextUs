@@ -1,6 +1,6 @@
 "use client";
 
-import { MainNav } from "@/components/main-nav";
+import { NavMain } from "@/components/nav-main";
 import { usePathname } from "next/navigation";
 
 export function ClientSideNav() {
@@ -11,5 +11,5 @@ export function ClientSideNav() {
     return null;
   }
 
-  return <MainNav />;
+  return <NavMain />;
 }
