@@ -1,5 +1,7 @@
-import { ConversationList } from "@/components/conversations/conversation-list";
-
 export default function ConversationsPage() {
-  return <ConversationList />;
+  return (
+    <div className="flex h-full items-center justify-center px-4 text-muted-foreground">
+      Select a conversation to start chatting
+    </div>
+  );
 }

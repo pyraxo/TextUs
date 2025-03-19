@@ -14,10 +14,17 @@ export interface User {
   last_login: string;
 }
 
-export interface UserCreateData {
+export interface UserCreate {
   name: string;
   username: string;
   email: string;
   password: string;
   user_type: UserType;
-} 
+}
+
+export interface UserUpdate {
+  name?: string;
+  username?: string;
+  email?: string;
+  user_type?: UserType;
+}

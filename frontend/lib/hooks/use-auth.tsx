@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return true;
       } else {
         setUser(null);
+        router.push("/login");
         return false;
       }
     } catch (error) {

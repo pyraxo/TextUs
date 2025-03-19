@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .chat import ChatConversation
     from .customer import Customer
     from .scenario import Scenario
 
@@ -35,6 +36,9 @@ class CustomerScenario(CustomerScenarioBase, table=True):
     # Relationships
     customer: Optional["Customer"] = Relationship()
     scenario: Optional["Scenario"] = Relationship(back_populates="customer_scenarios")
+    conversations: List["ChatConversation"] = Relationship(
+        back_populates="customer_scenario"
+    )
 
     # TODO: user_ratings
     feedback_ai: Optional[str] = None
@@ -60,9 +64,6 @@ class CustomerScenarioRead(CustomerScenarioBase):
     scenario_id: UUID
     chat_history: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 class CustomerScenarioCreate(CustomerScenarioBase):

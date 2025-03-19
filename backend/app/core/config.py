@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # JWT Authentication
     secret_key: str = "supersecretkey"  # Should be set in .env for production
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 60
 
     # Database URL (will be constructed based on environment)
     @property

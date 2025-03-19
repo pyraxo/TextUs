@@ -11,41 +11,34 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-// Fallback dummy data (will be replaced by API data)
-const fallbackConversations = [
-  {
-    id: "1",
-    customer: "Naomi Austin",
-    subject: "Signing up for a demo account",
-    created_at: new Date(Date.now() - 41 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 41 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "2",
-    customer: "William Chen",
-    subject: "API integration issues",
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-];
-
 export function ConversationList() {
   const pathname = usePathname();
   const { data: conversations, isLoading, error } = useConversations();
 
   // Format time difference
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
+    try {
+      const date = new Date(dateString);
 
-    if (diffMins < 60) {
-      return `${diffMins} min ago`;
-    } else if (diffMins < 24 * 60) {
-      return `${Math.floor(diffMins / 60)} hours ago`;
-    } else {
-      return `${Math.floor(diffMins / (60 * 24))} days ago`;
+      // Check if date is valid before proceeding
+      if (isNaN(date.getTime())) {
+        return "Unknown time";
+      }
+
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+
+      if (diffMins < 60) {
+        return `${diffMins} min ago`;
+      } else if (diffMins < 24 * 60) {
+        return `${Math.floor(diffMins / 60)} hours ago`;
+      } else {
+        return `${Math.floor(diffMins / (60 * 24))} days ago`;
+      }
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return "Unknown time";
     }
   };
 
@@ -80,12 +73,18 @@ export function ConversationList() {
 
   // Show an error state
   if (error) {
+    const isConnectionError =
+      error instanceof Error &&
+      (error.message.includes("connect") ||
+        error.message.includes("network") ||
+        error.message.includes("failed"));
+
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between p-4">
           <div>
             <h2 className="text-xl font-semibold">All conversations</h2>
-            <p className="text-sm text-muted-foreground text-red-500">
+            <p className="text-sm text-muted-foreground">
               Error loading conversations
             </p>
           </div>
@@ -94,9 +93,22 @@ export function ConversationList() {
           </Button>
         </div>
         <Separator className="bg-muted" />
-        <div className="p-4 text-center">
-          <p>Failed to load conversations. Please try again later.</p>
-          <Button variant="outline" className="mt-2">
+        <div className="p-4 text-left">
+          {isConnectionError ? (
+            <>
+              <p>Unable to connect to the conversation service.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Please make sure the API server is running and try again.
+              </p>
+            </>
+          ) : (
+            <p>Failed to load conversations. Please try again later.</p>
+          )}
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
             Retry
           </Button>
         </div>
@@ -104,8 +116,7 @@ export function ConversationList() {
     );
   }
 
-  // Use API data if available, otherwise fallback data
-  const displayConversations = conversations || fallbackConversations;
+  const displayConversations = conversations || [];
 
   return (
     <div className="flex h-full flex-col">
@@ -122,34 +133,51 @@ export function ConversationList() {
       </div>
       <Separator className="bg-muted" />
       <ScrollArea className="flex-1">
-        {displayConversations.map((conversation) => (
-          <Link
-            key={conversation.id}
-            href={`/conversations/${conversation.id}`}
-            className={cn(
-              "flex flex-col gap-1 py-3 px-4 hover:bg-muted/20",
-              pathname === `/conversations/${conversation.id}` && "bg-muted/20"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{conversation.customer}</span>
+        {displayConversations.length > 0 ? (
+          displayConversations.map((conversation) => (
+            <Link
+              key={conversation.id}
+              href={`/conversations/${conversation.id}`}
+              className={cn(
+                "flex flex-col gap-1 py-3 px-4 hover:bg-muted/20",
+                pathname === `/conversations/${conversation.id}` &&
+                  "bg-muted/20"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">
+                    {conversation.scenario_name}
+                  </span>
+                  {/* {conversation.scenario_name && (
+                    <Badge variant="outline" className="text-xs">
+                      {conversation.scenario_name}
+                    </Badge>
+                  )} */}
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {formatTime(conversation.updated_at)}
+                </span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {formatTime(conversation.updated_at)}
-              </span>
-            </div>
+              {/* <p className="text-sm text-muted-foreground">
+                {conversation.subject}
+              </p> */}
+              {new Date(conversation.updated_at) >
+                new Date(Date.now() - 60 * 60 * 1000) && (
+                <Badge variant="secondary" className="w-fit mt-1">
+                  New
+                </Badge>
+              )}
+            </Link>
+          ))
+        ) : (
+          <div className="p-6 text-center">
+            <p className="text-muted-foreground mb-2">No conversations found</p>
             <p className="text-sm text-muted-foreground">
-              {conversation.subject}
+              Your conversations will appear here once they become available
             </p>
-            {new Date(conversation.updated_at) >
-              new Date(Date.now() - 60 * 60 * 1000) && (
-              <Badge variant="secondary" className="w-fit mt-1">
-                New
-              </Badge>
-            )}
-          </Link>
-        ))}
+          </div>
+        )}
       </ScrollArea>
     </div>
   );

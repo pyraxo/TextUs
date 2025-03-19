@@ -1,13 +1,19 @@
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+export enum MessageType {
+  USER = 'user',
+  BOT = 'bot'
+}
+
 // Types matching backend models
 export interface Conversation {
   id: string;
-  customer: string;
+  customer_name: string;
   subject: string;
   created_at: string;
   updated_at: string;
+  scenario_name?: string;
 }
 
 export interface Message {
@@ -16,7 +22,12 @@ export interface Message {
   sender: string;
   content: string;
   timestamp: string;
-  type: 'customer' | 'agent';
+  message_type: MessageType;
+}
+
+interface ConversationResponse {
+  conversation: Conversation;
+  messages: Message[];
 }
 
 // API Error class
@@ -36,27 +47,49 @@ async function fetchApi<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new ApiError(error.message || 'An unknown error occurred', response.status);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+      throw new ApiError(error.message || 'An unknown error occurred', response.status);
+    }
+
+    return response.json();
+  } catch (error) {
+    // Handle network errors or other fetch failures
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('API connection error:', error);
+      throw new ApiError('Unable to connect to the API server. Please check your connection or try again later.', 503);
+    }
+
+    // Re-throw other errors
+    throw error;
   }
-
-  return response.json();
 }
 
 /**
  * Fetch all conversations
  */
 export async function getConversations(): Promise<Conversation[]> {
-  return fetchApi<Conversation[]>('/conversations');
+  const data = await fetchApi<any[]>('/conversations');
+
+  // Map the API response to our frontend model
+  return data.map(conv => ({
+    id: conv.id,
+    customer_name: `Customer ${conv.customer_id.slice(0, 8)}`, // Example formatting
+    subject: conv.scenario_name || 'Untitled Conversation',
+    created_at: conv.started_at,
+    updated_at: conv.started_at, // We use started_at as updated_at for now
+    scenario_name: conv.scenario_name
+  }));
 }
 
 /**
@@ -66,7 +99,23 @@ export async function getConversation(id: string): Promise<{
   conversation: Conversation;
   messages: Message[];
 }> {
-  return fetchApi<{ conversation: Conversation; messages: Message[] }>(`/conversations/${id}`);
+  const response = await fetchApi<ConversationResponse>(`/conversations/${id}`);
+
+  // Format the conversation for frontend display
+  const conversation: Conversation = {
+    id: response.conversation.id,
+    customer_name: response.conversation.scenario_name || 'Customer',
+    subject: response.conversation.scenario_name || 'Untitled Conversation',
+    created_at: response.conversation.created_at,
+    updated_at: response.conversation.updated_at,
+    scenario_name: response.conversation.scenario_name || undefined
+  };
+
+  // Pass through the messages as is
+  return {
+    conversation,
+    messages: response.messages as Message[] // The types already match
+  };
 }
 
 /**
@@ -74,10 +123,20 @@ export async function getConversation(id: string): Promise<{
  */
 export async function createMessage(
   conversationId: string,
-  content: string
+  content: string,
+  sender: string
 ): Promise<Message> {
+  const payload = {
+    conversation_id: conversationId,
+    content,
+    sender,
+    message_type: 'bot'
+  };
+  console.log('Sending message payload:', payload);
+
   return fetchApi<Message>(`/conversations/${conversationId}/messages`, {
     method: 'POST',
-    body: JSON.stringify({ content }),
+    body: JSON.stringify(payload),
+    credentials: 'include',
   });
 } 

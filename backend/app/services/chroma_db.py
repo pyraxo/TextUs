@@ -1,8 +1,8 @@
 import os
 
-from langchain.document_loaders import CSVLoader
-from langchain.embeddings import SentenceTransformerEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_community.document_loaders import CSVLoader
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.vectorstores import Chroma
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_FILE_PATH = os.path.join(BASE_DIR, "../data/faq_cat_for_embed.csv")

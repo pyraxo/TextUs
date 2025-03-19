@@ -1,9 +1,12 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.models.customer_scenario import CustomerScenario
 
 
 class MessageType(str, Enum):
@@ -52,6 +55,7 @@ class ChatConversationBase(SQLModel):
     """Base Chat conversation model with common fields."""
 
     scenario_id: UUID
+    customer_id: UUID
 
 
 class ChatConversation(ChatConversationBase, table=True):
@@ -63,7 +67,13 @@ class ChatConversation(ChatConversationBase, table=True):
     started_at: datetime = Field(default_factory=datetime.now)
     ended_at: Optional[datetime] = None
 
+    # Foreign keys
+    customer_scenario_id: UUID = Field(foreign_key="customer_scenarios.id")
+
     # Relationships
+    customer_scenario: Optional["CustomerScenario"] = Relationship(
+        back_populates="conversations"
+    )
     messages: List[ChatMessage] = Relationship(back_populates="conversation")
 
 
@@ -80,3 +90,9 @@ class ChatConversationCreate(ChatConversationBase):
     """Chat conversation model for creation."""
 
     initial_message: Optional[ChatMessageCreate] = None
+
+
+class ConversationResponse(ChatConversationBase):
+    id: UUID
+    started_at: datetime
+    ended_at: Optional[datetime] = None

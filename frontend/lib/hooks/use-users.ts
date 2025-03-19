@@ -1,16 +1,14 @@
 'use client';
 
 import {
-  type User,
-  type UserCreate,
-  type UserUpdate,
   createUser,
   deleteUser,
   getUser,
   getUsers,
   updateUser
 } from '@/lib/api/users';
-import { useAuth } from '@/lib/hooks/use-auth';
+import { useAuth, User } from '@/lib/hooks/use-auth';
+import { UserCreate, UserUpdate } from '@/types/user';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Query keys for caching

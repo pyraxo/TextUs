@@ -1,31 +1,7 @@
+import { User, UserCreate, UserUpdate } from '@/types/user';
+
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-// Types matching backend models
-export interface User {
-  id: string;
-  name: string;
-  username: string;
-  email: string;
-  user_type: 'admin' | 'trainer' | 'trainee';
-  joined_at: string;
-  last_login: string;
-}
-
-export interface UserUpdate {
-  name?: string;
-  username?: string;
-  email?: string;
-  user_type?: 'admin' | 'trainer' | 'trainee';
-}
-
-export interface UserCreate {
-  name: string;
-  username: string;
-  email: string;
-  password: string;
-  user_type: 'admin' | 'trainer' | 'trainee';
-}
 
 // API Error class
 export class ApiError extends Error {
@@ -54,6 +30,14 @@ async function fetchApi<T>(
   });
 
   if (!response.ok) {
+    // Handle 401 Unauthorized by redirecting to login page
+    if (response.status === 401) {
+      // Use client-side navigation if in browser environment
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+
     const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
     throw new ApiError(error.message || 'An unknown error occurred', response.status);
   }

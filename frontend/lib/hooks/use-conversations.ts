@@ -24,6 +24,8 @@ export function useConversations() {
   return useQuery({
     queryKey: conversationKeys.lists(),
     queryFn: getConversations,
+    retry: 1, // Only retry once to avoid excessive retries on server down
+    retryDelay: 1000, // Wait 1 second before retrying
   });
 }
 
@@ -42,6 +44,7 @@ export function useConversation(id: string) {
 interface SendMessageVariables {
   conversationId: string;
   content: string;
+  sender: string;
 }
 
 /**
@@ -51,8 +54,8 @@ export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation<Message, Error, SendMessageVariables>({
-    mutationFn: ({ conversationId, content }) =>
-      createMessage(conversationId, content),
+    mutationFn: ({ conversationId, content, sender }) =>
+      createMessage(conversationId, content, sender),
     onSuccess: (newMessage, variables) => {
       // Invalidate the conversation query to refetch with the new message
       queryClient.invalidateQueries({

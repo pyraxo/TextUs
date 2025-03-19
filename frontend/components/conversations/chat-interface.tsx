@@ -1,8 +1,9 @@
 "use client";
 
+import { useAuth } from "@/lib/hooks/use-auth";
 import { useConversation, useSendMessage } from "@/lib/hooks/use-conversations";
-import { Paperclip, SendHorizontal, SmilePlus } from "lucide-react";
-import * as React from "react";
+import { Paperclip, SendHorizontal } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,76 +12,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
-// Fallback conversation histories for when API is not available
-const fallbackConversationHistories = {
-  "1": [
-    {
-      id: "1",
-      conversation_id: "1",
-      sender: "Naomi",
-      content:
-        "Hi there, I would like to sign up for a demo account to try out the product. I completed the form on your website and awaiting further instructions. Is there anything else that I need to do?",
-      timestamp: new Date(Date.now() - 120 * 60000).toISOString(),
-      type: "customer",
-    },
-    {
-      id: "2",
-      conversation_id: "1",
-      sender: "Chris",
-      content:
-        "Hi Naomi 👋 Thank you for your interest. I've added you to the waitlist and will be sending you an access key to the private beta in the upcoming few days. Could you please confirm your e-mail?",
-      timestamp: new Date(Date.now() - 90 * 60000).toISOString(),
-      type: "agent",
-    },
-    {
-      id: "3",
-      conversation_id: "1",
-      sender: "Naomi",
-      content:
-        "That's perfect, looking forward! My email is: naomi.austin@unity.com",
-      timestamp: new Date(Date.now() - 60 * 60000).toISOString(),
-      type: "customer",
-    },
-  ],
-  "2": [
-    {
-      id: "1",
-      conversation_id: "2",
-      sender: "William",
-      content:
-        "Hello, I'm having some issues integrating your API with our system. The documentation seems to be outdated. Can you help?",
-      timestamp: new Date(Date.now() - 180 * 60000).toISOString(),
-      type: "customer",
-    },
-    {
-      id: "2",
-      conversation_id: "2",
-      sender: "Sarah",
-      content:
-        "Hi William, I'm sorry to hear you're experiencing difficulties. Can you tell me which specific part of the API you're having trouble with?",
-      timestamp: new Date(Date.now() - 165 * 60000).toISOString(),
-      type: "agent",
-    },
-    {
-      id: "3",
-      conversation_id: "2",
-      sender: "William",
-      content:
-        "It's the authentication process. The tokens don't seem to be working as described in the docs.",
-      timestamp: new Date(Date.now() - 150 * 60000).toISOString(),
-      type: "customer",
-    },
-  ],
-};
-
 export function ChatInterface({ conversationId }: { conversationId: string }) {
-  const [message, setMessage] = React.useState("");
+  const [message, setMessage] = useState("");
   const { data, isLoading, error } = useConversation(conversationId);
   const sendMessageMutation = useSendMessage();
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+
+  // Log data for debugging
+  useEffect(() => {
+    if (data) {
+      console.log("Conversation data:", data);
+    }
+  }, [data]);
 
   // Scroll to bottom of messages
-  React.useEffect(() => {
+  useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -96,8 +43,13 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
   const handleSendMessage = () => {
     if (!message.trim()) return;
 
+    if (!user?.id) {
+      toast.error("You must be logged in to send messages");
+      return;
+    }
+
     sendMessageMutation.mutate(
-      { conversationId, content: message },
+      { conversationId, content: message, sender: user.id },
       {
         onSuccess: () => {
           setMessage("");
@@ -137,6 +89,7 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
 
   // Error state
   if (error) {
+    console.error("Error loading conversation:", error);
     return (
       <div className="flex h-full flex-col">
         <div className="p-4">
@@ -159,80 +112,92 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
   }
 
   // Use API data if available, otherwise fallback data
-  const { conversation, messages } = data || {
-    conversation: {
-      id: conversationId,
-      customer: conversationId === "1" ? "Naomi Austin" : "William Chen",
-      subject:
-        conversationId === "1"
-          ? "Demo Account Request"
-          : "API Integration Support",
-      created_at: "",
-      updated_at: "",
-    },
-    messages:
-      fallbackConversationHistories[
-        conversationId as keyof typeof fallbackConversationHistories
-      ] || [],
+  const conversation = data?.conversation || {
+    id: conversationId,
+    customer_name: "Customer",
+    subject: "Conversation",
+    created_at: "",
+    updated_at: "",
+    scenario_name: "",
   };
+
+  const messages = data?.messages || [];
+
+  // If we have data but no messages, display a message
+  const hasMessages = messages && messages.length > 0;
 
   return (
     <div className="flex h-full flex-col">
       <div className="p-4">
-        <h2 className="font-semibold">{conversation.customer}</h2>
-        <p className="text-sm text-muted-foreground">{conversation.subject}</p>
+        <h2 className="font-semibold">
+          {conversation?.customer_name || "Customer"}
+        </h2>
+        {/* <p className="text-sm text-muted-foreground">
+          {conversation?.subject || "Conversation"}
+        </p> */}
       </div>
       <Separator className="bg-muted" />
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${
-                msg.type === "agent" ? "justify-end" : "justify-start"
-              }`}
-            >
+        {hasMessages ? (
+          <div className="space-y-4">
+            {messages.map((msg) => (
               <div
-                className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                  msg.type === "agent"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                key={msg.id}
+                className={`flex ${
+                  msg.message_type === "bot" ? "justify-end" : "justify-start"
                 }`}
               >
-                <div className="flex items-baseline gap-2">
-                  <span
-                    className={`text-sm font-medium ${
-                      msg.type === "agent"
-                        ? "text-white"
-                        : "text-primary-foreground"
-                    }`}
-                  >
-                    {msg.sender}
-                  </span>
-                  <span
-                    className={`text-xs opacity-70 ${
-                      msg.type === "agent"
-                        ? "text-white"
-                        : "text-primary-foreground"
-                    }`}
-                  >
-                    {formatTime(msg.timestamp)}
-                  </span>
-                </div>
-                <p
-                  className={`mt-1 text-sm ${
-                    msg.type === "agent"
-                      ? "text-white"
-                      : "text-primary-foreground"
+                <div
+                  className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                    msg.message_type === "bot"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
                   }`}
                 >
-                  {msg.content}
-                </p>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className={`text-sm font-medium ${
+                        msg.message_type === "bot"
+                          ? "text-white"
+                          : "text-primary-foreground"
+                      }`}
+                    >
+                      {msg.sender}
+                    </span>
+                    <span
+                      className={`text-xs opacity-70 ${
+                        msg.message_type === "bot"
+                          ? "text-white"
+                          : "text-primary-foreground"
+                      }`}
+                    >
+                      {formatTime(msg.timestamp)}
+                    </span>
+                  </div>
+                  <p
+                    className={`mt-1 text-sm ${
+                      msg.message_type === "bot"
+                        ? "text-white"
+                        : "text-primary-foreground"
+                    }`}
+                  >
+                    {msg.content}
+                  </p>
+                </div>
               </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center text-center">
+            <div>
+              <p className="text-muted-foreground">No messages yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Start the conversation by sending a message
+              </p>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+          </div>
+        )}
       </ScrollArea>
 
       <div className="border-t p-4">
@@ -253,15 +218,15 @@ export function ChatInterface({ conversationId }: { conversationId: string }) {
             <Button size="icon" variant="ghost">
               <Paperclip className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost">
+            {/* <Button size="icon" variant="ghost">
               <SmilePlus className="h-4 w-4" />
-            </Button>
+            </Button> */}
             <Button
               size="icon"
               onClick={handleSendMessage}
               disabled={sendMessageMutation.isPending || !message.trim()}
             >
-              <SendHorizontal className="h-4 w-4" />
+              <SendHorizontal className="h-4 w-4 text-muted" />
             </Button>
           </div>
         </div>
