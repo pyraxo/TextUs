@@ -1,61 +1,50 @@
 import json
-
-from .eval_types import EvaluationResponse
-
-
-def retrieve_info(agent_response: str, category: str) -> list[str]:
-    """Retrieves information from the database based on the agent's response."""
-    return []
+import os
+#from app.services.chroma_db import query_chroma #WIP
+from dotenv import load_dotenv
+from openai import OpenAI
+from eval_types import UserMessage, AgentResponse, EvaluationMetric, EvaluationResult
 
 
-def load_prompt() -> str:
-    # Loads the evaluation prompt
-    with open("app/Prompts/evaluator_prompt.py", "r", encoding="utf-8") as f:
-        return f.read()
 
+# Load environment variables
+load_dotenv()
 
-def evaluate_response(agent_response: str, customer_message: str) -> EvaluationResponse:
-    """Evaluates an agent's response based on tone and accuracy."""
-    retrieved_docs = retrieve_info(agent_response, category="evaluation")
-    context = (
-        "\n".join(retrieved_docs)
-        if retrieved_docs
-        else "No relevant CPF policies found."
+def evaluate_agent_response(customer_message: UserMessage, agent_response: AgentResponse):
+    # replace with your file path
+    with open(r"C:\Users\wangy\OneDrive\Documents\GitHub\sds_cpf\backend\app\evaluator\prompt.txt", "r") as file:
+        prompt = file.read()
+    
+    #retrieved_docs = query_chroma(customer_message.text) #still fixing
+    #retrieved_knowledge = "\n".join([doc.page_content for doc in retrieved_docs])
+
+    # Initialize OpenAI client
+    client = OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY")  # Reads API key from .env
     )
 
-    prompt_template = load_prompt()
-
-    # Format the prompt with actual values
-    prompt = prompt_template.format(
-        customer_message=customer_message,
-        agent_response=agent_response,  # placeholder, replace with inputs from frontend
-        context=context,  # context from retrieved docs
-    )
-
-    # Call OpenAI API
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
+    # OpenAI API request to evaluate the response
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a customer service evaluator."},
-            {"role": "user", "content": prompt},
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": f"Customer message: {customer_message.text}\n"
+                                        f"Agent response: {agent_response.text}\n"} 
+                                        #f"Relevant CPF Knowledge: {retrieved_knowledge}\n\n"
+                                        #"Assess the accuracy of the agent's response based on the CPF knowledge."} #add back in once RAG is working
         ],
+        max_tokens=350
     )
+    
+    # Example result handling
+    evaluation_result = response.choices[0].message.content.strip()  # Process the response as needed
+    return evaluation_result
 
-    # Extract JSON response from AI
-    feedback = response["choices"][0]["message"]["content"]
 
-    try:
-        parsed_feedback = json.loads(feedback)  # Convert string to dict
-    except json.JSONDecodeError:
-        # If JSON format fails, return default values
-        parsed_feedback = {
-            "tone_score": 5,
-            "accuracy_score": 5,
-            "feedback": "AI response format error.",
-        }
+# Example usage for now, to be replaced with actual chat messages later on
+customer_msg = UserMessage(text="Why is interest earned on my CPF LIFE premium not included as part of the amount paid to my beneficiaries when I pass away?")
+agent_resp = AgentResponse(text="CPF LIFE is a longevity insurance scheme that provides you with a monthly payout for as long as you live. When you join CPF LIFE, your CPF LIFE premium will be paid with your CPF savings. Projected interest earned on your CPF LIFE premium is factored into your monthly payouts from the start. Your CPF LIFE payouts will be drawn from your CPF LIFE premium first. When your CPF LIFE premium is exhausted, you will then draw your monthly payouts for as long as you live from the interest that you and other CPF LIFE members have accumulated. The lifelong payouts under CPF LIFE for all members are made possible through this method of interest accumulation. That is why interest does not form part of the amount paid to the beneficiaries of CPF LIFE members when they pass away. If you pass on before your CPF LIFE premium is exhausted, the CPF LIFE premium balance (if any) together with any remaining CPF savings will be distributed to your loved ones.")
 
-    return EvaluationResponse(
-        tone_score=parsed_feedback.get("tone_score", 5),
-        accuracy_score=parsed_feedback.get("accuracy_score", 5),
-        feedback=parsed_feedback.get("feedback", "No feedback provided."),
-    )
+# Call the evaluation function
+evaluation_result = evaluate_agent_response(customer_msg, agent_resp)
+print(evaluation_result)
