@@ -76,7 +76,8 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const isActive = (url: string) => {
     // Check if the current path matches the item URL
     // For exact matches or if the item URL is a prefix of the current path
-    return pathname === url || (pathname?.startsWith(url) && url !== "/");
+    // return pathname === url || (pathname?.startsWith(url) && url !== "/");
+    return pathname === url;
   };
 
   // Check user roles based on user_type
