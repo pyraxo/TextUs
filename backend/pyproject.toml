@@ -23,4 +23,5 @@ dependencies = [
     "bcrypt==4.0.1",
     "sse-starlette>=2.2.1",
     "asyncio>=3.4.3",
+    "openai>=1.67.0",
 ]
