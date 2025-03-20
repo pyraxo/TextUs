@@ -17,7 +17,17 @@ import {
   MessageType,
   type ConversationResponse,
 } from "@/types/conversations";
-import { Filter, Paperclip, SendHorizontal, WifiOff } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Filter,
+  MoreVertical,
+  Paperclip,
+  SendHorizontal,
+  User,
+  WifiOff,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -356,17 +366,44 @@ export function ConversationsInterface() {
       <div className="flex-1">
         {activeConversation ? (
           <div className="flex h-full flex-col">
-            <div className="p-4">
-              <h2 className="font-semibold">
-                {activeConversation.conversation?.scenario_name || "Customer"}
-              </h2>
-              {connectionState !== "connected" && (
-                <p className="text-sm text-yellow-500">Reconnecting...</p>
-              )}
+            {/* Chat Header */}
+            <div className="border-b">
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold">
+                      {activeConversation.conversation?.scenario_name ||
+                        "Customer"}
+                    </h2>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        Started{" "}
+                        {formatListTime(
+                          activeConversation.conversation?.started_at || ""
+                        )}
+                      </span>
+                      {connectionState !== "connected" && (
+                        <span className="text-yellow-500 flex items-center gap-1">
+                          <WifiOff className="h-3 w-3" />
+                          Reconnecting...
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <Separator className="bg-muted" />
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
+
+            {/* Messages Area */}
+            <ScrollArea className="flex-1 px-4">
+              <div className="space-y-4 py-4">
                 {activeConversation.messages.map((msg, index) => (
                   <div
                     key={msg.id || index}
@@ -377,39 +414,25 @@ export function ConversationsInterface() {
                     }`}
                   >
                     <div
-                      className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                      className={cn(
+                        "rounded-lg px-4 py-2 max-w-[80%]",
                         msg.message_type === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
+                          ? "bg-[#0B6160] text-white"
+                          : "bg-[#F3F4F6] text-gray-900"
+                      )}
                     >
-                      <div className="flex items-baseline gap-2">
-                        <span
-                          className={`text-sm font-medium ${
-                            msg.message_type === "user"
-                              ? "text-white"
-                              : "text-primary-foreground"
-                          }`}
-                        >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="text-sm font-medium">
                           {msg.message_type === "user" ? "You" : "Customer"}
                         </span>
-                        <span
-                          className={`text-xs opacity-70 ${
-                            msg.message_type === "user"
-                              ? "text-white"
-                              : "text-primary-foreground"
-                          }`}
-                        >
-                          {formatMessageTime(msg.timestamp)}
-                        </span>
+                        <div className="flex items-center gap-1 text-xs opacity-70">
+                          <span>{formatMessageTime(msg.timestamp)}</span>
+                          {msg.message_type === "user" && (
+                            <CheckCircle2 className="h-3 w-3" />
+                          )}
+                        </div>
                       </div>
-                      <p
-                        className={`mt-1 text-sm ${
-                          msg.message_type === "user"
-                            ? "text-white"
-                            : "text-primary-foreground"
-                        }`}
-                      >
+                      <p className="mt-1 text-sm whitespace-pre-wrap">
                         {msg.content}
                       </p>
                     </div>
@@ -419,33 +442,43 @@ export function ConversationsInterface() {
               </div>
             </ScrollArea>
 
+            {/* Input Area */}
             <div className="border-t p-4">
-              <div className="flex gap-2">
-                <Textarea
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder="Type your message..."
-                  className="min-h-[80px]"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                />
-                <div className="flex flex-col gap-2">
-                  <Button size="icon" variant="ghost">
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    onClick={handleSendMessage}
-                    disabled={
-                      connectionState !== "connected" || !messageInput.trim()
-                    }
-                  >
-                    <SendHorizontal className="h-4 w-4" />
-                  </Button>
+              <div className="flex gap-3">
+                <div className="flex-1 bg-muted rounded-lg">
+                  <Textarea
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    placeholder="Type your message..."
+                    className="min-h-[80px] bg-transparent border-0 focus-visible:ring-0 resize-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                  <div className="flex items-center justify-between px-3 py-2 border-t">
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost">
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost">
+                        <AlertCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={handleSendMessage}
+                      disabled={
+                        connectionState !== "connected" || !messageInput.trim()
+                      }
+                      className="bg-[#0B6160] text-white hover:bg-[#095453]"
+                    >
+                      <SendHorizontal className="h-4 w-4 mr-2" />
+                      Send
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

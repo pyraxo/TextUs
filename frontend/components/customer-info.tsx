@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, User, X } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Clock,
+  MessageSquare,
+  Tag,
+  User,
+  X,
+} from "lucide-react";
 
 // Dummy data - replace with your actual data
 const customerInfo = {
@@ -62,51 +70,60 @@ export function CustomerInfo() {
   return (
     <Tabs defaultValue="chat-info" className="w-full">
       <div className="flex flex-col">
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <div>
-            <h2 className="text-xl font-semibold">{customerInfo.name}</h2>
-            <div className="flex items-center space-x-2 mt-2">
-              <div className="bg-[#EA9C9C] text-black px-3 py-1 rounded-full text-sm">
-                {customerInfo.category}
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">{customerInfo.name}</h2>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="bg-[#EA9C9C] text-black px-3 py-1 rounded-full text-sm font-medium">
+                  {customerInfo.category}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  {customerInfo.startTime}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Case ID: {customerInfo.caseId}
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Case ID: {customerInfo.caseId}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Start: {customerInfo.startTime}
-              </p>
             </div>
           </div>
-          <Button variant="outline" size="icon">
-            <User className="h-4 w-4" />
-          </Button>
         </div>
 
-        <TabsList className="grid w-full grid-cols-3 p-0 bg-transparent">
+        {/* Tabs */}
+        <TabsList className="grid w-full grid-cols-3 p-0 bg-transparent border-b rounded-none h-[45px]">
           <TabsTrigger
             value="chat-info"
-            className="data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-muted data-[state=active]:border-[#004D40] bg-transparent px-0 py-2"
+            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
           >
+            <MessageSquare className="h-4 w-4 mr-2" />
             Chat Info
           </TabsTrigger>
           <TabsTrigger
             value="feedback"
-            className="data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-muted data-[state=active]:border-[#004D40] bg-transparent px-0 py-2"
+            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
           >
+            <AlertCircle className="h-4 w-4 mr-2" />
             Feedback
           </TabsTrigger>
           <TabsTrigger
             value="scores"
-            className="data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-muted data-[state=active]:border-[#004D40] bg-transparent px-0 py-2"
+            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
           >
+            <Tag className="h-4 w-4 mr-2" />
             Scores
           </TabsTrigger>
         </TabsList>
 
+        {/* Chat Info Content */}
         <TabsContent value="chat-info" className="p-6">
           <ScrollArea className="h-[600px] w-full pr-4">
             <div className="space-y-6">
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <h3 className="font-semibold text-sm">Status</h3>
                 <div className="flex space-x-2">
                   <Button
@@ -116,8 +133,9 @@ export function CustomerInfo() {
                         : "secondary"
                     }
                     size="sm"
+                    className="gap-2"
                   >
-                    <Check className="h-4 w-4 mr-1" />
+                    <Check className="h-4 w-4" />
                     Open
                   </Button>
                   <Button
@@ -127,8 +145,9 @@ export function CustomerInfo() {
                         : "secondary"
                     }
                     size="sm"
+                    className="gap-2"
                   >
-                    <X className="h-4 w-4 mr-1" />
+                    <X className="h-4 w-4" />
                     Closed
                   </Button>
                 </div>
@@ -136,10 +155,12 @@ export function CustomerInfo() {
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Subject</h3>
-                <p className="text-sm">{customerInfo.chatInfo.subject}</p>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.subject}
+                </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <h3 className="font-semibold text-sm">Outcome</h3>
                 <div className="flex space-x-2">
                   <Button
@@ -149,8 +170,9 @@ export function CustomerInfo() {
                         : "secondary"
                     }
                     size="sm"
+                    className="gap-2"
                   >
-                    <Check className="h-4 w-4 mr-1" />
+                    <Check className="h-4 w-4" />
                     Accepted
                   </Button>
                   <Button
@@ -160,77 +182,152 @@ export function CustomerInfo() {
                         : "secondary"
                     }
                     size="sm"
+                    className="gap-2"
                   >
-                    <X className="h-4 w-4 mr-1" />
+                    <X className="h-4 w-4" />
                     Rejected
                   </Button>
                 </div>
               </div>
 
-              {/* Add all other chat info fields */}
-              {/* ... existing fields ... */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Outcome Details</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.outcomeDetails}
+                </p>
+              </div>
 
               <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Flags</h3>
-                <div className="flex flex-col space-y-2">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={customerInfo.chatInfo.flags.classified}
-                      readOnly
-                    />
-                    <span>Classified</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={customerInfo.chatInfo.flags.transferredByOfficer}
-                      readOnly
-                    />
-                    <span>Transferred by Officer</span>
-                  </label>
+                <h3 className="font-semibold text-sm">Case Assessment</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.caseAssessment}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Survey Reason</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.surveyReason}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Enquiry</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.enquiry}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Messaging User</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.messagingUser}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm">Times</h3>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span>Start Time</span>
+                    <span>{customerInfo.chatInfo.times.start}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span>End Time</span>
+                    <span>{customerInfo.chatInfo.times.end}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span>Accept Time</span>
+                    <span>{customerInfo.chatInfo.times.accept}</span>
+                  </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Contact Info</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.contactInfo}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm">Flags</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span>Classified</span>
+                    <Check
+                      className={`h-4 w-4 ${
+                        customerInfo.chatInfo.flags.classified
+                          ? "text-green-500"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span>Transferred by Officer</span>
+                    <Check
+                      className={`h-4 w-4 ${
+                        customerInfo.chatInfo.flags.transferredByOfficer
+                          ? "text-green-500"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Assigned Officer</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.assignedOfficer}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Scheme</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
+                  {customerInfo.chatInfo.scheme}
+                </p>
               </div>
             </div>
           </ScrollArea>
         </TabsContent>
 
+        {/* Feedback Content */}
         <TabsContent value="feedback" className="p-6">
           <ScrollArea className="h-[600px] w-full pr-4">
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">General Feedback</h3>
-                <p className="text-sm whitespace-pre-wrap">
+                <p className="text-sm bg-muted p-3 rounded-lg">
                   {customerInfo.feedback.general}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Scenario</h3>
-                <p className="text-sm whitespace-pre-wrap">
+                <h3 className="font-semibold text-sm">Scenario Feedback</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
                   {customerInfo.feedback.scenario}
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <h3 className="font-semibold text-sm">Customer Profile</h3>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   {customerInfo.feedback.profile.traits.map((trait) => (
-                    <span
+                    <div
                       key={trait}
-                      className="px-2 py-1 bg-secondary rounded text-sm"
+                      className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
                     >
                       {trait}
-                    </span>
+                    </div>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-semibold text-sm">
-                  TL Comments & Feedback
-                </h3>
-                <p className="text-sm whitespace-pre-wrap">
+                <h3 className="font-semibold text-sm">Team Lead Comments</h3>
+                <p className="text-sm bg-muted p-3 rounded-lg">
                   {customerInfo.feedback.tlComments}
                 </p>
               </div>
@@ -238,6 +335,7 @@ export function CustomerInfo() {
           </ScrollArea>
         </TabsContent>
 
+        {/* Scores Content */}
         <TabsContent value="scores" className="p-6">
           <ScrollArea className="h-[600px] w-full pr-4">
             <div className="space-y-6">
@@ -275,25 +373,105 @@ export function CustomerInfo() {
                   <span className="mt-2 font-semibold">Comprehension</span>
                 </div>
 
-                {/* Similar circles for Tone and Accuracy */}
+                <div className="flex flex-col items-center">
+                  <div className="relative w-24 h-24">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl font-bold">
+                        {customerInfo.scores.tone}%
+                      </span>
+                    </div>
+                    <svg className="transform -rotate-90 w-24 h-24">
+                      <circle
+                        className="text-muted stroke-current"
+                        strokeWidth="4"
+                        fill="transparent"
+                        r="38"
+                        cx="48"
+                        cy="48"
+                      />
+                      <circle
+                        className="text-primary stroke-current"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        fill="transparent"
+                        r="38"
+                        cx="48"
+                        cy="48"
+                        strokeDasharray={`${
+                          customerInfo.scores.tone * 2.4
+                        } 240`}
+                      />
+                    </svg>
+                  </div>
+                  <span className="mt-2 font-semibold">Tone</span>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="relative w-24 h-24">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl font-bold">
+                        {customerInfo.scores.accuracy}%
+                      </span>
+                    </div>
+                    <svg className="transform -rotate-90 w-24 h-24">
+                      <circle
+                        className="text-muted stroke-current"
+                        strokeWidth="4"
+                        fill="transparent"
+                        r="38"
+                        cx="48"
+                        cy="48"
+                      />
+                      <circle
+                        className="text-primary stroke-current"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        fill="transparent"
+                        r="38"
+                        cx="48"
+                        cy="48"
+                        strokeDasharray={`${
+                          customerInfo.scores.accuracy * 2.4
+                        } 240`}
+                      />
+                    </svg>
+                  </div>
+                  <span className="mt-2 font-semibold">Accuracy</span>
+                </div>
+              </div>
+
+              <div className="bg-muted p-6 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold text-primary">
+                      {customerInfo.scores.totalScore}%
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Total Score</p>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Time Taken: {customerInfo.scores.timeTaken}
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Total Score</span>
-                  <span className="text-4xl font-bold text-primary">
-                    {customerInfo.scores.totalScore}%
-                  </span>
+                <h3 className="font-semibold text-sm">Performance Metrics</h3>
+                <div className="space-y-2">
+                  {Object.entries(customerInfo.scores.metrics).map(
+                    ([key, metric]) => (
+                      <div key={key} className="bg-muted p-3 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">
+                            {metric.value}%
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {metric.comparison}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Time Taken</span>
-                  <span className="text-2xl font-bold">
-                    {customerInfo.scores.timeTaken}
-                  </span>
-                </div>
-
-                {/* Add metrics comparison */}
               </div>
             </div>
           </ScrollArea>
