@@ -22,7 +22,7 @@ export default function ConversationsPage() {
         variant="ghost"
         size="icon"
         className={`fixed z-50 transition-all duration-300 ${
-          isSidebarOpen ? "right-[400px]" : "right-4"
+          isSidebarOpen ? "right-[400px]" : "right-6"
         } top-[88px]`}
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
