@@ -8,7 +8,7 @@ from app.core.config import get_settings
 from app.core.db import Database, get_session
 from app.core.middleware import AuthCookieMiddleware
 from app.models.user import User
-from app.routers import admin, auth, conversations, rag, scenarios, schemes, users
+from app.routers import admin, auth, conversations, rag, scenarios, schemes, users, ws
 
 settings = get_settings()
 db = Database()
@@ -45,6 +45,7 @@ app.include_router(scenarios.router)
 app.include_router(schemes.router)
 app.include_router(rag.router)
 app.include_router(conversations.router)
+app.include_router(ws.router)
 
 
 @app.get("/")

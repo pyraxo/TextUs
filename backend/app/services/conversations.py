@@ -7,12 +7,14 @@ from sqlmodel import Session, select
 from app.core.db import get_session
 from app.models.chat import ChatConversation, ChatMessage
 from app.models.response import MessageCreate
+from app.routers.ws import broadcast_message
 
 
 async def get_conversations(session: Session = Depends(get_session)):
     """Get all conversations."""
     statement = select(ChatConversation).options(
-        selectinload(ChatConversation.customer_scenario)
+        selectinload(ChatConversation.customer_scenario),
+        selectinload(ChatConversation.messages),
     )
     results = session.exec(statement).all()
     return results
@@ -40,22 +42,25 @@ async def create_message(
     session: Session = Depends(get_session),
 ):
     """Create a message."""
-    message = ChatMessage(
+    chat_message = ChatMessage(
         conversation_id=conversation_id,
         message=message.content,
         sender_id=message.sender_id,
         message_type=message.message_type,
     )
-    session.add(message)
+    session.add(chat_message)
     session.commit()
-    session.refresh(message)
+    session.refresh(chat_message)
+
+    # Broadcast the message to all connected clients
+    await broadcast_message(chat_message)
 
     # Return a formatted response
     return {
-        "id": message.id,
-        "conversation_id": message.conversation_id,
-        "sender_id": message.sender_id,
-        "content": message.message,
-        "timestamp": str(message.timestamp),
-        "message_type": message.message_type.value,
+        "id": chat_message.id,
+        "conversation_id": chat_message.conversation_id,
+        "sender_id": chat_message.sender_id,
+        "content": chat_message.message,
+        "timestamp": str(chat_message.timestamp),
+        "message_type": chat_message.message_type.value,
     }

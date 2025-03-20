@@ -25,6 +25,18 @@ class MessageCreate(SQLModel):
     message_type: MessageType
 
 
+class ConversationListResponse(SQLModel):
+    """Response model for conversation list."""
+
+    id: UUID
+    scenario_id: UUID
+    customer_id: UUID
+    started_at: str
+    ended_at: Optional[str] = None
+    scenario_name: Optional[str] = None
+    latest_message_timestamp: str
+
+
 class ConversationResponse(SQLModel):
     """Response model for conversation details."""
 

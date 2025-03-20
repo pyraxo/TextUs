@@ -21,12 +21,18 @@ export const conversationKeys = {
  * Hook to fetch all conversations
  */
 export function useConversations() {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const query = useQuery({
     queryKey: conversationKeys.lists(),
     queryFn: getConversations,
     retry: 1, // Only retry once to avoid excessive retries on server down
     retryDelay: 1000, // Wait 1 second before retrying
   });
+
+  return {
+    ...query,
+    mutate: () => queryClient.invalidateQueries({ queryKey: conversationKeys.lists() }),
+  };
 }
 
 /**

@@ -1,3 +1,4 @@
+from logging import ERROR, basicConfig, getLogger
 from logging.config import fileConfig
 
 from alembic import context
@@ -11,6 +12,9 @@ from app.core.config import get_settings
 
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.database_url)
+
+basicConfig()
+getLogger("sqlalchemy").setLevel(ERROR)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

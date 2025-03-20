@@ -1,4 +1,4 @@
-import { ConversationList } from "@/components/conversations/conversation-list";
+import { WebSocketProvider } from "@/lib/providers/websocket-provider";
 import type React from "react";
 
 export default function ConversationsLayout({
@@ -7,13 +7,12 @@ export default function ConversationsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full gap-4 p-4">
-      <div className="w-80 rounded-xl border bg-background shadow-sm">
-        <ConversationList />
+    <WebSocketProvider>
+      <div className="h-[calc(100vh-4rem)] w-full p-4">
+        <div className="h-full rounded-xl border bg-background shadow-sm">
+          {children}
+        </div>
       </div>
-      <div className="flex-1 rounded-xl border bg-background shadow-sm">
-        {children}
-      </div>
-    </div>
+    </WebSocketProvider>
   );
 }

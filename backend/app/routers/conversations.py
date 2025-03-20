@@ -8,7 +8,7 @@ from app.core.db import get_session
 from app.models.chat import MessageType
 from app.models.response import (
     ConversationDetailResponse,
-    ConversationResponse,
+    ConversationListResponse,
     MessageCreate,
     MessageResponse,
 )
@@ -17,10 +17,10 @@ from app.services import conversations
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
-@router.get("/", response_model=List[ConversationResponse])
+@router.get("/", response_model=List[ConversationListResponse])
 async def get_conversations(session: Session = Depends(get_session)):
     conv_list = await conversations.get_conversations(session=session)
-    # Transform to include scenario name
+    # Transform to include scenario name and latest message timestamp
     return [
         {
             "id": conv.id,
@@ -31,6 +31,10 @@ async def get_conversations(session: Session = Depends(get_session)):
             "scenario_name": conv.customer_scenario.name
             if conv.customer_scenario
             else None,
+            "latest_message_timestamp": max(
+                (msg.timestamp.isoformat() for msg in conv.messages),
+                default=conv.started_at.isoformat(),
+            ),
         }
         for conv in conv_list
     ]
