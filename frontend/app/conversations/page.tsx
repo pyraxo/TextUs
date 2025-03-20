@@ -7,7 +7,7 @@ import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useState } from "react";
 
 export default function ConversationsPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="h-full flex overflow-hidden relative">

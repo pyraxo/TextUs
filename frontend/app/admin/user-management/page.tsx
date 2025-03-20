@@ -28,14 +28,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/lib/hooks/use-toast";
 import {
   useCreateUser,
   useDeleteUser,
   useUpdateUser,
   useUsers,
 } from "@/lib/hooks/use-users";
-import { User, UserCreateData, UserType } from "@/types/user";
+import { User, UserCreate, UserType } from "@/types/user";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -48,7 +48,7 @@ export default function UserManagementPage() {
 
   // Local state
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState<UserCreateData>({
+  const [newUser, setNewUser] = useState<UserCreate>({
     name: "",
     username: "",
     email: "",
