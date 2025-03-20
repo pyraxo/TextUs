@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.core.db import get_session
+from app.core.security import get_password_hash
 from app.models.user import User, UserCreate, UserType
 
 
@@ -45,7 +46,20 @@ class UserService:
 
     async def create_user(self, user: UserCreate) -> User:
         """Create a new user."""
-        db_user = User.from_orm(user)
+        # Hash the password before storing
+        hashed_password = get_password_hash(user.password)
+
+        # Create user with hashed password
+        db_user = User(
+            name=user.name,
+            username=user.username,
+            email=user.email,
+            password=hashed_password,
+            user_type=user.user_type,
+            joined_at=user.joined_at,
+            last_login=user.last_login,
+        )
+
         self.session.add(db_user)
         self.session.commit()
         self.session.refresh(db_user)

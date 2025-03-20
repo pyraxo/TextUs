@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from app.core.config import get_settings
 from app.core.db import Database, get_session
 from app.core.middleware import AuthCookieMiddleware
+from app.core.rate_limiter import RateLimiter
 from app.models.user import User
 from app.routers import admin, auth, conversations, rag, scenarios, schemes, users, ws
 
@@ -33,6 +34,9 @@ app.add_middleware(
     allow_methods=settings.allow_methods,
     allow_headers=settings.allow_headers,
 )
+
+# Add rate limiting middleware
+app.add_middleware(RateLimiter)
 
 # Add authentication cookie middleware
 app.add_middleware(AuthCookieMiddleware)

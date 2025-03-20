@@ -37,12 +37,6 @@ const adminOptions = [
     href: "/admin/question-bank",
     icon: <MessageSquare className="h-8 w-8 text-black stroke-[2px]" />,
   },
-  {
-    title: "Customer Profile Configuration",
-    description: "Configure customer profile settings",
-    href: "/admin/customer-profile",
-    icon: <Users className="h-8 w-8 text-black stroke-[2px]" />,
-  },
 ];
 
 export default function AdminPage() {
