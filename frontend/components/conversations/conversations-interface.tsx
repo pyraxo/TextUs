@@ -301,9 +301,9 @@ export function ConversationsInterface() {
                   <span className="text-xs">Offline</span>
                 </Badge>
               )}
-              <Button variant="outline" size="icon">
+              {/* <Button variant="outline" size="icon">
                 <Filter className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </div>
           </div>
           <Separator className="bg-muted" />

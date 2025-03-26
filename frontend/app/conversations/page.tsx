@@ -1,7 +1,7 @@
 "use client";
 
 import { ConversationsInterface } from "@/components/conversations/conversations-interface";
-import { CustomerInfo } from "@/components/customer-info";
+import { CustomerInfo } from "@/components/conversations/customer-info";
 import { Button } from "@/components/ui/button";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useState } from "react";

@@ -9,7 +9,7 @@ import {
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
-import { NavUser } from "@/components/nav-user";
+import { NavUser } from "@/components/sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,

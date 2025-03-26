@@ -23,7 +23,7 @@ export const LastAttempt: FC<LastAttemptProps> = ({
     <div className="bg-white p-6 rounded">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[20px] font-semibold">Last Attempt</h3>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <div className="text-sm text-gray-600">Completion</div>
           <div className="w-32 h-2 bg-gray-200 rounded-full">
             <div
@@ -32,7 +32,7 @@ export const LastAttempt: FC<LastAttemptProps> = ({
             />
           </div>
           <div className="text-sm font-medium">{completion}%</div>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-2 gap-6">

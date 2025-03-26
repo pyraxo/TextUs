@@ -1,6 +1,5 @@
 "use client";
 
-import { Assignments } from "../../components/dashboard/assignments";
 import { LastAttempt } from "../../components/dashboard/last-attempt";
 import { Leaderboard } from "../../components/dashboard/leaderboard";
 import { PerformanceMetrics } from "../../components/dashboard/performance-metrics";
@@ -50,7 +49,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-2 gap-6 mt-6">
           <div className="space-y-6">
-            <Assignments newAssignments={2} />
+            {/* <Assignments newAssignments={2} /> */}
             <LastAttempt {...lastAttemptData} />
           </div>
           <Leaderboard entries={leaderboardEntries} />

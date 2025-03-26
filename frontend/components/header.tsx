@@ -12,7 +12,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import Link from "next/link";
@@ -146,7 +145,7 @@ export default function Header() {
             )}
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="flex items-center gap-2 ml-auto">
+        {/* <div className="flex items-center gap-2 ml-auto">
           <div className="relative w-full max-w-sm hidden sm:block">
             <Input
               type="search"
@@ -154,7 +153,7 @@ export default function Header() {
               className="bg-cpf-teal-dark/50 border-cpf-teal-dark text-white placeholder:text-white/60 focus-visible:ring-white/30"
             />
           </div>
-        </div>
+        </div> */}
       </div>
     </header>
   );

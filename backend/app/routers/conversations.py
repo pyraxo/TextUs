@@ -89,7 +89,6 @@ async def create_message(
     message: MessageCreate,
     session: Session = Depends(get_session),
 ):
-    print(message)
     msg = await conversations.create_message(
         conversation_id=conversation_id,
         message=message,

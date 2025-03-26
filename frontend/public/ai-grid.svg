@@ -1,0 +1,36 @@
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="smallGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0f766e" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+    <pattern id="grid" width="200" height="200" patternUnits="userSpaceOnUse">
+      <rect width="200" height="200" fill="url(#smallGrid)"/>
+      <path d="M 200 0 L 0 0 0 200" fill="none" stroke="#0f766e" stroke-width="1" opacity="0.3"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background grid -->
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  
+  <!-- Connected nodes -->
+  <g>
+    <circle cx="200" cy="200" r="4" fill="#10b981"/>
+    <circle cx="400" cy="300" r="4" fill="#10b981"/>
+    <circle cx="600" cy="200" r="4" fill="#10b981"/>
+    <circle cx="300" cy="500" r="4" fill="#10b981"/>
+    <circle cx="500" cy="400" r="4" fill="#10b981"/>
+    
+    <!-- Connecting lines -->
+    <path d="M 200 200 L 400 300 L 600 200" stroke="#10b981" stroke-width="1" fill="none" opacity="0.3"/>
+    <path d="M 300 500 L 400 300 L 500 400" stroke="#10b981" stroke-width="1" fill="none" opacity="0.3"/>
+  </g>
+  
+  <!-- Glowing effects -->
+  <g>
+    <circle cx="200" cy="200" r="8" fill="#10b981" opacity="0.2"/>
+    <circle cx="400" cy="300" r="8" fill="#10b981" opacity="0.2"/>
+    <circle cx="600" cy="200" r="8" fill="#10b981" opacity="0.2"/>
+    <circle cx="300" cy="500" r="8" fill="#10b981" opacity="0.2"/>
+    <circle cx="500" cy="400" r="8" fill="#10b981" opacity="0.2"/>
+  </g>
+</svg>

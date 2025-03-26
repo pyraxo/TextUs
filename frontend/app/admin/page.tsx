@@ -3,7 +3,7 @@
 import ProtectedRoute from "@/components/auth/protected-route";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { MessageSquare, Settings, Sliders, Users } from "lucide-react";
+import { Sliders, Users } from "lucide-react";
 import Link from "next/link";
 
 const adminOptions = [
@@ -14,28 +14,10 @@ const adminOptions = [
     icon: <Users className="h-8 w-8 text-black stroke-[2px]" />,
   },
   {
-    title: "Content Management",
-    description: "Manage scenarios and schemes",
-    href: "/admin/content",
-    icon: <MessageSquare className="h-8 w-8 text-black stroke-[2px]" />,
-  },
-  {
-    title: "System Settings",
-    description: "Configure system settings",
-    href: "/admin/settings",
-    icon: <Settings className="h-8 w-8 text-black stroke-[2px]" />,
-  },
-  {
     title: "Prompt Engineering Controls",
     description: "Configure AI prompt engineering settings",
     href: "/admin/prompt-engineering",
     icon: <Sliders className="h-8 w-8 text-black stroke-[2px]" />,
-  },
-  {
-    title: "Question Bank Modifier",
-    description: "Manage the question bank for assessments",
-    href: "/admin/question-bank",
-    icon: <MessageSquare className="h-8 w-8 text-black stroke-[2px]" />,
   },
 ];
 
