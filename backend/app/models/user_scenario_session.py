@@ -29,7 +29,7 @@ class UserScenarioSessionBase(SQLModel):
     user_id: UUID = Field(foreign_key="users.id")
     scenario_id: UUID = Field(foreign_key="scenarios.id")
     start_timestamp: datetime = Field(default_factory=datetime.now)
-    end_timestamp: datetime = Field(default=None)
+    end_timestamp: Optional[datetime] = Field(default=None)
 
 
 class UserScenarioSession(UserScenarioSessionBase, table=True):

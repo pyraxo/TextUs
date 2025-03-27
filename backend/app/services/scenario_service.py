@@ -1,3 +1,6 @@
+from typing import Optional
+from uuid import UUID
+
 from fastapi import Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -15,9 +18,21 @@ from app.models.scenario import (
 from app.models.user_scenario_session import UserScenarioSession
 
 
-async def get_scenarios(session: Session = Depends(get_session)):
-    """Get all scenarios."""
+async def get_scenarios(
+    scheme_id: Optional[str] = None, session: Session = Depends(get_session)
+):
+    """Get all scenarios, optionally filtered by scheme_id."""
     statement = select(Scenario)
+    if scheme_id:
+        try:
+            # Convert string to UUID
+            scheme_uuid = UUID(scheme_id)
+            statement = statement.where(Scenario.scheme_id == scheme_uuid)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid scheme_id format. Must be a valid UUID.",
+            )
     results = session.exec(statement).all()
     return results
 
@@ -36,18 +51,26 @@ async def create_scenario(
 
 
 async def get_scenario(
-    scenario_id: int, session: Session = Depends(get_session)
+    scenario_id: str, session: Session = Depends(get_session)
 ) -> Scenario:
     """Get a scenario by ID."""
-    statement = select(Scenario).where(Scenario.id == scenario_id)
-    scenario = session.exec(statement).first()
-    if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
-    return scenario
+    try:
+        # Convert string to UUID
+        scenario_uuid = UUID(scenario_id)
+        statement = select(Scenario).where(Scenario.id == scenario_uuid)
+        scenario = session.exec(statement).first()
+        if not scenario:
+            raise HTTPException(status_code=404, detail="Scenario not found")
+        return scenario
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid scenario_id format. Must be a valid UUID.",
+        )
 
 
 async def update_scenario(
-    scenario_id: int,
+    scenario_id: str,
     scenario_data: ScenarioUpdate,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -66,7 +89,7 @@ async def update_scenario(
 
 
 async def add_customer_to_scenario(
-    scenario_id: int,
+    scenario_id: str,
     customer_data: ScenarioAddCustomer,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -91,7 +114,7 @@ async def add_customer_to_scenario(
 
 
 async def remove_customer_from_scenario(
-    scenario_id: int,
+    scenario_id: str,
     customer_data: ScenarioRemoveCustomer,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -117,7 +140,7 @@ async def remove_customer_from_scenario(
 
 
 async def update_scenario_history(
-    scenario_id: int,
+    scenario_id: str,
     history_data: ScenarioUpdateHistory,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -143,15 +166,23 @@ async def update_scenario_history(
 
 
 async def start_scenario(
-    scenario_id: int, user_id: int, session: Session = Depends(get_session)
-) -> Scenario:
+    scenario_id: str, user_id: str, session: Session = Depends(get_session)
+) -> UserScenarioSession:
     """Start a scenario."""
     scenario = await get_scenario(scenario_id, session)
-    user_scenario_session = UserScenarioSession(
-        user_id=user_id,
-        scenario_id=scenario.id,
+    # TODO: Separate start and continue
+    statement = select(UserScenarioSession).where(
+        UserScenarioSession.user_id == user_id,
+        UserScenarioSession.scenario_id == scenario.id,
     )
-    session.add(user_scenario_session)
-    session.commit()
-    session.refresh(user_scenario_session)
-    return user_scenario_session
+    existing_session = session.exec(statement).first()
+
+    if not existing_session:
+        existing_session = UserScenarioSession(
+            user_id=user_id,
+            scenario_id=scenario.id,
+        )
+        session.add(existing_session)
+        session.commit()
+        session.refresh(existing_session)
+    return existing_session

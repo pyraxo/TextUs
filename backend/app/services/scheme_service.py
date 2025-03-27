@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -15,11 +17,17 @@ async def get_schemes(session: Session = Depends(get_session)):
 
 async def get_scheme(scheme_id: str, session: Session = Depends(get_session)):
     """Get a scheme by ID."""
-    statement = select(Scheme).where(Scheme.id == scheme_id)
-    scheme = session.exec(statement).first()
-    if not scheme:
-        raise HTTPException(status_code=404, detail="Scheme not found")
-    return scheme
+    try:
+        statement = select(Scheme).where(Scheme.id == scheme_id)
+        scheme = session.exec(statement).first()
+        if not scheme:
+            raise HTTPException(status_code=404, detail="Scheme not found")
+        return scheme
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid scheme_id format. Must be a valid UUID.",
+        )
 
 
 async def get_scheme_by_slug(slug: str, session: Session = Depends(get_session)):
@@ -106,8 +114,8 @@ async def delete_scheme(scheme_id: str, session: Session = Depends(get_session))
 
 async def get_scheme_scenarios(scheme_id: str, session: Session = Depends(get_session)):
     """Get all scenarios for a scheme."""
-    scheme = await get_scheme(scheme_id, session)
-    statement = select(Scenario).where(Scenario.scheme_id == scheme_id)
+    scheme = await get_scheme_by_id_or_slug(scheme_id, session)
+    statement = select(Scenario).where(Scenario.scheme_id == scheme.id)
     scenarios = session.exec(statement).all()
     return scenarios
 
@@ -118,19 +126,22 @@ async def get_scheme_by_id_or_slug(
     """Get a scheme by either ID or slug."""
     # Try to get by ID first
     try:
-        statement = select(Scheme).where(Scheme.id == id_or_slug)
+        # Try to convert to UUID first
+        scheme_uuid = UUID(id_or_slug)
+        statement = select(Scheme).where(Scheme.id == scheme_uuid)
         scheme = session.exec(statement).first()
         if scheme:
             return scheme
-    except:
-        pass
+    except ValueError:
+        # Not a valid UUID, try by slug
+        statement = select(Scheme).where(Scheme.slug == id_or_slug)
+        scheme = session.exec(statement).first()
+        if not scheme:
+            raise HTTPException(status_code=404, detail="Scheme not found")
+        return scheme
 
-    # If not found or invalid ID format, try by slug
-    statement = select(Scheme).where(Scheme.slug == id_or_slug)
-    scheme = session.exec(statement).first()
-    if not scheme:
-        raise HTTPException(status_code=404, detail="Scheme not found")
-    return scheme
+    # If we got here, it was a valid UUID but no scheme found
+    raise HTTPException(status_code=404, detail="Scheme not found")
 
 
 async def create_scheme_scenario(

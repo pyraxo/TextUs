@@ -1,11 +1,5 @@
 "use client";
-import {
-  BotMessageSquare,
-  ClipboardList,
-  PieChart,
-  Settings,
-  Users,
-} from "lucide-react";
+import { ClipboardList, PieChart, Settings, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
@@ -35,11 +29,6 @@ const navMain = [
     title: "Practice",
     url: "/practice",
     icon: ClipboardList,
-  },
-  {
-    title: "Conversations",
-    url: "/conversations",
-    icon: BotMessageSquare,
   },
 ];
 

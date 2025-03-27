@@ -78,6 +78,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       ws.onopen = () => {
         setConnectionState("connected");
         console.log("WebSocket connected");
+        reconnectAttempts.current = 0; // Reset reconnect attempts on successful connection
 
         // Clear any reconnection timeout
         if (reconnectTimeoutRef.current) {
@@ -126,8 +127,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         setConnectionState("disconnected");
         webSocketRef.current = null;
 
-        // Attempt to reconnect after a delay, unless it was a clean closure
-        if (!event.wasClean) {
+        // Don't attempt to reconnect if it was a clean closure or user is not logged in
+        if (!event.wasClean && user) {
           const delay = calculateReconnectDelay();
           console.log(`Reconnecting in ${delay}ms...`);
           reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
@@ -137,15 +138,22 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
         setConnectionState("error");
+
+        // Close the connection on error to trigger reconnect
+        if (webSocketRef.current) {
+          webSocketRef.current.close();
+        }
       };
     } catch (error) {
       console.error("WebSocket connection error:", error);
       setConnectionState("error");
 
-      // Attempt to reconnect after a delay
-      const delay = calculateReconnectDelay();
-      console.log(`Reconnecting in ${delay}ms...`);
-      reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
+      // Only attempt to reconnect if user is logged in
+      if (user) {
+        const delay = calculateReconnectDelay();
+        console.log(`Reconnecting in ${delay}ms...`);
+        reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
+      }
     }
   };
 

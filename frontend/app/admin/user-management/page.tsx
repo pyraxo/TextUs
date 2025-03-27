@@ -392,7 +392,7 @@ export default function UserManagementPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  users.map((user) => (
+                  users.map((user: User) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.username}</TableCell>

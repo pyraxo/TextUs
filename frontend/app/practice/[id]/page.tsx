@@ -10,44 +10,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { startScenario } from "@/lib/api/scenarios";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { useSchemeScenarios } from "@/lib/hooks/use-scenarios";
+import { useToast } from "@/lib/hooks/use-toast";
+import type { Scenario } from "@/types/scenario";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-// Mock assignments data
-const assignments = [
-  {
-    id: 1,
-    scheme: "Home Ownership Scheme",
-    scenario: "Divorce Assets Distribution",
-    expectedScore: "70%",
-    completeBy: "27 March 2025",
-    assignedBy: "Pamela",
-  },
-  {
-    id: 2,
-    scheme: "Home Ownership Scheme",
-    scenario: "Divorce Assets Distribution",
-    expectedScore: "70%",
-    completeBy: "27 March 2025",
-    assignedBy: "Pamela",
-  },
-];
-
-// Mock saved scenarios data
-const savedScenarios = [
-  {
-    id: 1,
-    scenario: "Hello",
-  },
-  {
-    id: 2,
-    scenario: "It's me",
-  },
-  {
-    id: 3,
-    scenario: "I was wondering if after all these years you'd like to meet",
-  },
-];
 
 // Mock completed scenarios data
 const completedScenarios = [
@@ -100,11 +71,17 @@ export default function SchemeDetailPage({
   params: { id: string };
 }) {
   const { user } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isStarting, setIsStarting] = useState<string | null>(null);
   const isTrainerOrAdmin =
     user?.user_type === "trainer" || user?.user_type === "admin";
   const [savedCurrentPage, setSavedCurrentPage] = useState(1);
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Get scenarios data
+  const { data: scenarios, isLoading, error } = useSchemeScenarios(params.id);
 
   // Get scheme name based on ID or use fallback
   const schemeName =
@@ -115,13 +92,11 @@ export default function SchemeDetailPage({
     "Unknown Scheme";
 
   // Pagination logic for saved scenarios
-  const savedTotalPages = Math.ceil(savedScenarios.length / itemsPerPage);
+  const savedTotalPages = Math.ceil((scenarios?.length || 0) / itemsPerPage);
   const savedStartIndex = (savedCurrentPage - 1) * itemsPerPage;
   const savedEndIndex = savedStartIndex + itemsPerPage;
-  const currentSavedScenarios = savedScenarios.slice(
-    savedStartIndex,
-    savedEndIndex
-  );
+  const currentSavedScenarios =
+    scenarios?.slice(savedStartIndex, savedEndIndex) || [];
 
   // Pagination logic for completed scenarios
   const completedTotalPages = Math.ceil(
@@ -167,11 +142,49 @@ export default function SchemeDetailPage({
     return pages;
   };
 
+  const handleStartScenario = async (scenarioId: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to start a scenario.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsStarting(scenarioId);
+      await startScenario(scenarioId, user.id);
+      // Redirect to the scenario page
+      router.push(`/conversations/${scenarioId}`);
+    } catch (error) {
+      console.error("Failed to start scenario:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to start scenario. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStarting(null);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header content area */}
-      <div className="bg-[#E8F6F4] pt-16 pb-12">
+    <div className="min-h-screen">
+      <div className="bg-[#E8F6F4] pt-10 pb-12">
         <div className="container mx-auto px-4 md:px-8">
+          {/* Header content area */}
+          {/* Back button */}
+          <Link
+            href="/practice"
+            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Link>
           <div className="flex justify-between items-start">
             <div>
               {/* Main heading */}
@@ -193,7 +206,7 @@ export default function SchemeDetailPage({
       <div className="container mx-auto px-4 md:px-8 py-12 space-y-8">
         {/* Saved Scenarios Section */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Saved Scenarios</h2>
+          <h2 className="text-2xl font-semibold">Pending Scenarios</h2>
           <Card className="border border-gray-200">
             <CardContent className="p-0">
               <Table>
@@ -204,19 +217,44 @@ export default function SchemeDetailPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentSavedScenarios.length === 0 ? (
+                  {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        No saved scenarios found.
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                          <span>Loading scenarios...</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : error ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-8 text-red-500"
+                      >
+                        Error loading scenarios. Please try again later.
+                      </TableCell>
+                    </TableRow>
+                  ) : currentSavedScenarios.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        No pending scenarios found.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    currentSavedScenarios.map((scenario) => (
+                    currentSavedScenarios.map((scenario: Scenario) => (
                       <TableRow key={scenario.id}>
-                        <TableCell>{scenario.scenario}</TableCell>
+                        <TableCell>{scenario.name}</TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm">
-                            Start Now
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isStarting === scenario.id}
+                            onClick={() => handleStartScenario(scenario.id)}
+                          >
+                            {isStarting === scenario.id
+                              ? "Starting..."
+                              : "Start Now"}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -227,7 +265,7 @@ export default function SchemeDetailPage({
             </CardContent>
           </Card>
           {/* Saved Scenarios Pagination */}
-          {savedScenarios.length > 0 && (
+          {scenarios && scenarios.length > 0 && (
             <div className="flex justify-center items-center gap-2">
               <Button
                 variant="outline"
@@ -351,7 +389,7 @@ export default function SchemeDetailPage({
                       }
                       className={
                         completedCurrentPage === page
-                          ? "bg-primary text-sm text-primary-foreground"
+                          ? "bg-primary text-primary-foreground text-sm"
                           : "text-sm"
                       }
                       onClick={() => setCompletedCurrentPage(page as number)}

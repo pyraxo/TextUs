@@ -110,3 +110,9 @@ class ScenarioUpdateHistory(SQLModel):
 
     customer_id: UUID
     history: List[str]
+
+
+class ScenarioStart(SQLModel):
+    """Model for starting a scenario."""
+
+    user_id: UUID

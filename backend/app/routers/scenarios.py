@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
@@ -7,18 +9,22 @@ from app.models.scenario import (
     ScenarioAddCustomer,
     ScenarioCreate,
     ScenarioRemoveCustomer,
+    ScenarioStart,
     ScenarioUpdate,
     ScenarioUpdateHistory,
 )
+from app.models.user_scenario_session import UserScenarioSession
 from app.services import scenario_service
 
 router = APIRouter(prefix="/scenarios", tags=["Scenarios"])
 
 
 @router.get("/")
-async def get_scenarios(session: Session = Depends(get_session)) -> list[Scenario]:
-    """Get all scenarios."""
-    return await scenario_service.get_scenarios(session=session)
+async def get_scenarios(
+    scheme_id: Optional[str] = None, session: Session = Depends(get_session)
+) -> list[Scenario]:
+    """Get all scenarios, optionally filtered by scheme_id."""
+    return await scenario_service.get_scenarios(scheme_id=scheme_id, session=session)
 
 
 @router.post("/")
@@ -31,7 +37,7 @@ async def create_scenario(
 
 @router.get("/{scenario_id}")
 async def get_scenario(
-    scenario_id: int, session: Session = Depends(get_session)
+    scenario_id: str, session: Session = Depends(get_session)
 ) -> Scenario:
     """Get a scenario by ID."""
     return await scenario_service.get_scenario(scenario_id, session=session)
@@ -39,7 +45,7 @@ async def get_scenario(
 
 @router.put("/{scenario_id}")
 async def update_scenario(
-    scenario_id: int,
+    scenario_id: str,
     scenario_data: ScenarioUpdate,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -51,7 +57,7 @@ async def update_scenario(
 
 @router.post("/{scenario_id}/customers")
 async def add_customer_to_scenario(
-    scenario_id: int,
+    scenario_id: str,
     customer_data: ScenarioAddCustomer,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -63,7 +69,7 @@ async def add_customer_to_scenario(
 
 @router.delete("/{scenario_id}/customers")
 async def remove_customer_from_scenario(
-    scenario_id: int,
+    scenario_id: str,
     customer_data: ScenarioRemoveCustomer,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -75,7 +81,7 @@ async def remove_customer_from_scenario(
 
 @router.put("/{scenario_id}/history")
 async def update_scenario_history(
-    scenario_id: int,
+    scenario_id: str,
     history_data: ScenarioUpdateHistory,
     session: Session = Depends(get_session),
 ) -> Scenario:
@@ -87,8 +93,11 @@ async def update_scenario_history(
 
 @router.post("/{scenario_id}/start")
 async def start_scenario(
-    scenario_id: int,
+    scenario_id: str,
+    scenario_data: ScenarioStart,
     session: Session = Depends(get_session),
-) -> Scenario:
+) -> UserScenarioSession:
     """Start a scenario."""
-    return await scenario_service.start_scenario(scenario_id, session=session)
+    return await scenario_service.start_scenario(
+        scenario_id=scenario_id, user_id=scenario_data.user_id, session=session
+    )

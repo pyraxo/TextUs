@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  ArrowLeft,
   BookOpen,
   Briefcase,
   GraduationCap,
@@ -52,8 +53,17 @@ export default function PracticePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header content area */}
-      <div className="bg-[#E8F6F4] pt-16 pb-12">
+      <div className="bg-[#E8F6F4] pt-10 pb-12">
         <div className="container mx-auto px-4 md:px-8">
+          {/* Back button */}
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Link>
+
           {/* Main heading */}
           <h1 className="text-5xl font-bold mb-6">Schemes</h1>
 
