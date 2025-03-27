@@ -148,7 +148,7 @@ export const NewScenarioDialog: FC<NewScenarioDialogProps> = ({
             </Button>
             <Button
               type="submit"
-              className="bg-[#0B6160] hover:bg-[#094a49] text-white"
+              className="bg-[#0B6160] hover:bg-[#094a49] text-foreground"
             >
               Create Scenario
             </Button>

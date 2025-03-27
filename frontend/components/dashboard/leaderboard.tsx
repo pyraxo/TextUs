@@ -1,3 +1,11 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Medal } from "lucide-react";
 import { FC } from "react";
 
@@ -11,7 +19,7 @@ export const Leaderboard: FC<{ entries: LeaderboardEntry[] }> = ({
   entries,
 }) => {
   return (
-    <div className="bg-white p-6 rounded">
+    <div className="bg-card text-card-foreground p-6 rounded">
       <h3 className="text-[20px] font-semibold mb-4">Leaderboard</h3>
 
       <div className="flex justify-between mb-6">
@@ -29,37 +37,26 @@ export const Leaderboard: FC<{ entries: LeaderboardEntry[] }> = ({
         </div>
       </div>
 
-      <div className="overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-[#E5E7EB]">
-              <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">
-                Name
-              </th>
-              <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">
-                Schemes
-              </th>
-              <th className="text-right py-2 px-4 text-sm font-medium text-gray-600">
-                Score
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry, index) => (
-              <tr
-                key={index}
-                className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-              >
-                <td className="py-2 px-4 text-[15px]">{entry.name}</td>
-                <td className="py-2 px-4 text-[15px]">{entry.schemes}</td>
-                <td className="py-2 px-4 text-[15px] text-right font-medium">
-                  {entry.score}%
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Schemes</TableHead>
+            <TableHead className="text-right">Score</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry, index) => (
+            <TableRow key={index}>
+              <TableCell>{entry.name}</TableCell>
+              <TableCell>{entry.schemes}</TableCell>
+              <TableCell className="text-right font-medium">
+                {entry.score}%
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };

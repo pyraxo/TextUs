@@ -134,7 +134,7 @@ export default function TrainerDashboardPage() {
   const { toast } = useToast();
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8">
         <Welcome
           userName={user?.name}
@@ -157,14 +157,14 @@ export default function TrainerDashboardPage() {
             <div className="grid grid-cols-3 gap-3">
               <Button
                 variant="outline"
-                className="bg-[#0B6160] text-white flex items-center gap-2"
+                className="bg-cpf-teal text-primary-foreground flex items-center gap-2"
               >
                 <Users size={18} />
                 View Trainees
               </Button>
               <Button
                 variant="outline"
-                className="bg-[#0B6160] text-white flex items-center gap-2"
+                className="bg-cpf-teal text-primary-foreground flex items-center gap-2"
               >
                 <User size={18} />
                 Customer Profiles

@@ -44,7 +44,7 @@ const config = {
 					foreground: '#FFFFFF'
 				},
 				accent: 'rgba(165, 207, 76, 0.8)',
-				border: '#444444',
+				border: 'hsl(var(--border))',
 				muted: '#D9D9D9',
 				'muted-foreground': '#848484',
 				input: 'hsl(var(--input))',
@@ -70,7 +70,8 @@ const config = {
 					teal: 'hsl(var(--cpf-teal))',
 					'teal-dark': 'hsl(var(--cpf-teal-dark))',
 					gray: 'hsl(var(--cpf-gray))',
-					'light-gray': 'hsl(var(--cpf-light-gray))'
+					'light-gray': 'hsl(var(--cpf-light-gray))',
+					'light-teal': 'hsl(var(--cpf-light-teal))'
 				}
 			},
 			borderRadius: {

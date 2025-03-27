@@ -91,7 +91,7 @@ export const TrainerShortcuts: FC<TrainerShortcutsProps> = ({ shortcuts }) => {
         <Link
           key={index}
           href={shortcut.link}
-          className="bg-[#0B6160] text-white py-2 px-4 rounded-md shadow flex items-center justify-between"
+          className="bg-[#0B6160] text-foreground py-2 px-4 rounded-md shadow flex items-center justify-between"
         >
           <div className="flex items-center space-x-2">
             {getIcon(shortcut.icon)}

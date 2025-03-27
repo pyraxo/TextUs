@@ -16,7 +16,7 @@ interface TraineeQuickStatsProps {
 
 export const TraineeQuickStats: FC<TraineeQuickStatsProps> = ({ trainee }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow overflow-hidden h-full">
+    <div className="bg-foreground rounded-lg border border-gray-200 shadow overflow-hidden h-full">
       <div className="p-4">
         <h2 className="text-xl font-bold text-[#0B6160] text-center mb-3">
           {trainee.name}
@@ -60,7 +60,7 @@ export const TraineeQuickStats: FC<TraineeQuickStatsProps> = ({ trainee }) => {
         <div className="mt-4">
           <Link
             href={`/trainer/trainees/${trainee.name.toLowerCase()}`}
-            className="w-full block bg-[#0B6160] text-white py-2 px-2 rounded text-xs font-bold text-center hover:bg-[#094a49] transition-colors"
+            className="w-full block bg-[#0B6160] text-foreground py-2 px-2 rounded text-xs font-bold text-center hover:bg-[#094a49] transition-colors"
           >
             Manage Trainee
           </Link>

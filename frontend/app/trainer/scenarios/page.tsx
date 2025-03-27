@@ -113,9 +113,9 @@ export default function ScenariosPage() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-background">
       {/* Header content area */}
-      <div className="bg-[#E8F6F4] pt-8 pb-8">
+      <div className="bg-cpf-light-teal pt-8 pb-8">
         <div className="container mx-auto px-4">
           {/* Main heading */}
           <h1 className="text-3xl font-bold mb-2">Scenario Management</h1>
@@ -139,7 +139,7 @@ export default function ScenariosPage() {
             <div className="flex-1">
               <div className="relative">
                 <Search
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                   size={20}
                 />
                 <Input placeholder="Search..." className="pl-10 w-[240px]" />
@@ -158,29 +158,19 @@ export default function ScenariosPage() {
           </div>
         </div>
 
-        <Card className="border border-gray-200">
+        <Card className="border-0">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="bg-primary hover:bg-primary/90">
-                  <TableHead className="text-primary-foreground">
-                    Scenario Title
-                  </TableHead>
-                  <TableHead className="text-primary-foreground">
-                    Created Date
-                  </TableHead>
+                <TableRow className="text-primary-foreground">
+                  <TableHead className="">Scenario Title</TableHead>
+                  <TableHead className="">Created Date</TableHead>
                   {/* <TableHead className="text-primary-foreground">
                     Assigned To
                   </TableHead> */}
-                  <TableHead className="text-primary-foreground text-center">
-                    Completion Rate
-                  </TableHead>
-                  <TableHead className="text-primary-foreground text-center">
-                    Avg. Score
-                  </TableHead>
-                  <TableHead className="text-primary-foreground text-center">
-                    Actions
-                  </TableHead>
+                  <TableHead className="text-center">Completion Rate</TableHead>
+                  <TableHead className="text-center">Avg. Score</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

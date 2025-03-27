@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { Card } from "../ui/card";
 
 interface GraphAnalysisProps {
   data: {
@@ -15,7 +16,7 @@ export const GraphAnalysis: FC<GraphAnalysisProps> = ({ data }) => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <Card className="bg-card rounded-lg border-0 shadow-md p-6">
       <h3 className="text-lg font-semibold mb-4">{data.title}</h3>
 
       <div className="flex justify-between mb-2">
@@ -27,14 +28,14 @@ export const GraphAnalysis: FC<GraphAnalysisProps> = ({ data }) => {
         {data.schemes.map((scheme, index) => (
           <div key={index} className="relative">
             <div className="flex justify-between mb-1">
-              <span className="text-xs text-gray-600">{scheme}</span>
-              <span className="text-xs font-medium bg-[#0B6160] text-white px-2 py-0.5 rounded">
+              <span className="text-xs text-card-foreground">{scheme}</span>
+              <span className="text-xs font-medium bg-cpf-teal text-primary-foreground px-2 py-0.5 rounded">
                 {data.values[index]}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-cpf-light-teal rounded-full h-2">
               <div
-                className="bg-[#0B6160] h-2 rounded-full"
+                className="bg-cpf-teal h-2 rounded-full"
                 style={{ width: `${normalizedValues[index]}%` }}
               ></div>
             </div>
@@ -42,12 +43,12 @@ export const GraphAnalysis: FC<GraphAnalysisProps> = ({ data }) => {
         ))}
       </div>
 
-      <div className="flex justify-between mt-4 text-xs text-gray-500">
+      <div className="flex justify-between mt-4 text-xs text-card-foreground">
         <span>0</span>
         <span>50</span>
         <span>100</span>
       </div>
-    </div>
+    </Card>
   );
 };
 

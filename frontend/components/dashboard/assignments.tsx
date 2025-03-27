@@ -15,7 +15,7 @@ export const Assignments: FC<AssignmentsProps> = ({ newAssignments }) => {
       <button
         onClick={() => setNewExpanded(!newExpanded)}
         className={`w-full flex items-center justify-between p-4 rounded transition-colors ${
-          newAssignments > 0 ? "bg-[#0B6160] text-white" : "bg-white"
+          newAssignments > 0 ? "bg-[#0B6160] text-foreground" : "bg-foreground"
         }`}
       >
         <span className="font-medium text-[15px]">
@@ -32,7 +32,7 @@ export const Assignments: FC<AssignmentsProps> = ({ newAssignments }) => {
         />
       </button>
       {newExpanded && (
-        <div className="p-4 bg-white rounded mt-1 border border-[#E5E7EB]">
+        <div className="p-4 bg-foreground rounded mt-1 border border-[#E5E7EB]">
           {/* Assignment content would go here */}
         </div>
       )}
@@ -40,7 +40,7 @@ export const Assignments: FC<AssignmentsProps> = ({ newAssignments }) => {
       {/* Existing assignments section */}
       <button
         onClick={() => setExistingExpanded(!existingExpanded)}
-        className="w-full flex items-center justify-between p-4 bg-white rounded"
+        className="w-full flex items-center justify-between p-4 bg-foreground rounded"
       >
         <span className="font-medium text-[15px]">
           View existing assignments
@@ -52,7 +52,7 @@ export const Assignments: FC<AssignmentsProps> = ({ newAssignments }) => {
         />
       </button>
       {existingExpanded && (
-        <div className="p-4 bg-white rounded mt-1 border border-[#E5E7EB]">
+        <div className="p-4 bg-foreground rounded mt-1 border border-[#E5E7EB]">
           {/* Existing assignments content would go here */}
         </div>
       )}

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#001a1a] text-white">
+    <div className="min-h-screen bg-[#001a1a] text-foreground">
       {/* TODO: Needs the hero image, but also looks quite bad */}
       <section className="relative w-full px-6 py-16 overflow-hidden">
         <div className="absolute inset-0">
@@ -98,7 +98,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="w-full max-w-7xl mx-auto px-6 py-12 text-center">
         <Link href="/login">
-          <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 text-lg rounded-lg">
+          <Button className="bg-emerald-500 hover:bg-emerald-600 text-foreground px-8 py-6 text-lg rounded-lg">
             Login to Try TextUs
           </Button>
         </Link>

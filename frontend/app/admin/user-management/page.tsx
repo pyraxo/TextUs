@@ -236,9 +236,9 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-background">
       {/* Header content area */}
-      <div className="bg-[#E8F6F4] pt-8 pb-8">
+      <div className="bg-cpf-light-teal pt-8 pb-8">
         <div className="container mx-auto px-4">
           {/* Main heading */}
           <h1 className="text-3xl font-bold mb-2">User Management</h1>

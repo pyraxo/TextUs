@@ -61,7 +61,7 @@ const createdProfiles = [
 
 export default function CustomerProfilePage() {
   return (
-    <div className="bg-white">
+    <div className="bg-foreground">
       {/* Header content area */}
       <div className="bg-[#E8F6F4] pt-8 pb-8">
         <div className="container mx-auto px-4">
@@ -146,7 +146,7 @@ export default function CustomerProfilePage() {
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className="bg-[#0B6160] text-white hover:bg-[#094e4d] text-xs py-1 px-3 h-8"
+                className="bg-cpf-teal text-backgound text-xs py-1 px-3 h-8"
               >
                 Create Scenario
               </Button>

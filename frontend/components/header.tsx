@@ -4,6 +4,7 @@ import { SidebarIcon } from "lucide-react";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -80,13 +81,16 @@ export default function Header() {
           />
           <span className="text-xl font-bold">CPF Board</span>
         </div>
-        <Button
-          variant="ghost"
-          className="text-white hover:bg-cpf-teal-dark"
-          asChild
-        >
-          <Link href="/login">Log In</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-cpf-teal-dark"
+            asChild
+          >
+            <Link href="/login">Log In</Link>
+          </Button>
+        </div>
       </header>
     );
   }
@@ -103,7 +107,10 @@ export default function Header() {
         >
           <SidebarIcon />
         </Button>
-        <Separator orientation="vertical" className="mr-2 h-4 bg-white/20" />
+        <Separator
+          orientation="vertical"
+          className="mr-2 h-4 bg-foreground/20"
+        />
         <div className="flex items-center gap-2">
           <Image
             src="/cpf_logo.png"
@@ -145,15 +152,9 @@ export default function Header() {
             )}
           </BreadcrumbList>
         </Breadcrumb>
-        {/* <div className="flex items-center gap-2 ml-auto">
-          <div className="relative w-full max-w-sm hidden sm:block">
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="bg-cpf-teal-dark/50 border-cpf-teal-dark text-white placeholder:text-white/60 focus-visible:ring-white/30"
-            />
-          </div>
-        </div> */}
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

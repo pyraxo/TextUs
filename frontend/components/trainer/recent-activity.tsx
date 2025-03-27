@@ -19,7 +19,7 @@ export const RecentActivity: FC<RecentActivityProps> = ({ activities }) => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-5 h-5 text-gray-700"
+          className="w-5 h-5 text-card-foreground"
         >
           <path
             strokeLinecap="round"
@@ -36,7 +36,7 @@ export const RecentActivity: FC<RecentActivityProps> = ({ activities }) => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-5 h-5 text-gray-700"
+          className="w-5 h-5 text-card-foreground"
         >
           <path
             strokeLinecap="round"
@@ -54,7 +54,7 @@ export const RecentActivity: FC<RecentActivityProps> = ({ activities }) => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-5 h-5 text-gray-700"
+          className="w-5 h-5 text-card-foreground"
         >
           <path
             strokeLinecap="round"
@@ -67,7 +67,7 @@ export const RecentActivity: FC<RecentActivityProps> = ({ activities }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-md p-6">
+    <div className="bg-card rounded-lg border-0 shadow-md p-6 text-card-foreground">
       <div className="flex items-center mb-4">
         <h3 className="text-xl font-bold">Recent Activity</h3>
       </div>
@@ -75,13 +75,13 @@ export const RecentActivity: FC<RecentActivityProps> = ({ activities }) => {
       <div className="space-y-6">
         {activities.map((activity, index) => (
           <div key={index} className="space-y-1">
-            <div className="text-gray-500 text-xs">{activity.time}</div>
+            <div className="text-card-foreground text-xs">{activity.time}</div>
             <div className="flex items-start">
               <div className="mr-3 mt-0.5">{getTimeIcon(activity.time)}</div>
               <p>
                 <span className="font-medium">{activity.trainee}</span> just
                 completed [Question] from the{" "}
-                <span className="text-[#0B6160]">Housing scheme</span>
+                <span className="text-primary">Housing scheme</span>
               </p>
             </div>
           </div>

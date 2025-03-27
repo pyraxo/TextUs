@@ -1,4 +1,13 @@
 import { FC } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 
 interface TrainerLeaderboardProps {
   entries: Array<{
@@ -12,26 +21,31 @@ export const TrainerLeaderboard: FC<TrainerLeaderboardProps> = ({
   entries,
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow p-0 overflow-hidden">
-      <table className="w-full text-left">
-        <thead>
-          <tr className="bg-[#0B6160] text-white">
-            <th className="py-3 px-4 font-semibold">Name</th>
-            <th className="py-3 px-4 font-semibold text-center">Schemes</th>
-            <th className="py-3 px-4 font-semibold text-center">Scores</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {entries.map((entry, index) => (
-            <tr key={index} className="hover:bg-gray-50">
-              <td className="py-3 px-4 font-semibold">{entry.name}</td>
-              <td className="py-3 px-4 text-center">{entry.schemes}</td>
-              <td className="py-3 px-4 text-center">{entry.score}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Card className="bg-card border-0 rounded-lg shadow">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">Leaderboard</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow className="">
+              <TableHead>Name</TableHead>
+              <TableHead className="text-center">Schemes</TableHead>
+              <TableHead className="text-center">Scores</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {entries.map((entry, index) => (
+              <TableRow key={index}>
+                <TableCell className="font-semibold">{entry.name}</TableCell>
+                <TableCell className="text-center">{entry.schemes}</TableCell>
+                <TableCell className="text-center">{entry.score}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 

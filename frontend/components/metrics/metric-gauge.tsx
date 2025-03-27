@@ -44,7 +44,7 @@ export function MetricGauge({ title, value, color }: MetricGaugeProps) {
         </svg>
         {/* Percentage text */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold text-white">{value}%</span>
+          <span className="text-2xl font-bold text-foreground">{value}%</span>
         </div>
       </div>
       <span className="mt-3 text-sm font-medium text-emerald-100/80">

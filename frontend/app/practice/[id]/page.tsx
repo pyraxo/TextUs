@@ -208,7 +208,7 @@ export default function SchemeDetailPage({
         {/* Saved Scenarios Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Pending Scenarios</h2>
-          <Card className="border border-gray-200">
+          <Card className="">
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
@@ -319,7 +319,7 @@ export default function SchemeDetailPage({
         {/* Completed Scenarios Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Completed Scenarios</h2>
-          <Card className="border border-gray-200">
+          <Card className="border">
             <CardContent className="p-0">
               <Table>
                 <TableHeader>

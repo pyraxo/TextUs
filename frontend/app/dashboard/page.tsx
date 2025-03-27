@@ -37,7 +37,7 @@ const leaderboardEntries = [
 export default function DashboardPage() {
   const { user } = useAuth();
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8">
         <Welcome
           userName={user?.name || null}
@@ -58,31 +58,37 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-3 gap-6 mt-6">
-          <div className="bg-white p-6 rounded">
+          <div className="bg-card text-card-foreground p-6 rounded">
             <h3 className="text-[20px] font-semibold mb-2">
               Total Practice Sessions
             </h3>
             <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-[#0B6160]">24</span>
-              <span className="text-sm text-gray-600 ml-2">sessions</span>
+              <span className="text-3xl font-bold text-primary">24</span>
+              <span className="text-sm text-muted-foreground ml-2">
+                sessions
+              </span>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded">
+          <div className="bg-card text-card-foreground p-6 rounded">
             <h3 className="text-[20px] font-semibold mb-2">
               Schemes Progression
             </h3>
             <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-[#0B6160]">8/12</span>
-              <span className="text-sm text-gray-600 ml-2">completed</span>
+              <span className="text-3xl font-bold text-primary">8/12</span>
+              <span className="text-sm text-muted-foreground ml-2">
+                completed
+              </span>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded">
+          <div className="bg-card text-card-foreground p-6 rounded">
             <h3 className="text-[20px] font-semibold mb-2">Average Score</h3>
             <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-[#0B6160]">85%</span>
-              <span className="text-sm text-gray-600 ml-2">overall</span>
+              <span className="text-3xl font-bold text-primary">85%</span>
+              <span className="text-sm text-muted-foreground ml-2">
+                overall
+              </span>
             </div>
           </div>
         </div>

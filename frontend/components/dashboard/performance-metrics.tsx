@@ -29,7 +29,7 @@ const CircleProgress: FC<{ value: number; label: string }> = ({
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="#E5E7EB"
+            stroke="hsl(var(--muted))"
             strokeWidth={strokeWidth}
           />
           {/* Progress circle */}
@@ -38,7 +38,7 @@ const CircleProgress: FC<{ value: number; label: string }> = ({
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="#0B6160"
+            stroke="hsl(var(--cpf-teal))"
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -59,18 +59,18 @@ export const PerformanceMetrics: FC<PerformanceMetricsProps> = ({
   metrics,
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-8">
+    <div className="bg-card text-card-foreground rounded-lg shadow-sm p-8">
       <div className="flex items-center justify-between">
         <div className="flex gap-24">
           <CircleProgress value={metrics.comprehension} label="Comprehension" />
           <CircleProgress value={metrics.tone} label="Tone" />
           <CircleProgress value={metrics.accuracy} label="Accuracy" />
         </div>
-        <div className="border-l border-[#E5E7EB] pl-12">
-          <div className="text-[#0B6160] text-[56px] font-bold leading-tight">
+        <div className="border-l pl-12">
+          <div className="text-cpf-teal text-[56px] font-bold leading-tight">
             {metrics.averageScore}%
           </div>
-          <div className="text-[#6B7280] text-lg">Average Score</div>
+          <div className="text-muted-foreground text-lg">Average Score</div>
         </div>
       </div>
     </div>

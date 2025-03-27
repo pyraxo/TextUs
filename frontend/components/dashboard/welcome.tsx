@@ -16,8 +16,8 @@ export const Welcome: FC<WelcomeProps> = ({
   if (isLoading || !userName) {
     return (
       <div className={`py-4 rounded-lg animate-pulse`}>
-        <div className="h-8 bg-gray-200 rounded-md w-2/5 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded-md w-3/5"></div>
+        <div className="h-8 bg-muted rounded-md w-2/5 mb-2"></div>
+        <div className="h-4 bg-muted rounded-md w-3/5"></div>
       </div>
     );
   }
@@ -27,7 +27,7 @@ export const Welcome: FC<WelcomeProps> = ({
       <h1 className="text-[28px] leading-tight font-bold">
         Welcome back, {userName}!
       </h1>
-      <p className={`mt-1 text-[#6B7280]`}>
+      <p className={`mt-1 text-muted-foreground`}>
         Last login on {lastLoginDate} at {lastLoginTime}
       </p>
     </div>

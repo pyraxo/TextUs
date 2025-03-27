@@ -392,7 +392,7 @@ export function ConversationsInterface() {
                         <span
                           className={`text-sm font-medium ${
                             msg.message_type === "user"
-                              ? "text-white"
+                              ? "text-foreground"
                               : "text-primary-foreground"
                           }`}
                         >
@@ -401,7 +401,7 @@ export function ConversationsInterface() {
                         <span
                           className={`text-xs opacity-70 ${
                             msg.message_type === "user"
-                              ? "text-white"
+                              ? "text-foreground"
                               : "text-primary-foreground"
                           }`}
                         >
@@ -411,7 +411,7 @@ export function ConversationsInterface() {
                       <p
                         className={`mt-1 text-sm ${
                           msg.message_type === "user"
-                            ? "text-white"
+                            ? "text-foreground"
                             : "text-primary-foreground"
                         }`}
                       >
