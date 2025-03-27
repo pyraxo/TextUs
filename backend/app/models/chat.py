@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.customer_scenario import CustomerScenario
+    from app.models.user_scenario_session import UserScenarioSession
 
 
 class MessageType(str, Enum):
@@ -20,6 +21,7 @@ class ChatMessageBase(SQLModel):
     sender_id: str
     message: str
     message_type: MessageType
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class ChatMessage(ChatMessageBase, table=True):
@@ -28,7 +30,6 @@ class ChatMessage(ChatMessageBase, table=True):
     __tablename__ = "chat_messages"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    timestamp: datetime = Field(default_factory=datetime.now)
 
     # Foreign keys
     conversation_id: UUID = Field(foreign_key="chat_conversations.id")
@@ -41,7 +42,6 @@ class ChatMessageRead(ChatMessageBase):
     """Chat message model for reading."""
 
     id: UUID
-    timestamp: datetime
     conversation_id: UUID
 
 
@@ -54,8 +54,7 @@ class ChatMessageCreate(ChatMessageBase):
 class ChatConversationBase(SQLModel):
     """Base Chat conversation model with common fields."""
 
-    scenario_id: UUID
-    customer_id: UUID
+    customer_scenario_id: UUID
 
 
 class ChatConversation(ChatConversationBase, table=True):
@@ -75,6 +74,10 @@ class ChatConversation(ChatConversationBase, table=True):
         back_populates="conversations"
     )
     messages: List[ChatMessage] = Relationship(back_populates="conversation")
+    user_scenario_session: Optional["UserScenarioSession"] = Relationship(
+        back_populates="chat_conversations",
+        sa_relationship_kwargs={"secondary": "user_scenario_session_chats"},
+    )
 
 
 class ChatConversationRead(ChatConversationBase):

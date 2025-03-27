@@ -12,6 +12,7 @@ from app.models.scenario import (
     ScenarioUpdate,
     ScenarioUpdateHistory,
 )
+from app.models.user_scenario_session import UserScenarioSession
 
 
 async def get_scenarios(session: Session = Depends(get_session)):
@@ -26,11 +27,22 @@ async def create_scenario(
 ) -> Scenario:
     """Create a new scenario."""
     # Create the scenario with the settings
-    scenario = Scenario.from_orm(scenario_data)
+    scenario = Scenario.model_validate(scenario_data)
 
     session.add(scenario)
     session.commit()
     session.refresh(scenario)
+    return scenario
+
+
+async def get_scenario(
+    scenario_id: int, session: Session = Depends(get_session)
+) -> Scenario:
+    """Get a scenario by ID."""
+    statement = select(Scenario).where(Scenario.id == scenario_id)
+    scenario = session.exec(statement).first()
+    if not scenario:
+        raise HTTPException(status_code=404, detail="Scenario not found")
     return scenario
 
 
@@ -40,10 +52,7 @@ async def update_scenario(
     session: Session = Depends(get_session),
 ) -> Scenario:
     """Update a scenario."""
-    statement = select(Scenario).where(Scenario.id == scenario_id)
-    scenario = session.exec(statement).first()
-    if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+    scenario = await get_scenario(scenario_id, session)
 
     # Update scenario fields
     for key, value in scenario_data.dict(exclude_unset=True).items():
@@ -62,10 +71,7 @@ async def add_customer_to_scenario(
     session: Session = Depends(get_session),
 ) -> Scenario:
     """Add a customer to a scenario."""
-    statement = select(Scenario).where(Scenario.id == scenario_id)
-    scenario = session.exec(statement).first()
-    if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+    scenario = await get_scenario(scenario_id, session)
 
     customer_statement = select(Customer).where(
         Customer.id == customer_data.customer_id
@@ -90,10 +96,7 @@ async def remove_customer_from_scenario(
     session: Session = Depends(get_session),
 ) -> Scenario:
     """Remove a customer from a scenario."""
-    statement = select(Scenario).where(Scenario.id == scenario_id)
-    scenario = session.exec(statement).first()
-    if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+    scenario = await get_scenario(scenario_id, session)
 
     # Find the customer scenario to remove
     customer_scenario_index = None
@@ -119,10 +122,7 @@ async def update_scenario_history(
     session: Session = Depends(get_session),
 ) -> Scenario:
     """Update the history of a scenario."""
-    statement = select(Scenario).where(Scenario.id == scenario_id)
-    scenario = session.exec(statement).first()
-    if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+    scenario = await get_scenario(scenario_id, session)
 
     # Find the customer scenario
     customer_scenario = None
@@ -140,3 +140,18 @@ async def update_scenario_history(
     session.commit()
     session.refresh(scenario)
     return scenario
+
+
+async def start_scenario(
+    scenario_id: int, user_id: int, session: Session = Depends(get_session)
+) -> Scenario:
+    """Start a scenario."""
+    scenario = await get_scenario(scenario_id, session)
+    user_scenario_session = UserScenarioSession(
+        user_id=user_id,
+        scenario_id=scenario.id,
+    )
+    session.add(user_scenario_session)
+    session.commit()
+    session.refresh(user_scenario_session)
+    return user_scenario_session

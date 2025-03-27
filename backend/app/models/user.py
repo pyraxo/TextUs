@@ -1,11 +1,17 @@
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING, List
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from .user_scenario_session import UserScenarioSession
 
 
 class UserType(str, Enum):
+    """User type enum."""
+
     TRAINEE = "trainee"
     TRAINER = "trainer"
     ADMIN = "admin"
@@ -29,6 +35,11 @@ class User(UserBase, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     password: str
+
+    # Relationships
+    user_scenario_sessions: List["UserScenarioSession"] = Relationship(
+        back_populates="user"
+    )
 
 
 class UserRead(UserBase):

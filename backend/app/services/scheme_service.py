@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.core.db import get_session
-from app.models.scenario import Scenario
+from app.models.scenario import Scenario, ScenarioCreate
 from app.models.scheme import Scheme, SchemeCreate, SchemeUpdate, generate_slug
 
 
@@ -131,3 +131,18 @@ async def get_scheme_by_id_or_slug(
     if not scheme:
         raise HTTPException(status_code=404, detail="Scheme not found")
     return scheme
+
+
+async def create_scheme_scenario(
+    scheme_id: str,
+    scenario_data: ScenarioCreate,
+    session: Session = Depends(get_session),
+):
+    """Create a new scenario for a scheme."""
+    scheme = await get_scheme(scheme_id, session)
+    scenario = Scenario.model_validate(scenario_data)
+    scenario.scheme_id = scheme.id
+    session.add(scenario)
+    session.commit()
+    session.refresh(scenario)
+    return scenario

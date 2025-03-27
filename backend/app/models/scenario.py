@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .customer_scenario import CustomerScenario
     from .scheme import Scheme
     from .user import User
+    from .user_scenario_session import UserScenarioSession
 
 
 class ScenarioBase(SQLModel):
@@ -46,6 +47,9 @@ class Scenario(ScenarioBase, table=True):
     created_by: Optional["User"] = Relationship()
     scheme: Optional["Scheme"] = Relationship(back_populates="scenarios")
     customer_scenarios: List["CustomerScenario"] = Relationship(
+        back_populates="scenario"
+    )
+    user_scenario_sessions: List["UserScenarioSession"] = Relationship(
         back_populates="scenario"
     )
 

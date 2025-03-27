@@ -17,7 +17,7 @@ import {
   MessageType,
   type ConversationResponse,
 } from "@/types/conversations";
-import { Filter, Paperclip, SendHorizontal, WifiOff } from "lucide-react";
+import { Filter, Paperclip, SendHorizontal, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -295,10 +295,15 @@ export function ConversationsInterface() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {connectionState !== "connected" && (
+              {connectionState !== "connected" ? (
                 <Badge variant="outline" className="gap-1">
                   <WifiOff className="h-3 w-3" />
                   <span className="text-xs">Offline</span>
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1">
+                  <Wifi className="h-3 w-3" />
+                  <span className="text-xs">Online</span>
                 </Badge>
               )}
               {/* <Button variant="outline" size="icon">
