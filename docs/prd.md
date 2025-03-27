@@ -143,26 +143,87 @@ The CPF Board TextUs application is a standalone training system that simulates 
 
 ### 6.1 Frontend
 
-- Next.js React framework
+- Next.js React framework (v14+)
+  - Server-side rendering for improved performance
+  - API routes for backend communication
+  - Static site generation for documentation
 - Tailwind CSS for styling
+  - Custom theme configuration
+  - Responsive design system
+  - Dark mode support
 - Component-based architecture
+  - Reusable UI components
+  - Custom hooks for shared logic
+  - State management with React Context
+- TypeScript for type safety
+- Jest and React Testing Library for unit tests
+- Cypress for end-to-end testing
 
 ### 6.2 Backend
 
-- FastAPI Python framework
+- FastAPI Python framework (v0.100+)
+  - Async request handling
+  - OpenAPI documentation
+  - WebSocket support for real-time chat
 - SQLModel for database operations
+  - Type-safe database interactions
+  - Automatic schema generation
 - Alembic for database migrations
+  - Version-controlled schema changes
+  - Automated migration scripts
+- Pydantic for data validation
+- JWT-based authentication
+- OpenAI integration for AI chat simulation
 
 ### 6.3 Database
 
 - SQLite for development
+  - Simple setup and iteration
+  - No additional services required
 - PostgreSQL for production
+  - High performance and reliability
+  - Full-text search capabilities
+  - Connection pooling
+  - Automated backups
+- Redis for caching and session management
+  - Rate limiting
+  - WebSocket state management
+  - Temporary data storage
 
 ### 6.4 Deployment
 
 - Docker containers
+  - Multi-stage builds for optimization
+  - Environment-specific configurations
 - Docker Compose for local development
+  - Service orchestration
+  - Development utilities (pgAdmin, Redis Commander)
 - Cloud deployment for production
+  - Kubernetes orchestration
+  - Automated scaling
+  - Load balancing
+  - SSL/TLS encryption
+  - CDN integration
+- CI/CD pipeline
+  - Automated testing
+  - Code quality checks
+  - Security scanning
+  - Deployment automation
+
+### 6.5 Monitoring and Logging
+
+- Application monitoring
+  - Performance metrics
+  - Error tracking
+  - User analytics
+- Centralized logging
+  - Structured log format
+  - Log aggregation
+  - Search and analysis
+- Health checks
+  - Service availability
+  - Database connectivity
+  - External API status
 
 ## 7. Future Enhancements
 
