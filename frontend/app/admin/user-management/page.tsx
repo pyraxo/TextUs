@@ -252,7 +252,7 @@ export default function UserManagementPage() {
             onOpenChange={setIsCreateDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button className="bg-[#0B6160] text-white hover:bg-[#094e4d]">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Add New User
               </Button>
             </DialogTrigger>
@@ -353,7 +353,7 @@ export default function UserManagementPage() {
                 <Button
                   type="submit"
                   onClick={handleCreateUser}
-                  className="bg-[#0B6160] text-white hover:bg-[#094e4d]"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={isSubmitting}
                 >
                   {createUserMutation.isPending ? (
@@ -504,7 +504,7 @@ export default function UserManagementPage() {
             <DialogFooter>
               <Button
                 onClick={handleUpdateUser}
-                className="bg-[#0B6160] text-white hover:bg-[#094e4d]"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={isSubmitting}
               >
                 {updateUserMutation.isPending ? (

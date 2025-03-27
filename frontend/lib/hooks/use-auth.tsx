@@ -22,7 +22,10 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (
+    username: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
 }
@@ -33,7 +36,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isAuthenticated: false,
   isAdmin: false,
-  login: async () => false,
+  login: async () => ({ success: false }),
   logout: async () => {},
   checkAuth: async () => false,
 });
@@ -78,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (
     username: string,
     password: string
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -93,15 +96,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
-        return true;
+        return { success: true };
       } else {
         const error = await response.json();
         console.error("Login failed:", error);
-        return false;
+        if (response.status === 429) {
+          return {
+            success: false,
+            error: error.detail || "Too many requests. Please try again later.",
+          };
+        }
+        return {
+          success: false,
+          error: error.detail || "Invalid username or password",
+        };
       }
     } catch (error) {
       console.error("Login error:", error);
-      return false;
+      return {
+        success: false,
+        error: "An error occurred during login. Please try again.",
+      };
     } finally {
       setIsLoading(false);
     }

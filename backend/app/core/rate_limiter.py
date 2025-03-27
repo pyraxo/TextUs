@@ -1,9 +1,13 @@
 from datetime import datetime, timedelta
 from typing import Dict
 
-from fastapi import HTTPException, Request, status
+from fastapi import Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+
+from app.core.config import get_settings
+
+settings = get_settings()
 
 
 class RateLimiter(BaseHTTPMiddleware):
@@ -47,10 +51,23 @@ class RateLimiter(BaseHTTPMiddleware):
 
         # Check rate limit
         if len(self._requests[ip]) >= self.requests_per_minute:
-            raise HTTPException(
+            response = Response(
+                content='{"detail": "Too many login attempts. Please try again later"}',
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Too many requests. Please try again later.",
+                media_type="application/json",
             )
+            # TODO: This is a nasty fix
+            response.headers["Access-Control-Allow-Origin"] = settings.allow_origins[0]
+            response.headers["Access-Control-Allow-Credentials"] = str(
+                settings.allow_credentials
+            ).lower()
+            response.headers["Access-Control-Allow-Methods"] = ", ".join(
+                settings.allow_methods
+            )
+            response.headers["Access-Control-Allow-Headers"] = ", ".join(
+                settings.allow_headers
+            )
+            return response
 
         # Add current request
         self._requests[ip].append(datetime.now())

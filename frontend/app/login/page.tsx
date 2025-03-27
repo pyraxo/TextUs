@@ -36,12 +36,12 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const success = await login(username, password);
+      const { success, error: loginError } = await login(username, password);
 
       if (success) {
         router.push("/dashboard");
       } else {
-        setError("Invalid username or password");
+        setError(loginError || "Invalid username or password");
       }
     } catch (err) {
       setError("An error occurred during login. Please try again.");
@@ -101,7 +101,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>

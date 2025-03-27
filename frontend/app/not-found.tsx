@@ -16,7 +16,7 @@ export default function NotFound() {
           place.
         </p>
         <Link href="/">
-          <Button className="bg-primary hover:bg-primary/90 text-white px-8">
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
             Back to Home
           </Button>
         </Link>

@@ -39,7 +39,10 @@ const config = {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
 				},
-				primary: '#0B6160',
+				primary: {
+					DEFAULT: '#0B6160',
+					foreground: '#FFFFFF'
+				},
 				accent: 'rgba(165, 207, 76, 0.8)',
 				border: '#444444',
 				muted: '#D9D9D9',
