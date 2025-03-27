@@ -15,6 +15,7 @@ class CustomerScenarioBase(SQLModel):
 
     name: str
     profile_prompt: Optional[str] = None
+    temperature: Optional[float] = 1.0
 
 
 class CustomerScenario(CustomerScenarioBase, table=True):

@@ -29,7 +29,6 @@ class Scenario(ScenarioBase, table=True):
     __tablename__ = "scenarios"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    temperature: Optional[float] = 1.0
 
     # Foreign keys
     created_by_id: Optional[UUID] = Field(default=None, foreign_key="users.id")
@@ -64,7 +63,6 @@ class ScenarioRead(ScenarioBase):
     id: UUID
     created_by_id: Optional[UUID] = None
     scheme_id: Optional[UUID] = None
-    temperature: Optional[float] = None
 
 
 class ScenarioCreate(ScenarioBase):
@@ -80,7 +78,6 @@ class ScenarioUpdate(SQLModel):
     name: Optional[str] = None
     description: Optional[str] = None
     system_prompt: Optional[str] = None
-    temperature: Optional[float] = None
     is_pausable: Optional[bool] = None
     scheme_id: Optional[UUID] = None
 

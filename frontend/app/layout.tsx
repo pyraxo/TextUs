@@ -18,6 +18,7 @@ const outfit = Outfit({
 import { ClientSideNav } from "@/components/client-side-nav";
 import Header from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/toaster";
 import { cookies } from "next/headers";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ export default function RootLayout({
                   <SidebarInset className="flex-1">
                     {/* <div className="h-1 w-full bg-[rgba(165,207,76,0.8)]"></div> */}
                     {children}
+                    <Toaster />
                   </SidebarInset>
                 </div>
               </SidebarProvider>

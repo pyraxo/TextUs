@@ -1,9 +1,10 @@
 "use client";
 
-import { LastAttempt } from "../../components/dashboard/last-attempt";
-import { Leaderboard } from "../../components/dashboard/leaderboard";
-import { PerformanceMetrics } from "../../components/dashboard/performance-metrics";
-import { Welcome } from "../../components/dashboard/welcome";
+import { LastAttempt } from "@/components/dashboard/last-attempt";
+import { Leaderboard } from "@/components/dashboard/leaderboard";
+import { PerformanceMetrics } from "@/components/dashboard/performance-metrics";
+import { Welcome } from "@/components/dashboard/welcome";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 // Mock data for demonstration
 const performanceData = {
@@ -34,11 +35,12 @@ const leaderboardEntries = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
       <main className="container mx-auto px-6 py-8">
         <Welcome
-          userName="John"
+          userName={user?.name || null}
           lastLoginDate="12 March 2024"
           lastLoginTime="09:30 AM"
         />

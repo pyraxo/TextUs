@@ -87,6 +87,7 @@ export default function UserManagementPage() {
         title: "Error",
         description: "All fields are required",
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
@@ -103,6 +104,7 @@ export default function UserManagementPage() {
       toast({
         title: "Success",
         description: "User created successfully",
+        duration: 3000,
       });
       setIsCreateDialogOpen(false);
     } catch (error) {
@@ -110,6 +112,7 @@ export default function UserManagementPage() {
         title: "Error",
         description: "Failed to create user",
         variant: "destructive",
+        duration: 3000,
       });
       console.error("Error creating user:", error);
     }
@@ -124,6 +127,7 @@ export default function UserManagementPage() {
         title: "Error",
         description: "Name, username and email are required",
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
@@ -136,6 +140,7 @@ export default function UserManagementPage() {
       toast({
         title: "Success",
         description: "User updated successfully",
+        duration: 3000,
       });
       setIsEditDialogOpen(false);
     } catch (error) {
@@ -143,6 +148,7 @@ export default function UserManagementPage() {
         title: "Error",
         description: "Failed to update user",
         variant: "destructive",
+        duration: 3000,
       });
       console.error("Error updating user:", error);
     }
@@ -156,6 +162,7 @@ export default function UserManagementPage() {
       toast({
         title: "Success",
         description: "User deleted successfully",
+        duration: 3000,
       });
       setIsDeleteDialogOpen(false);
     } catch (error) {
@@ -163,6 +170,7 @@ export default function UserManagementPage() {
         title: "Error",
         description: "Failed to delete user",
         variant: "destructive",
+        duration: 3000,
       });
       console.error("Error deleting user:", error);
     }

@@ -1,5 +1,12 @@
 "use client";
-import { ClipboardList, PieChart, Settings, Users } from "lucide-react";
+import {
+  BotMessageSquare,
+  ClipboardList,
+  LayoutDashboard,
+  PieChart,
+  Settings,
+  Users,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
@@ -33,16 +40,21 @@ const navMain = [
 ];
 
 const navTrainer = [
-  // {
-  //   title: "Manage Scenarios",
-  //   url: "/trainer/scenarios",
-  //   icon: BotMessageSquare,
-  // },
   {
-    title: "Manage Customers",
-    url: "/trainer/customer-profile",
-    icon: Users,
+    title: "Dashboard",
+    url: "/trainer",
+    icon: LayoutDashboard,
   },
+  {
+    title: "Scenarios",
+    url: "/trainer/scenarios",
+    icon: BotMessageSquare,
+  },
+  // {
+  //   title: "Manage Customers",
+  //   url: "/trainer/customer-profile",
+  //   icon: Users,
+  // },
 ];
 
 const navAdmin = [

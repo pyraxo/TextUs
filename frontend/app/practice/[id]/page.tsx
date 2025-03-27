@@ -148,6 +148,7 @@ export default function SchemeDetailPage({
         title: "Error",
         description: "You must be logged in to start a scenario.",
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
@@ -166,6 +167,7 @@ export default function SchemeDetailPage({
             ? error.message
             : "Failed to start scenario. Please try again.",
         variant: "destructive",
+        duration: 3000,
       });
     } finally {
       setIsStarting(null);
@@ -187,9 +189,8 @@ export default function SchemeDetailPage({
           </Link>
           <div className="flex justify-between items-start">
             <div>
-              {/* Main heading */}
-              <h1 className="text-4xl font-bold mb-6">{schemeName}</h1>
-              <p className="text-gray-600">{schemeDescription}</p>
+              <h1 className="text-3xl font-bold mb-2">{schemeName}</h1>
+              <h2 className="text-sm">{schemeDescription}</h2>
             </div>
             {isTrainerOrAdmin && (
               <Button
