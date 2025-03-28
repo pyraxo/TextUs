@@ -107,10 +107,7 @@ export default function Header() {
         >
           <SidebarIcon />
         </Button>
-        <Separator
-          orientation="vertical"
-          className="mr-2 h-4 bg-foreground/20"
-        />
+        <Separator orientation="vertical" className="mr-2 h-4 bg-white/20" />
         <div className="flex items-center gap-2">
           <Image
             src="/cpf_logo.png"

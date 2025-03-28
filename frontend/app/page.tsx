@@ -27,7 +27,7 @@ export default function Home() {
       </section>
 
       {/* Metrics Dashboard */}
-      <section className="w-full max-w-7xl mx-auto px-6 py-12">
+      <section className="w-full max-w-7xl mx-auto px-6 py-12 text-emerald-400">
         <div className="bg-[#002626] rounded-xl p-8 shadow-lg border border-emerald-900/30">
           <div className="flex flex-col md:flex-row justify-between gap-8">
             <div className="flex-1">
