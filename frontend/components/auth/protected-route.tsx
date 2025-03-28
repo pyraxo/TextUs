@@ -7,13 +7,15 @@ import { useEffect } from "react";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   adminOnly?: boolean;
+  trainerOnly?: boolean;
 }
 
 export default function ProtectedRoute({
   children,
   adminOnly = false,
+  trainerOnly = false,
 }: ProtectedRouteProps) {
-  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading, isTrainer } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -24,9 +26,12 @@ export default function ProtectedRoute({
       } else if (adminOnly && !isAdmin) {
         // If admin only and user is not admin, redirect to dashboard
         router.push("/dashboard");
+      } else if (trainerOnly && !isTrainer) {
+        // If trainer only and user is not trainer or admin, redirect to dashboard
+        router.push("/dashboard");
       }
     }
-  }, [isAuthenticated, isAdmin, isLoading, router, adminOnly]);
+  }, [isAuthenticated, isAdmin, isLoading, router, adminOnly, trainerOnly]);
 
   // Show nothing while checking authentication
   if (isLoading) {
@@ -38,7 +43,11 @@ export default function ProtectedRoute({
   }
 
   // If not authenticated or admin check fails, show nothing (will redirect)
-  if (!isAuthenticated || (adminOnly && !isAdmin)) {
+  if (
+    !isAuthenticated ||
+    (adminOnly && !isAdmin) ||
+    (trainerOnly && !isTrainer)
+  ) {
     return null;
   }
 

@@ -22,6 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isTrainer: boolean;
   login: (
     username: string,
     password: string
@@ -36,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isAuthenticated: false,
   isAdmin: false,
+  isTrainer: false,
   login: async () => ({ success: false }),
   logout: async () => {},
   checkAuth: async () => false,
@@ -153,6 +155,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isAuthenticated = !!user;
   const isAdmin = user?.user_type === "admin";
+  const isTrainer =
+    user?.user_type === "trainer" || user?.user_type === "admin";
 
   return (
     <AuthContext.Provider
@@ -161,6 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         isAuthenticated,
         isAdmin,
+        isTrainer,
         login,
         logout,
         checkAuth,

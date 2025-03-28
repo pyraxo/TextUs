@@ -111,24 +111,6 @@ const leaderboardData = [
   { name: "Lorelei", schemes: "56/600", score: "61%" },
 ];
 
-const shortcutsData = [
-  {
-    title: "Go to Create Scenario",
-    link: "/trainer/scenarios/create",
-    icon: "plus",
-  },
-  {
-    title: "Go to View Trainees",
-    link: "/trainer/trainees",
-    icon: "users",
-  },
-  {
-    title: "Go to Customer Profiles",
-    link: "/trainer/customer-profile",
-    icon: "user",
-  },
-];
-
 export default function TrainerDashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -152,8 +134,6 @@ export default function TrainerDashboardPage() {
 
         <div className="grid grid-cols-2 gap-6 mt-8">
           <div className="flex flex-col gap-6">
-            <RecentActivity activities={activityData} />
-
             <div className="grid grid-cols-3 gap-3">
               <Button
                 variant="outline"
@@ -170,6 +150,7 @@ export default function TrainerDashboardPage() {
                 Customer Profiles
               </Button>
             </div>
+            <RecentActivity activities={activityData} />
           </div>
 
           <div className="flex flex-col gap-6">

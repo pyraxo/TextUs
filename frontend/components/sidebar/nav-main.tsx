@@ -4,7 +4,8 @@ import {
   ClipboardList,
   LayoutDashboard,
   PieChart,
-  Settings,
+  ShieldCheck,
+  Sliders,
   Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -50,23 +51,23 @@ const navTrainer = [
     url: "/trainer/scenarios",
     icon: BotMessageSquare,
   },
-  // {
-  //   title: "Manage Customers",
-  //   url: "/trainer/customer-profile",
-  //   icon: Users,
-  // },
 ];
 
 const navAdmin = [
   {
-    title: "System Settings",
+    title: "Admin Dashboard",
     url: "/admin",
-    icon: Settings,
+    icon: ShieldCheck,
   },
   {
     title: "User Management",
     url: "/admin/user-management",
     icon: Users,
+  },
+  {
+    title: "Prompt Engineering",
+    url: "/admin/prompt-engineering",
+    icon: Sliders,
   },
 ];
 
