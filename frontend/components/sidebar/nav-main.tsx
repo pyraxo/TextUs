@@ -41,12 +41,12 @@ const navMain = [
 
 const navTrainer = [
   {
-    title: "Dashboard",
+    title: "Trainer Dashboard",
     url: "/trainer",
     icon: LayoutDashboard,
   },
   {
-    title: "Scenarios",
+    title: "Manage Scenarios",
     url: "/trainer/scenarios",
     icon: BotMessageSquare,
   },

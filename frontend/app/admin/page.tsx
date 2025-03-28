@@ -68,7 +68,7 @@ export default function AdminPage() {
         {/* User info section at the bottom */}
         {user && (
           <div className="container mx-auto px-4 md:px-8 pb-8">
-            <div className="p-4 bg-muted rounded-lg">
+            <div className="p-4 bg-card rounded-lg">
               <p className="text-sm">
                 Logged in as: <span className="font-bold">{user.name}</span> (
                 {user.user_type})

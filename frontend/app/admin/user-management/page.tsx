@@ -36,7 +36,7 @@ import {
   useUsers,
 } from "@/lib/hooks/use-users";
 import { User, UserCreate, UserType } from "@/types/user";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash } from "lucide-react";
 import { useState } from "react";
 
 export default function UserManagementPage() {
@@ -378,7 +378,7 @@ export default function UserManagementPage() {
           </Dialog>
         </div>
 
-        <Card className="border border-gray-200">
+        <Card className="border-0">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -421,10 +421,10 @@ export default function UserManagementPage() {
                           </Button>
                           <Button
                             onClick={() => confirmDelete(user as User)}
-                            variant="destructive"
+                            variant="outline"
                             size="sm"
                           >
-                            Delete
+                            <Trash className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

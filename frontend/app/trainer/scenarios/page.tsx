@@ -118,7 +118,7 @@ export default function ScenariosPage() {
       <div className="bg-cpf-light-teal pt-8 pb-8">
         <div className="container mx-auto px-4">
           {/* Main heading */}
-          <h1 className="text-3xl font-bold mb-2">Scenario Management</h1>
+          <h1 className="text-3xl font-bold mb-2">Manage Scenarios</h1>
 
           {/* Subheading */}
           <h2 className="text-sm">
@@ -130,7 +130,10 @@ export default function ScenariosPage() {
       {/* Main content */}
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h2 className="text-4xl font-semibold mb-6">Housing Scenarios</h2>
+          <h2 className="text-2xl font-semibold mb-2">Housing</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Description of the housing scenarios.
+          </p>
 
           {/* Action buttons and search */}
           <div className="flex gap-4 items-center mb-6">
