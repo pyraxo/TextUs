@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
+from app.core.config import get_settings
 from app.core.security import Token, get_current_user
 from app.models.user import User, UserRead
 from app.services.auth_service import AuthService
@@ -12,6 +13,9 @@ router = APIRouter(
     prefix="/auth",
     tags=["authentication"],
 )
+
+
+settings = get_settings()
 
 
 class LoginRequest(BaseModel):
@@ -62,8 +66,8 @@ async def login(
         key="access_token",
         value=f"Bearer {token.access_token}",
         httponly=True,
-        max_age=1800,  # 30 minutes in seconds
-        expires=1800,
+        max_age=settings.access_token_expire_minutes * 60,
+        expires=settings.access_token_expire_minutes * 60,
         secure=False,  # Set to True in production with HTTPS
         samesite="lax",
     )
