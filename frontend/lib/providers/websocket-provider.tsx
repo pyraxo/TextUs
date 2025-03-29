@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/lib/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 // Define WebSocket message types

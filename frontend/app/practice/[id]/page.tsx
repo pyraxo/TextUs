@@ -1,49 +1,23 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  ScenarioTableItem,
+  getCompletedColumns,
+  getPendingColumns,
+} from "@/components/scenarios/columns";
+import { DataTable } from "@/components/scenarios/data-table";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
+import { useSchemeScenarios } from "@/hooks/use-scenarios";
+import { useToast } from "@/hooks/use-toast";
 import { startScenario } from "@/lib/api/scenarios";
-import { useAuth } from "@/lib/hooks/use-auth";
-import { useSchemeScenarios } from "@/lib/hooks/use-scenarios";
-import { useToast } from "@/lib/hooks/use-toast";
-import type { Scenario } from "@/types/scenario.d";
+import { Scenario } from "@/types/scenario";
+import { UserScenarioSession } from "@/types/user-scenario-session";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-// Mock completed scenarios data
-const completedScenarios = [
-  {
-    id: 1,
-    scenario: "Hello, can you hear me?",
-    dateCompleted: "17 March 2025",
-    score: "71%",
-    feedback: "No Feedback Available",
-  },
-  {
-    id: 2,
-    scenario: "I'm in California dreaming about who we used to be",
-    dateCompleted: "17 March 2025",
-    score: "85%",
-    feedback: "No Feedback Available",
-  },
-  {
-    id: 3,
-    scenario: "When we were younger and free",
-    dateCompleted: "10 March 2025",
-    score: "74%",
-    feedback: "No Feedback Available",
-  },
-];
 
 // Map of scheme IDs to their display names
 const schemeNames = {
@@ -76,12 +50,15 @@ export default function SchemeDetailPage({
   const [isStarting, setIsStarting] = useState<string | null>(null);
   const isTrainerOrAdmin =
     user?.user_type === "trainer" || user?.user_type === "admin";
-  const [savedCurrentPage, setSavedCurrentPage] = useState(1);
+  const [pendingCurrentPage, setPendingCurrentPage] = useState(1);
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   // Get scenarios data
   const { data: scenarios, isLoading, error } = useSchemeScenarios(params.id);
+
+  // Get user scenario sessions data
+  const { data: sessions } = useUserScenarioSessions(user?.id);
 
   // Get scheme name based on ID or use fallback
   const schemeName =
@@ -91,12 +68,40 @@ export default function SchemeDetailPage({
     schemeDescriptions[params.id as keyof typeof schemeDescriptions] ||
     "Unknown Scheme";
 
-  // Pagination logic for saved scenarios
-  const savedTotalPages = Math.ceil((scenarios?.length || 0) / itemsPerPage);
-  const savedStartIndex = (savedCurrentPage - 1) * itemsPerPage;
-  const savedEndIndex = savedStartIndex + itemsPerPage;
-  const currentSavedScenarios =
-    scenarios?.slice(savedStartIndex, savedEndIndex) || [];
+  // Transform scenarios into table items
+  const tableItems: ScenarioTableItem[] =
+    scenarios?.map((scenario: Scenario) => {
+      const session = sessions?.find(
+        (s: UserScenarioSession) => s.scenario_id === scenario.id
+      );
+      const isCompleted = session?.end_timestamp != null;
+
+      return {
+        id: scenario.id,
+        name: scenario.name,
+        description: scenario.description || undefined,
+        status: isCompleted ? "completed" : "pending",
+        dateCompleted: session?.end_timestamp || undefined,
+        metrics: session?.metrics,
+      };
+    }) || [];
+
+  // Filter scenarios by status
+  const pendingScenarios = tableItems.filter(
+    (item) => item.status === "pending"
+  );
+  const completedScenarios = tableItems.filter(
+    (item) => item.status === "completed"
+  );
+
+  // Pagination logic for pending scenarios
+  const pendingTotalPages = Math.ceil(pendingScenarios.length / itemsPerPage);
+  const pendingStartIndex = (pendingCurrentPage - 1) * itemsPerPage;
+  const pendingEndIndex = pendingStartIndex + itemsPerPage;
+  const currentPendingScenarios = pendingScenarios.slice(
+    pendingStartIndex,
+    pendingEndIndex
+  );
 
   // Pagination logic for completed scenarios
   const completedTotalPages = Math.ceil(
@@ -176,20 +181,21 @@ export default function SchemeDetailPage({
 
   return (
     <div className="min-h-screen">
-      <div className="bg-[#E8F6F4] pt-10 pb-12">
+      <div className="bg-cpf-light-teal pt-10 pb-12">
         <div className="container mx-auto px-4 md:px-8">
           {/* Header content area */}
-          {/* Back button */}
           <Link
             href="/practice"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6"
+            className="inline-flex items-center hover:text-foreground/80 mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Link>
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{schemeName}</h1>
+              <h1 className="text-3xl font-bold mb-2 text-foreground">
+                {schemeName}
+              </h1>
               <h2 className="text-sm">{schemeDescription}</h2>
             </div>
             {isTrainerOrAdmin && (
@@ -205,79 +211,28 @@ export default function SchemeDetailPage({
       </div>
 
       <div className="container mx-auto px-4 md:px-8 py-12 space-y-8">
-        {/* Saved Scenarios Section */}
+        {/* Pending Scenarios Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Pending Scenarios</h2>
-          <Card className="">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40%]">Scenario</TableHead>
-                    <TableHead className="w-[10%]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                          <span>Loading scenarios...</span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : error ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-center py-8 text-red-500"
-                      >
-                        Error loading scenarios. Please try again later.
-                      </TableCell>
-                    </TableRow>
-                  ) : currentSavedScenarios.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        No pending scenarios found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    currentSavedScenarios.map((scenario: Scenario) => (
-                      <TableRow key={scenario.id}>
-                        <TableCell>{scenario.name}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={isStarting === scenario.id}
-                            onClick={() => handleStartScenario(scenario.id)}
-                          >
-                            {isStarting === scenario.id
-                              ? "Starting..."
-                              : "Start Now"}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          {/* Saved Scenarios Pagination */}
-          {scenarios && scenarios.length > 0 && (
+          <DataTable
+            columns={getPendingColumns({
+              onStart: handleStartScenario,
+              isStarting,
+            })}
+            data={currentPendingScenarios}
+          />
+          {pendingScenarios.length > itemsPerPage && (
             <div className="flex justify-center items-center gap-2">
               <Button
                 variant="outline"
                 className="text-sm"
-                disabled={savedCurrentPage === 1}
-                onClick={() => setSavedCurrentPage(savedCurrentPage - 1)}
+                disabled={pendingCurrentPage === 1}
+                onClick={() => setPendingCurrentPage(pendingCurrentPage - 1)}
               >
                 Previous
               </Button>
               <div className="flex gap-2">
-                {generatePageNumbers(savedCurrentPage, savedTotalPages).map(
+                {generatePageNumbers(pendingCurrentPage, pendingTotalPages).map(
                   (page, index) =>
                     page === "..." ? (
                       <span
@@ -290,14 +245,14 @@ export default function SchemeDetailPage({
                       <Button
                         key={`page-${page}`}
                         variant={
-                          savedCurrentPage === page ? "default" : "outline"
+                          pendingCurrentPage === page ? "default" : "outline"
                         }
                         className={
-                          savedCurrentPage === page
+                          pendingCurrentPage === page
                             ? "bg-primary text-primary-foreground text-sm"
                             : "text-sm"
                         }
-                        onClick={() => setSavedCurrentPage(page as number)}
+                        onClick={() => setPendingCurrentPage(page as number)}
                       >
                         {page}
                       </Button>
@@ -307,8 +262,8 @@ export default function SchemeDetailPage({
               <Button
                 variant="outline"
                 className="text-sm"
-                disabled={savedCurrentPage === savedTotalPages}
-                onClick={() => setSavedCurrentPage(savedCurrentPage + 1)}
+                disabled={pendingCurrentPage === pendingTotalPages}
+                onClick={() => setPendingCurrentPage(pendingCurrentPage + 1)}
               >
                 Next
               </Button>
@@ -319,46 +274,13 @@ export default function SchemeDetailPage({
         {/* Completed Scenarios Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Completed Scenarios</h2>
-          <Card className="border">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40%]">Scenario</TableHead>
-                    <TableHead className="w-[15%]">Date Completed</TableHead>
-                    <TableHead className="w-[10%]">Score</TableHead>
-                    <TableHead className="w-[25%]">Feedback</TableHead>
-                    <TableHead className="w-[10%]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentCompletedScenarios.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        No completed scenarios found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    currentCompletedScenarios.map((scenario) => (
-                      <TableRow key={scenario.id}>
-                        <TableCell>{scenario.scenario}</TableCell>
-                        <TableCell>{scenario.dateCompleted}</TableCell>
-                        <TableCell>{scenario.score}</TableCell>
-                        <TableCell>{scenario.feedback}</TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            Retry
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          {/* Completed Scenarios Pagination */}
-          {completedScenarios.length > 0 && (
+          <DataTable
+            columns={getCompletedColumns({
+              onRetry: handleStartScenario,
+            })}
+            data={currentCompletedScenarios}
+          />
+          {completedScenarios.length > itemsPerPage && (
             <div className="flex justify-center items-center gap-2">
               <Button
                 variant="outline"

@@ -6,9 +6,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
+import { useConversations } from "@/hooks/use-conversations";
 import { getConversation } from "@/lib/api/conversations";
-import { useAuth } from "@/lib/hooks/use-auth";
-import { useConversations } from "@/lib/hooks/use-conversations";
 import { useWebSocket } from "@/lib/providers/websocket-provider";
 import { cn } from "@/lib/utils";
 import {

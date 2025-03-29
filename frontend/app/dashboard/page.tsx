@@ -4,7 +4,7 @@ import { LastAttempt } from "@/components/dashboard/last-attempt";
 import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { PerformanceMetrics } from "@/components/dashboard/performance-metrics";
 import { Welcome } from "@/components/dashboard/welcome";
-import { useAuth } from "@/lib/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 // Mock data for demonstration
 const performanceData = {

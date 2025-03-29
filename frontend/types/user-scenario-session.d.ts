@@ -9,6 +9,17 @@ export interface UserScenarioSession {
   start_timestamp: string;  // ISO datetime string
   end_timestamp: string | null;  // ISO datetime string
 
+  // Metrics
+  metrics?: {
+    duration_seconds?: number;
+    total_messages: number;
+    user_messages: number;
+    bot_messages: number;
+    conversations: number;
+    avg_response_time?: number;
+    completion_rate: number;
+  };
+
   // Relationships
   user?: User;
   scenario?: Scenario;

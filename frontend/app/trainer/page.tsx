@@ -1,9 +1,8 @@
 "use client";
 
-import GraphAnalysis from "@/components/trainer/graph-analysis";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/hooks/use-auth";
-import { useToast } from "@/lib/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Welcome } from "../../components/dashboard/welcome";
@@ -157,7 +156,7 @@ export default function TrainerDashboardPage() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <GraphAnalysis data={graphData} />
+            {/* <GraphAnalysis data={graphData} /> */}
             <TrainerLeaderboard entries={leaderboardData} />
           </div>
         </div>

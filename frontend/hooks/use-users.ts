@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth, User } from '@/hooks/use-auth';
 import {
   createUser,
   deleteUser,
@@ -7,7 +8,6 @@ import {
   getUsers,
   updateUser
 } from '@/lib/api/users';
-import { useAuth, User } from '@/lib/hooks/use-auth';
 import { UserCreate, UserUpdate } from '@/types/user';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 

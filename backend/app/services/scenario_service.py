@@ -15,7 +15,6 @@ from app.models.scenario import (
     ScenarioUpdate,
     ScenarioUpdateHistory,
 )
-from app.models.user_scenario_session import UserScenarioSession
 
 
 async def get_scenarios(
@@ -163,26 +162,3 @@ async def update_scenario_history(
     session.commit()
     session.refresh(scenario)
     return scenario
-
-
-async def start_scenario(
-    scenario_id: str, user_id: str, session: Session = Depends(get_session)
-) -> UserScenarioSession:
-    """Start a scenario."""
-    scenario = await get_scenario(scenario_id, session)
-    # TODO: Separate start and continue
-    statement = select(UserScenarioSession).where(
-        UserScenarioSession.user_id == user_id,
-        UserScenarioSession.scenario_id == scenario.id,
-    )
-    existing_session = session.exec(statement).first()
-
-    if not existing_session:
-        existing_session = UserScenarioSession(
-            user_id=user_id,
-            scenario_id=scenario.id,
-        )
-        session.add(existing_session)
-        session.commit()
-        session.refresh(existing_session)
-    return existing_session

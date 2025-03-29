@@ -15,15 +15,19 @@ export async function getScenarios(schemeIdOrSlug?: string): Promise<Scenario[]>
 
 /**
  * Fetch a single scenario by ID
+ * @param scenarioId - The scenario's ID
  */
-export async function getScenario(id: number): Promise<Scenario> {
-  return fetchApi<Scenario>(`/scenarios/${id}`);
+export async function getScenario(scenarioId: string): Promise<Scenario> {
+  return fetchApi<Scenario>(`/scenarios/${scenarioId}`);
 }
 
 /**
  * Create a new scenario
+ * @param scenarioData - The scenario data to create
  */
-export async function createScenario(scenarioData: ScenarioCreate): Promise<Scenario> {
+export async function createScenario(
+  scenarioData: ScenarioCreate,
+): Promise<Scenario> {
   return fetchApi<Scenario>('/scenarios', {
     method: 'POST',
     body: JSON.stringify(scenarioData),
@@ -32,9 +36,14 @@ export async function createScenario(scenarioData: ScenarioCreate): Promise<Scen
 
 /**
  * Update a scenario
+ * @param scenarioId - The scenario's ID
+ * @param scenarioData - The scenario data to update
  */
-export async function updateScenario(id: number, scenarioData: ScenarioUpdate): Promise<Scenario> {
-  return fetchApi<Scenario>(`/scenarios/${id}`, {
+export async function updateScenario(
+  scenarioId: string,
+  scenarioData: ScenarioUpdate,
+): Promise<Scenario> {
+  return fetchApi<Scenario>(`/scenarios/${scenarioId}`, {
     method: 'PUT',
     body: JSON.stringify(scenarioData),
   });
@@ -42,10 +51,28 @@ export async function updateScenario(id: number, scenarioData: ScenarioUpdate): 
 
 /**
  * Start a scenario
+ * @param scenarioId - The scenario's ID
+ * @param traineeId - The trainee's ID
  */
-export async function startScenario(id: string, traineeId: string): Promise<UserScenarioSession> {
-  return fetchApi<UserScenarioSession>(`/scenarios/${id}/start`, {
+export async function startScenario(
+  scenarioId: string,
+  traineeId: string,
+): Promise<UserScenarioSession> {
+  return fetchApi<UserScenarioSession>(`/scenarios/${scenarioId}/start`, {
     method: 'POST',
     body: JSON.stringify({ trainee_id: traineeId }),
   });
-} 
+}
+
+/**
+ * Get the active scenario session for a trainee
+ * @param traineeId - The trainee's ID
+ */
+export async function getActiveScenarioSession(
+  traineeId: string,
+): Promise<UserScenarioSession> {
+  return fetchApi<UserScenarioSession>(`/scenarios/active`, {
+    method: 'GET',
+    body: JSON.stringify({ trainee_id: traineeId }),
+  });
+}

@@ -28,13 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/lib/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   useCreateUser,
   useDeleteUser,
   useUpdateUser,
   useUsers,
-} from "@/lib/hooks/use-users";
+} from "@/hooks/use-users";
 import { User, UserCreate, UserType } from "@/types/user.d";
 import { Loader2, Trash } from "lucide-react";
 import { useState } from "react";

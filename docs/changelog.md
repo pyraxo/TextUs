@@ -8,9 +8,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Added new trainer screens and functionality
+  - Trainer dashboard with quick stats and shortcuts
+  - Scenario management interface
+  - Trainee leaderboard and activity tracking
+  - Graph analysis tools
 - Added user scenario session models and relationships
+- Added new customer scenario temperature configuration
+- Enhanced frontend UI components and mobile responsiveness
+
+### Fixed
+
 - Fixed rate limit error handling
-- Updated schemes individual pages with placeholder information
+- Updated schemes individual pages with improved information display
+- Improved sidebar navigation and user interface
+
+### Enhanced
+
+- Updated prompt engineering system
+- Integrated RAG (Retrieval-Augmented Generation) to improve response accuracy
+- Enhanced backend logic for conversations
+- Improved database schema for conversations
+- Added support for schemes -> scenario -> chats flow
 
 ## [2025-03-26]
 

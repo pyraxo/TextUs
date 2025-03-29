@@ -12,8 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/lib/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Filter, Pencil, RefreshCw, Search, Trash } from "lucide-react";
+
 interface Scenario {
   id: string;
   title: string;
@@ -176,7 +177,7 @@ export default function ScenariosPage() {
               </TableHeader>
               <TableBody>
                 {mockScenarios.map((scenario) => (
-                  <TableRow key={scenario.id} className="hover:bg-muted/50">
+                  <TableRow key={scenario.id}>
                     <TableCell>{scenario.title}</TableCell>
                     <TableCell>{scenario.createdDate}</TableCell>
                     {/* <TableCell>{scenario.assignedTo}</TableCell> */}

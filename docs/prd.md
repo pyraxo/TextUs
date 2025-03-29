@@ -24,12 +24,14 @@ The CPF Board TextUs application is a standalone training system that simulates 
 
 ### 2.2 Product Features
 
-- User authentication and authorization
-- Dashboard with performance metrics
-- Practice sessions with AI-simulated customers
+- User authentication and authorization with rate limiting
+- Dashboard with performance metrics and trainer-specific views
+- Practice sessions with AI-simulated customers using RAG
 - Scenario management for administrators
 - Performance analytics and reporting
 - Customizable customer profiles and scenarios
+- Real-time chat with WebSocket support
+- Prompt engineering controls for administrators
 
 ### 2.3 User Classes and Characteristics
 
@@ -67,6 +69,8 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - The system shall support assigning customer profiles to scenarios
 - The system shall allow customization of system prompts for AI behavior
 - The system shall support configuration of scenario parameters (pausable, temperature)
+- The system shall support RAG-enhanced responses for improved accuracy
+- The system shall provide a trainer interface for scenario management
 
 #### 3.1.5 Customer Profile Management
 
@@ -165,15 +169,19 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - Async request handling
   - OpenAPI documentation
   - WebSocket support for real-time chat
+  - Rate limiting middleware
 - SQLModel for database operations
   - Type-safe database interactions
   - Automatic schema generation
+  - User scenario session tracking
 - Alembic for database migrations
   - Version-controlled schema changes
   - Automated migration scripts
 - Pydantic for data validation
-- JWT-based authentication
+- JWT-based authentication with password hashing
 - OpenAI integration for AI chat simulation
+- RAG system for improved response accuracy
+- Chatter bot system for dynamic conversations
 
 ### 6.3 Database
 
@@ -234,6 +242,8 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - Team-based competitions and leaderboards
 - Mobile application for on-the-go practice
 - Integration with learning management systems
+- Enhanced prompt engineering capabilities
+- Advanced RAG features for context-aware responses
 
 ## 8. Appendices
 
