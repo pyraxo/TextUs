@@ -68,7 +68,6 @@ async def login(
         samesite="lax",
     )
 
-    # Return user information (without password)
     return UserRead(
         id=user.id,
         name=user.name,

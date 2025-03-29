@@ -1,4 +1,4 @@
-import { Conversation, ConversationResponse } from "@/types/conversations";
+import { Conversation, ConversationResponse } from "@/types/conversations.d";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 

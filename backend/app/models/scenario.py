@@ -112,4 +112,4 @@ class ScenarioUpdateHistory(SQLModel):
 class ScenarioStart(SQLModel):
     """Model for starting a scenario."""
 
-    user_id: UUID
+    trainee_id: str

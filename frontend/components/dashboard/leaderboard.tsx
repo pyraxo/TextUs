@@ -41,7 +41,7 @@ export const Leaderboard: FC<{ entries: LeaderboardEntry[] }> = ({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Schemes</TableHead>
+            <TableHead>Scenarios</TableHead>
             <TableHead className="text-right">Score</TableHead>
           </TableRow>
         </TableHeader>

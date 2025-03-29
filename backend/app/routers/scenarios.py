@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
+from app.core.common import parse_uuid
 from app.core.db import get_session
 from app.models.scenario import (
     Scenario,
@@ -14,7 +15,7 @@ from app.models.scenario import (
     ScenarioUpdateHistory,
 )
 from app.models.user_scenario_session import UserScenarioSession
-from app.services import scenario_service
+from app.services import scenario_service, trainee_service
 
 router = APIRouter(prefix="/scenarios", tags=["Scenarios"])
 
@@ -98,6 +99,8 @@ async def start_scenario(
     session: Session = Depends(get_session),
 ) -> UserScenarioSession:
     """Start a scenario."""
-    return await scenario_service.start_scenario(
-        scenario_id=scenario_id, user_id=scenario_data.user_id, session=session
+    return await trainee_service.start_scenario(
+        trainee_id=parse_uuid(scenario_data.trainee_id),
+        scenario_id=parse_uuid(scenario_id),
+        session=session,
     )

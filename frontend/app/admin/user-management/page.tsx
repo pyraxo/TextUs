@@ -35,7 +35,7 @@ import {
   useUpdateUser,
   useUsers,
 } from "@/lib/hooks/use-users";
-import { User, UserCreate, UserType } from "@/types/user";
+import { User, UserCreate, UserType } from "@/types/user.d";
 import { Loader2, Trash } from "lucide-react";
 import { useState } from "react";
 

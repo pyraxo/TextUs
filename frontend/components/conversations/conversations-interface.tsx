@@ -16,7 +16,7 @@ import {
   Message,
   MessageType,
   type ConversationResponse,
-} from "@/types/conversations";
+} from "@/types/conversations.d";
 import { Filter, Paperclip, SendHorizontal, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";

@@ -1,5 +1,6 @@
 import { fetchApi } from '@/lib/api/common';
 import { Scenario, ScenarioCreate, ScenarioUpdate } from '@/types/scenario';
+import { UserScenarioSession } from '@/types/user-scenario-session';
 
 /**
  * Fetch all scenarios, optionally filtered by scheme ID or slug
@@ -42,9 +43,9 @@ export async function updateScenario(id: number, scenarioData: ScenarioUpdate): 
 /**
  * Start a scenario
  */
-export async function startScenario(id: string, userId: string): Promise<Scenario> {
-  return fetchApi<Scenario>(`/scenarios/${id}/start`, {
+export async function startScenario(id: string, traineeId: string): Promise<UserScenarioSession> {
+  return fetchApi<UserScenarioSession>(`/scenarios/${id}/start`, {
     method: 'POST',
-    body: JSON.stringify({ user_id: userId }),
+    body: JSON.stringify({ trainee_id: traineeId }),
   });
 } 

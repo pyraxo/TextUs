@@ -14,7 +14,7 @@ import { startScenario } from "@/lib/api/scenarios";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useSchemeScenarios } from "@/lib/hooks/use-scenarios";
 import { useToast } from "@/lib/hooks/use-toast";
-import type { Scenario } from "@/types/scenario";
+import type { Scenario } from "@/types/scenario.d";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -166,7 +166,7 @@ export default function SchemeDetailPage({
           error instanceof Error
             ? error.message
             : "Failed to start scenario. Please try again.",
-        variant: "destructive",
+        variant: "default",
         duration: 3000,
       });
     } finally {

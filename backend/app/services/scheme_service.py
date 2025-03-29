@@ -23,11 +23,11 @@ async def get_scheme(scheme_id: str, session: Session = Depends(get_session)):
         if not scheme:
             raise HTTPException(status_code=404, detail="Scheme not found")
         return scheme
-    except ValueError:
+    except ValueError as e:
         raise HTTPException(
             status_code=400,
             detail="Invalid scheme_id format. Must be a valid UUID.",
-        )
+        ) from e
 
 
 async def get_scheme_by_slug(slug: str, session: Session = Depends(get_session)):

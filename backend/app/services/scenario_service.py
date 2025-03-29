@@ -28,11 +28,11 @@ async def get_scenarios(
             # Convert string to UUID
             scheme_uuid = UUID(scheme_id)
             statement = statement.where(Scenario.scheme_id == scheme_uuid)
-        except ValueError:
+        except ValueError as e:
             raise HTTPException(
                 status_code=400,
                 detail="Invalid scheme_id format. Must be a valid UUID.",
-            )
+            ) from e
     results = session.exec(statement).all()
     return results
 
@@ -62,11 +62,11 @@ async def get_scenario(
         if not scenario:
             raise HTTPException(status_code=404, detail="Scenario not found")
         return scenario
-    except ValueError:
+    except ValueError as e:
         raise HTTPException(
             status_code=400,
             detail="Invalid scenario_id format. Must be a valid UUID.",
-        )
+        ) from e
 
 
 async def update_scenario(

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useToast } from "@/lib/hooks/use-toast";
 import { User, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Welcome } from "../../components/dashboard/welcome";
 import { RecentActivity } from "../../components/trainer/recent-activity";
 import { TrainerLeaderboard } from "../../components/trainer/trainer-leaderboard";
@@ -114,7 +115,7 @@ const leaderboardData = [
 export default function TrainerDashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto p-6">
@@ -138,6 +139,7 @@ export default function TrainerDashboardPage() {
               <Button
                 variant="outline"
                 className="bg-cpf-teal text-primary-foreground flex items-center gap-2"
+                onClick={() => router.push("/trainer/trainees")}
               >
                 <Users size={18} />
                 View Trainees
@@ -145,6 +147,7 @@ export default function TrainerDashboardPage() {
               <Button
                 variant="outline"
                 className="bg-cpf-teal text-primary-foreground flex items-center gap-2"
+                onClick={() => {}}
               >
                 <User size={18} />
                 Customer Profiles
