@@ -236,10 +236,10 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div className="bg-background">
+    <div className="bg-background min-h-screen">
       {/* Header content area */}
       <div className="bg-cpf-light-teal pt-8 pb-8">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           {/* Main heading */}
           <h1 className="text-3xl font-bold mb-2">User Management</h1>
 
@@ -251,7 +251,7 @@ export default function UserManagementPage() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">System Users</h2>
 

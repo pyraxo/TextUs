@@ -27,9 +27,6 @@ export const Welcome: FC<WelcomeProps> = ({
       <h1 className="text-[28px] leading-tight font-bold">
         Welcome back, {userName}!
       </h1>
-      <p className={`mt-1 text-muted-foreground`}>
-        Last login on {lastLoginDate} at {lastLoginTime}
-      </p>
     </div>
   );
 };

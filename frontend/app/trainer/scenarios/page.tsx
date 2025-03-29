@@ -113,10 +113,10 @@ export default function ScenariosPage() {
   };
 
   return (
-    <div className="bg-background">
+    <div className="bg-background min-h-screen">
       {/* Header content area */}
       <div className="bg-cpf-light-teal pt-8 pb-8">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           {/* Main heading */}
           <h1 className="text-3xl font-bold mb-2">Manage Scenarios</h1>
 
@@ -128,37 +128,35 @@ export default function ScenariosPage() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">Housing</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            Description of the housing scenarios.
-          </p>
+      <main className="container mx-auto p-8">
+        <h2 className="text-2xl font-semibold mb-2">Housing</h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          Description of the housing scenarios.
+        </p>
 
-          {/* Action buttons and search */}
-          <div className="flex gap-4 items-center mb-6">
-            <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
+        {/* Action buttons and search */}
+        <div className="flex gap-4 items-center mb-6">
+          <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
 
-            <div className="flex-1">
-              <div className="relative">
-                <Search
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                  size={20}
-                />
-                <Input placeholder="Search..." className="pl-10 w-[240px]" />
-              </div>
+          <div className="flex-1">
+            <div className="relative">
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                size={20}
+              />
+              <Input placeholder="Search..." className="pl-10 w-[240px]" />
             </div>
-
-            <Button variant="outline" className="gap-2">
-              <RefreshCw size={20} />
-              Refresh
-            </Button>
-
-            <Button variant="outline" className="gap-2">
-              <Filter size={20} />
-              Filter
-            </Button>
           </div>
+
+          <Button variant="outline" className="gap-2">
+            <RefreshCw size={20} />
+            Refresh
+          </Button>
+
+          <Button variant="outline" className="gap-2">
+            <Filter size={20} />
+            Filter
+          </Button>
         </div>
 
         <Card className="border-0">
@@ -249,7 +247,7 @@ export default function ScenariosPage() {
             Next
           </Button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

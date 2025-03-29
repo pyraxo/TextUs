@@ -51,6 +51,11 @@ const navTrainer = [
     url: "/trainer/scenarios",
     icon: BotMessageSquare,
   },
+  {
+    title: "Manage Trainees",
+    url: "/trainer/trainees",
+    icon: Users,
+  },
 ];
 
 const navAdmin = [
@@ -60,7 +65,7 @@ const navAdmin = [
     icon: ShieldCheck,
   },
   {
-    title: "User Management",
+    title: "Manage Users",
     url: "/admin/user-management",
     icon: Users,
   },

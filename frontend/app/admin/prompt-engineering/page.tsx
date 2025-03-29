@@ -22,10 +22,24 @@ const transcriptData = [
 
 export default function PromptEngineeringPage() {
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex flex-col gap-10">
-        <h1 className="text-3xl font-bold">Prompt Engineering Controls</h1>
+    <div className="min-h-screen bg-background">
+      {/* Header content area */}
+      <div className="bg-cpf-light-teal pt-8 pb-8">
+        <div className="container mx-auto">
+          {/* Main heading */}
+          <h1 className="text-3xl font-bold mb-2">
+            Prompt Engineering Controls
+          </h1>
 
+          {/* Subheading */}
+          <h2 className="text-sm">
+            Configure and manage the AI prompt engineering settings for the
+            system
+          </h2>
+        </div>
+      </div>
+
+      <main className="container mx-auto p-6">
         <Card className="w-full border border-gray-200 rounded-lg">
           <CardContent className="p-6">
             <div className="flex justify-between mb-6">
@@ -203,7 +217,7 @@ export default function PromptEngineeringPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

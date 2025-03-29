@@ -19,36 +19,34 @@ import Link from "next/link";
 
 // Helper function to get page title based on pathname and search params
 function getPageInfo(pathname: string, searchParams: URLSearchParams) {
-  // Extract the main route (first segment after /)
-  const mainRoute = pathname.split("/")[1];
+  // Helper function to format slug into title case
+  const formatTitle = (slug: string) => {
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  // Split the pathname into segments
+  const segments = pathname.split("/").filter(Boolean);
 
   // Default values
-  let mainTitle = mainRoute
-    ? mainRoute.charAt(0).toUpperCase() + mainRoute.slice(1)
-    : "Home";
+  let mainTitle = "Home";
   let subTitle = "";
-  let mainPath = `/${mainRoute}`;
+  let mainPath = "/";
   let subPath = "";
 
-  // Handle specific routes
-  // if (mainRoute === "dashboard") {
-  //   mainTitle = "Dashboard";
-  //   mainPath = "/dashboard";
+  if (segments.length > 0) {
+    // First segment becomes the main title
+    mainTitle = formatTitle(segments[0]);
+    mainPath = `/${segments[0]}`;
 
-  //   // Get the tab parameter for dashboard
-  //   const tab = searchParams.get("tab");
-  //   // Define valid tabs
-  //   const validTabs = ["overview", "practice", "schemes"];
-
-  //   if (tab && validTabs.includes(tab) && tab !== "overview") {
-  //     // Valid tab (except overview)
-  //     subTitle = tab.charAt(0).toUpperCase() + tab.slice(1);
-  //     subPath = `/dashboard?tab=${tab}`;
-  //   } else {
-  //     // Invalid or missing tab, or tab is "overview" - don't set subtitle
-  //     subPath = "/dashboard?tab=overview";
-  //   }
-  // }
+    // If there's a second segment, it becomes the sub title
+    if (segments.length > 1) {
+      subTitle = formatTitle(segments[1]);
+      subPath = `/${segments[0]}/${segments[1]}`;
+    }
+  }
 
   return { mainTitle, subTitle, mainPath, subPath };
 }
@@ -100,7 +98,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 z-50 w-full flex h-16 items-center justify-between bg-cpf-teal text-white border-b border-cpf-teal-dark">
       <div className="flex h-full w-full items-center gap-2 px-4">
         <Button
-          className="h-8 w-8 text-white"
+          className="h-8 w-8 text-white hover:bg-cpf-teal-dark"
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
