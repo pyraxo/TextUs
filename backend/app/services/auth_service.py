@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
@@ -35,6 +35,9 @@ class AuthService:
         if not verify_password(password, user.password):
             return None
 
+        user.last_login = datetime.now()
+        self.session.commit()
+        self.session.refresh(user)
         return user
 
     async def create_user(
