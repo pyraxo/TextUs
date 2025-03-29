@@ -18,7 +18,7 @@ const outfit = Outfit({
 import { ClientSideNav } from "@/components/client-side-nav";
 import Header from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { cookies } from "next/headers";
 import "./globals.css";
 

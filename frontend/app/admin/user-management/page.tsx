@@ -28,7 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
 import {
   useCreateUser,
   useDeleteUser,
@@ -38,6 +37,7 @@ import {
 import { User, UserCreate, UserType } from "@/types/user.d";
 import { Loader2, Trash } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function UserManagementPage() {
   // React Query hooks
@@ -59,7 +59,6 @@ export default function UserManagementPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const { toast } = useToast();
 
   // Helper to get display name for user type
   const getUserTypeDisplay = (type: UserType): string => {
@@ -83,12 +82,7 @@ export default function UserManagementPage() {
       !newUser.email ||
       !newUser.password
     ) {
-      toast({
-        title: "Error",
-        description: "All fields are required",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("All fields are required");
       return;
     }
 
@@ -101,19 +95,10 @@ export default function UserManagementPage() {
         password: "",
         user_type: UserType.TRAINEE,
       });
-      toast({
-        title: "Success",
-        description: "User created successfully",
-        duration: 3000,
-      });
+      toast.success("User created successfully");
       setIsCreateDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create user",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("Failed to create user");
       console.error("Error creating user:", error);
     }
   };
@@ -123,12 +108,7 @@ export default function UserManagementPage() {
 
     // Validate required fields
     if (!editingUser.name || !editingUser.username || !editingUser.email) {
-      toast({
-        title: "Error",
-        description: "Name, username and email are required",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("Name, username and email are required");
       return;
     }
 
@@ -137,19 +117,10 @@ export default function UserManagementPage() {
         id: editingUser.id,
         userData: editingUser,
       });
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-        duration: 3000,
-      });
+      toast.success("User updated successfully");
       setIsEditDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update user",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("Failed to update user");
       console.error("Error updating user:", error);
     }
   };
@@ -159,19 +130,10 @@ export default function UserManagementPage() {
 
     try {
       await deleteUserMutation.mutateAsync(userToDelete.id);
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-        duration: 3000,
-      });
+      toast.success("User deleted successfully");
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("Failed to delete user");
       console.error("Error deleting user:", error);
     }
   };

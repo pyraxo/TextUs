@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
 import { useSchemeScenarios } from "@/hooks/use-scenarios";
-import { useToast } from "@/hooks/use-toast";
 import { startScenario } from "@/lib/api/scenarios";
 import { Scenario } from "@/types/scenario";
 import { UserScenarioSession } from "@/types/user-scenario-session";
@@ -18,6 +17,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 // Map of scheme IDs to their display names
 const schemeNames = {
@@ -46,7 +46,6 @@ export default function SchemeDetailPage({
 }) {
   const { user } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [isStarting, setIsStarting] = useState<string | null>(null);
   const isTrainerOrAdmin =
     user?.user_type === "trainer" || user?.user_type === "admin";
@@ -149,12 +148,7 @@ export default function SchemeDetailPage({
 
   const handleStartScenario = async (scenarioId: string) => {
     if (!user?.id) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to start a scenario.",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("You must be logged in to start a scenario.");
       return;
     }
 
@@ -165,15 +159,11 @@ export default function SchemeDetailPage({
       router.push(`/conversations/${scenarioId}`);
     } catch (error) {
       console.error("Failed to start scenario:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to start scenario. Please try again.",
-        variant: "default",
-        duration: 3000,
-      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to start scenario. Please try again."
+      );
     } finally {
       setIsStarting(null);
     }

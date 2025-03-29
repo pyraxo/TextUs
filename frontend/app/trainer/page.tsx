@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
 import { User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Welcome } from "../../components/dashboard/welcome";
@@ -113,7 +112,6 @@ const leaderboardData = [
 
 export default function TrainerDashboardPage() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const router = useRouter();
   return (
     <div className="min-h-screen bg-background">

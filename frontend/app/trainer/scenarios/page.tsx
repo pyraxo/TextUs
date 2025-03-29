@@ -12,8 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
 import { Filter, Pencil, RefreshCw, Search, Trash } from "lucide-react";
+import { toast } from "sonner";
 
 interface Scenario {
   id: string;
@@ -101,16 +101,9 @@ const mockScenarios: Scenario[] = [
 ];
 
 export default function ScenariosPage() {
-  const { toast } = useToast();
-
   const handleScenarioCreate = (scenario: any) => {
     console.log("New scenario created:", scenario);
-    toast({
-      title: "Scenario Created",
-      description: `"${scenario.title}" has been successfully created.`,
-      variant: "default",
-      duration: 3000,
-    });
+    toast.success(`"${scenario.title}" has been successfully created.`);
   };
 
   return (
