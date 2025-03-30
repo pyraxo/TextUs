@@ -27,6 +27,7 @@ dependencies = [
     "langgraph>=0.3.21",
     "langchain-openai>=0.3.11",
     "greenlet>=3.1.1",
+    "instructor>=1.7.8",
 ]
 
 [dependency-groups]
