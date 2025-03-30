@@ -2,6 +2,7 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, status
 
+from app.models.scenario import Scenario
 from app.models.scheme import SchemeCreate, SchemeRead, SchemeUpdate
 from app.services.scheme_service import SchemeService
 
@@ -54,6 +55,6 @@ async def delete_scheme(
 @router.get("/{id_or_slug}/scenarios")
 async def get_scheme_scenarios(
     id_or_slug: str, scheme_service: Annotated[SchemeService, Depends()]
-):
+) -> List[Scenario]:
     """Get all scenarios for a scheme."""
     return await scheme_service.get_scheme_scenarios(id_or_slug)

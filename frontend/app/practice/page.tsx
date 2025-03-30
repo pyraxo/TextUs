@@ -38,7 +38,7 @@ export default function PracticePage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {schemes &&
             schemes.map((scheme) => (
-              <Link href={`/practice/${scheme.id}`} key={scheme.id}>
+              <Link href={`/practice/${scheme.slug}`} key={scheme.id}>
                 <Card className="overflow-hidden rounded-lg hover:shadow-md transition-shadow border-0 group relative h-full">
                   <CardContent className="p-0 flex flex-col">
                     <div className="px-6 py-6">

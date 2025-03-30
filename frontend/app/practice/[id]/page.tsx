@@ -28,7 +28,7 @@ export default function SchemeDetailPage({
   const { user } = useAuth();
   const router = useRouter();
   const { data: schemes } = useSchemes();
-  const scheme = schemes?.find((s) => s.id === params.id);
+  const scheme = schemes?.find((s) => s.slug === params.id);
 
   const [isStarting, setIsStarting] = useState<string | null>(null);
   const isTrainerOrAdmin =
