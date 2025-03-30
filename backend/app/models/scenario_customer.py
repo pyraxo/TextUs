@@ -14,9 +14,7 @@ class ScenarioCustomerBase(SQLModel):
     """Base ScenarioCustomer model with common fields."""
 
     name: str
-    # Scenario-specific prompt that builds upon the base customer's profile_prompt
     scenario_prompt: Optional[str] = None
-    # Temperature for controlling response variability
     temperature: Optional[float] = 1.0
 
 
@@ -29,11 +27,6 @@ class ScenarioCustomer(ScenarioCustomerBase, table=True):
     __tablename__ = "scenario_customers"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-
-    # Store chat history as JSON string
-    chat_history_json: Optional[str] = Field(
-        default=None, sa_column_kwargs={"name": "chat_history"}
-    )
 
     # Store expected queries as JSON string
     expected_queries_json: Optional[str] = Field(
@@ -55,18 +48,6 @@ class ScenarioCustomer(ScenarioCustomerBase, table=True):
     feedback_ai: Optional[str] = None
 
     @property
-    def chat_history(self) -> List[str]:
-        """Get the chat history as a list."""
-        if self.chat_history_json is None:
-            return []
-        return json.loads(self.chat_history_json)
-
-    @chat_history.setter
-    def chat_history(self, value: List[str]):
-        """Set the chat history from a list."""
-        self.chat_history_json = json.dumps(value)
-
-    @property
     def expected_queries(self) -> List[str]:
         """Get the expected queries as a list."""
         if self.expected_queries_json is None:
@@ -85,7 +66,6 @@ class ScenarioCustomerRead(ScenarioCustomerBase):
     id: UUID
     customer_id: UUID
     scenario_id: UUID
-    chat_history: Optional[List[str]] = None
     expected_queries: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
 
@@ -105,9 +85,3 @@ class ScenarioCustomerUpdate(SQLModel):
     scenario_prompt: Optional[str] = None
     expected_queries: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
-
-
-class ScenarioCustomerHistoryUpdate(SQLModel):
-    """Customer scenario model for updating chat history."""
-
-    chat_history: List[str]

@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
@@ -78,6 +79,23 @@ class ChatConversation(ChatConversationBase, table=True):
         back_populates="chat_conversations",
         sa_relationship_kwargs={"secondary": "scenario_session_chats"},
     )
+
+    # Store chat history as JSON string
+    messages_json: Optional[str] = Field(
+        default=None, sa_column_kwargs={"name": "messages"}
+    )
+
+    @property
+    def chat_history(self) -> List[str]:
+        """Get the chat history as a list."""
+        if self.messages_json is None:
+            return []
+        return json.loads(self.messages_json)
+
+    @chat_history.setter
+    def chat_history(self, value: List[str]):
+        """Set the chat history from a list."""
+        self.messages_json = json.dumps(value)
 
 
 class ChatConversationRead(ChatConversationBase):
