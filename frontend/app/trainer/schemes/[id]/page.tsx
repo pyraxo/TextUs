@@ -1,27 +1,17 @@
 "use client";
 
+import { DataTable } from "@/components/scenarios/data-table";
 import { NewScenarioDialog } from "@/components/trainer/new-scenario-dialog";
+import {
+  getScenarioColumns,
+  ScenarioTableItem,
+} from "@/components/trainer/scenario-columns";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSchemeScenarios } from "@/hooks/use-scenarios";
-import { Scenario } from "@/types/scenario";
-import {
-  ArrowLeft,
-  Filter,
-  Pencil,
-  RefreshCw,
-  Search,
-  Trash,
-} from "lucide-react";
+import { useSchemes } from "@/hooks/use-schemes";
+import { ArrowLeft, Filter, RefreshCw, Search } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -31,10 +21,16 @@ export default function SchemeDetailPage({
   params: { id: string };
 }) {
   const { data: scenarios } = useSchemeScenarios(params.id);
+  const { data: schemes } = useSchemes();
+  const scheme = schemes?.find((scheme) => scheme.slug === params.id);
+
   const handleScenarioCreate = (scenario: any) => {
     console.log("New scenario created:", scenario);
     toast.success(`"${scenario.title}" has been successfully created.`);
   };
+
+  // Transform scenarios into table items
+  const tableData: ScenarioTableItem[] = scenarios || [];
 
   return (
     <div className="bg-background min-h-screen">
@@ -49,22 +45,23 @@ export default function SchemeDetailPage({
             Back
           </Link>
           {/* Main heading */}
-          <h1 className="text-3xl font-bold mb-2">Manage Scenarios</h1>
+          {scheme ? (
+            <>
+              <h1 className="text-3xl font-bold mb-2">
+                {scheme?.name} Scenarios
+              </h1>
 
-          {/* Subheading */}
-          <h2 className="text-sm">
-            Create, assign, and manage chat scenarios for your trainees.
-          </h2>
+              {/* Subheading */}
+              <h2 className="text-sm">{scheme?.description}</h2>
+            </>
+          ) : (
+            <Skeleton className="h-8 w-2/5" />
+          )}
         </div>
       </div>
 
       {/* Main content */}
       <main className="container mx-auto p-8">
-        <h2 className="text-2xl font-semibold mb-2">Housing</h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Description of the housing scenarios.
-        </p>
-
         {/* Action buttons and search */}
         <div className="flex gap-4 items-center mb-6">
           <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
@@ -90,95 +87,11 @@ export default function SchemeDetailPage({
           </Button>
         </div>
 
-        <Card className="border-0">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="text-primary-foreground">
-                  <TableHead className="">Scenario Title</TableHead>
-                  <TableHead className="">Created Date</TableHead>
-                  {/* <TableHead className="text-primary-foreground">
-                    Assigned To
-                  </TableHead> */}
-                  <TableHead className="text-center">Completion Rate</TableHead>
-                  <TableHead className="text-center">Avg. Score</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {scenarios &&
-                  scenarios.map((scenario: Scenario) => (
-                    <TableRow key={scenario.id}>
-                      <TableCell>{scenario.name}</TableCell>
-                      <TableCell>{scenario.created_at}</TableCell>
-                      {/* <TableCell>{scenario.assignedTo}</TableCell> */}
-                      {/* <TableCell className="text-center">
-                        {scenario.completion_rate}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {scenario.avg_score}
-                      </TableCell> */}
-                      <TableCell className="flex justify-center">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            className="mb-[-4px] mt-[-4px]"
-                          >
-                            <Pencil size={20} />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="mb-[-4px] mt-[-4px]"
-                          >
-                            <Trash size={20} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-center space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1 text-gray-500"
-            disabled
-          >
-            Previous
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-primary text-primary-foreground"
-          >
-            1
-          </Button>
-          <Button variant="outline" size="sm">
-            2
-          </Button>
-          <Button variant="outline" size="sm">
-            3
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            ...
-          </Button>
-          <Button variant="outline" size="sm">
-            67
-          </Button>
-          <Button variant="outline" size="sm">
-            68
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1">
-            Next
-          </Button>
-        </div>
+        <DataTable
+          columns={getScenarioColumns()}
+          data={tableData}
+          title="Scenarios"
+        />
       </main>
     </div>
   );

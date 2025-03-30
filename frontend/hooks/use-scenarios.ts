@@ -1,6 +1,13 @@
-import { getScenarios } from '@/lib/api/scenarios';
-import { Scenario } from '@/types/scenario';
-import { useQuery } from '@tanstack/react-query';
+import { getScenarios, updateScenario } from '@/lib/api/scenarios';
+import { Scenario, ScenarioUpdate } from '@/types/scenario';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+// Query keys for caching
+export const scenarioKeys = {
+  all: ['scenarios'] as const,
+  lists: () => [...scenarioKeys.all, 'list'] as const,
+  list: (schemeId?: string) => [...scenarioKeys.lists(), { schemeId }] as const,
+};
 
 /**
  * Hook to fetch scenarios, optionally filtered by scheme ID or slug
@@ -8,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
  */
 export function useScenarios(schemeIdOrSlug?: string) {
   return useQuery<Scenario[]>({
-    queryKey: ['scenarios', schemeIdOrSlug],
+    queryKey: scenarioKeys.list(schemeIdOrSlug),
     queryFn: () => getScenarios(schemeIdOrSlug),
     retry: false, // Don't retry on 400 errors (invalid UUID format)
   });
@@ -20,4 +27,20 @@ export function useScenarios(schemeIdOrSlug?: string) {
  */
 export function useSchemeScenarios(schemeIdOrSlug: string) {
   return useScenarios(schemeIdOrSlug);
+}
+
+/**
+ * Hook to update a scenario
+ */
+export function useUpdateScenario() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ scenarioId, updates }: { scenarioId: string; updates: ScenarioUpdate }) =>
+      updateScenario(scenarioId, updates),
+    onSuccess: (_data, { scenarioId }) => {
+      // Invalidate all scenario queries to refetch with updated data
+      queryClient.invalidateQueries({ queryKey: scenarioKeys.all });
+    },
+  });
 } 
