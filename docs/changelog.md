@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+Guidelines for maintaining this changelog:
+
+1. Most recent changes should be at the top
+2. Each version should be in the format [YYYY-MM-DD]
+3. Changes within each version should be categorized as:
+   - Added: New features or components
+   - Enhanced: Improvements to existing features
+   - Fixed: Bug fixes
+   - Changed: Changes in existing functionality
+   - Deprecated: Soon-to-be removed features
+   - Removed: Removed features
+4. Keep entries clear and concise
+5. Reference relevant issue/PR numbers when applicable
+
+## [2025-03-30]
+
+### Enhanced
+
+- Updated Data Model documentation in PRD:
+  - Clarified relationships between Schemes, Scenarios, Customers, and ScenarioCustomers
+  - Added detailed explanation of Customer adaptation in scenarios
+  - Added Data Flow section explaining scenario creation and training flow
+- Updated ScenarioCustomer model:
+  - Renamed profile_prompt to scenario_prompt for clarity
+  - Added expected_queries field for scenario-specific questions
+  - Enhanced documentation of customer adaptation mechanism
+- Refactored codebase:
+  - Implemented dedicated type files
+  - Created Trainee management service
+  - Enhanced UUID parsing
+- Improved UI/UX:
+  - Implemented Sonner for toast notifications
+  - Fixed table row background color in dark mode
+
+### Fixed
+
+- Fixed authentication token expiration handling
+
 ## [2025-03-27]
 
 ### Added

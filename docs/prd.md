@@ -110,20 +110,66 @@ The CPF Board TextUs application is a standalone training system that simulates 
 
 ### 4.1 Core Entities
 
-- **User**: Represents system users with authentication details and roles
-- **Customer**: Represents AI customer profiles with descriptions and prompts
-- **Scenario**: Represents practice scenarios with configuration settings
-- **CustomerScenario**: Links customers to scenarios with specific settings
+- **User**: Represents system users with authentication details and roles (admin, trainer, trainee)
+- **Scheme**: Represents broad CPF-related categories that organize scenarios (e.g., Housing, Healthcare)
+- **Scenario**: Represents specific training situations within a scheme, with configuration settings
+- **Customer**: Represents base AI customer profiles with:
+  - Basic information (name, description)
+  - Personality traits and temperament
+  - Communication habits
+  - Base profile prompt defining general behavior
+- **ScenarioCustomer**: Specialized adaptation of a Customer for a specific Scenario:
+  - Inherits base Customer traits
+  - Adds scenario-specific prompt building upon base prompt
+  - Contains expected queries/concerns for this scenario
+  - Configurable temperature for response variability
 - **ChatConversation**: Represents a practice session conversation
 - **ChatMessage**: Represents individual messages in a conversation
 
 ### 4.2 Entity Relationships
 
-- Users create and manage Customers and Scenarios
-- Scenarios contain multiple CustomerScenarios
-- CustomerScenarios link Customers to Scenarios
-- ChatConversations belong to specific Scenarios
+#### Hierarchical Organization
+
+- Schemes contain multiple Scenarios
+- Scenarios can have multiple ScenarioCustomers
+- Each ScenarioCustomer links one Customer to one Scenario
+
+#### Customer Adaptation
+
+- A single Customer can be adapted into multiple ScenarioCustomers
+- Each ScenarioCustomer maintains the base Customer traits while adding scenario-specific:
+  - Behavioral adaptations through scenario prompts
+  - Expected queries and concerns
+  - Response characteristics (temperature)
+
+#### Session Management
+
+- ChatConversations belong to specific ScenarioCustomers
 - ChatMessages belong to ChatConversations
+- Users participate in ChatConversations
+
+#### Administrative
+
+- Users (admin/trainer) create and manage:
+  - Schemes
+  - Scenarios
+  - Customers
+  - ScenarioCustomer adaptations
+
+### 4.3 Data Flow
+
+1. **Scenario Creation**:
+
+   - Admin creates a Scheme
+   - Admin creates Scenarios within the Scheme
+   - Admin creates or selects existing Customers
+   - Admin adapts Customers to Scenarios via ScenarioCustomers
+
+2. **Training Flow**:
+   - Trainee selects a Scenario
+   - System loads the associated ScenarioCustomer(s)
+   - System uses both base Customer traits and scenario-specific adaptations
+   - Conversation is tracked through ChatConversation and ChatMessages
 
 ## 5. User Interface
 

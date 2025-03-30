@@ -10,8 +10,8 @@ from sqlmodel import Session, select
 from app.core.db import get_session
 from app.models.chat import MessageType
 from app.models.scenario import Scenario
+from app.models.scenario_session import ScenarioSession
 from app.models.user import User
-from app.models.user_scenario_session import UserScenarioSession
 
 
 class SessionStatus(str, Enum):
@@ -61,21 +61,21 @@ async def validate_scenario_prerequisites(
 
 async def start_scenario(
     trainee_id: UUID, scenario_id: UUID, session: Session = Depends(get_session)
-) -> UserScenarioSession:
+) -> ScenarioSession:
     """Start or continue a scenario session for a trainee."""
     # Validate scenario exists
     await validate_scenario_prerequisites(trainee_id, scenario_id, session)
 
     # Check for existing session for this user and scenario
-    statement = select(UserScenarioSession).where(
-        UserScenarioSession.user_id == trainee_id,
-        UserScenarioSession.scenario_id == scenario_id,
+    statement = select(ScenarioSession).where(
+        ScenarioSession.user_id == trainee_id,
+        ScenarioSession.scenario_id == scenario_id,
     )
     existing_session = session.exec(statement).first()
 
     if not existing_session:
         # Create new session if none exists
-        existing_session = UserScenarioSession(
+        existing_session = ScenarioSession(
             user_id=trainee_id,
             scenario_id=scenario_id,
         )
@@ -88,10 +88,10 @@ async def start_scenario(
 
 async def complete_scenario(
     session_id: str, status: SessionStatus, session: Session = Depends(get_session)
-) -> UserScenarioSession:
+) -> ScenarioSession:
     """Complete a scenario session with a specific status."""
     # Get and validate session
-    user_session = session.get(UserScenarioSession, session_id)
+    user_session = session.get(ScenarioSession, session_id)
     if not user_session:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -132,15 +132,15 @@ async def complete_scenario(
 
 async def get_active_session(
     trainee_id: str, session: Session = Depends(get_session)
-) -> Optional[UserScenarioSession]:
+) -> Optional[ScenarioSession]:
     """Get trainee's active scenario session if any exists."""
     # Check for sessions without end timestamp and not too old
     timeout_threshold = datetime.now() - timedelta(hours=24)  # 24 hour timeout
 
-    statement = select(UserScenarioSession).where(
-        UserScenarioSession.user_id == trainee_id,
-        UserScenarioSession.end_timestamp == None,  # noqa: E711
-        UserScenarioSession.start_timestamp > timeout_threshold,
+    statement = select(ScenarioSession).where(
+        ScenarioSession.user_id == trainee_id,
+        ScenarioSession.end_timestamp == None,  # noqa: E711
+        ScenarioSession.start_timestamp > timeout_threshold,
     )
     results = session.exec(statement).first()
 
@@ -156,7 +156,7 @@ async def get_session_metrics(
     session_id: str, session: Session = Depends(get_session)
 ) -> SessionMetrics:
     """Get comprehensive metrics for a session."""
-    user_session = session.get(UserScenarioSession, session_id)
+    user_session = session.get(ScenarioSession, session_id)
     if not user_session:
         raise HTTPException(status_code=404, detail="Session not found")
 

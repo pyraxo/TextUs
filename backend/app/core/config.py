@@ -13,11 +13,6 @@ class Settings(BaseSettings):
     # Environment
     environment: str = "development"  # "development" or "production"
 
-    # Database
-    # MongoDB settings (legacy)
-    mongo_uri: str = "mongodb://localhost:27017/"
-    mongo_db_name: str = "sds_cpf"
-
     # SQLModel settings
     # For SQLite (local development)
     sqlite_dir: str = "data"
@@ -41,10 +36,10 @@ class Settings(BaseSettings):
         if self.environment == "development":
             # Create the SQLite directory if it doesn't exist
             os.makedirs(self.sqlite_dir, exist_ok=True)
-            return f"sqlite:///{self.sqlite_dir}/{self.sqlite_db_name}"
+            return f"sqlite+aiosqlite:///{self.sqlite_dir}/{self.sqlite_db_name}"
         else:
             # Production - use Amazon RDS
-            return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+            return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
     # CORS
     allow_origins: list[str] = ["*"]

@@ -10,18 +10,23 @@ if TYPE_CHECKING:
     from .scenario import Scenario
 
 
-class CustomerScenarioBase(SQLModel):
-    """Base Customer scenario model with common fields."""
+class ScenarioCustomerBase(SQLModel):
+    """Base ScenarioCustomer model with common fields."""
 
     name: str
-    profile_prompt: Optional[str] = None
+    # Scenario-specific prompt that builds upon the base customer's profile_prompt
+    scenario_prompt: Optional[str] = None
+    # Temperature for controlling response variability
     temperature: Optional[float] = 1.0
 
 
-class CustomerScenario(CustomerScenarioBase, table=True):
-    """Customer settings for a scenario."""
+class ScenarioCustomer(ScenarioCustomerBase, table=True):
+    """Customer settings for a scenario.
+    Each scenario can have multiple customer settings.
+    A customer can be adapted for multiple scenarios with different settings.
+    """
 
-    __tablename__ = "customer_scenarios"
+    __tablename__ = "scenario_customers"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
@@ -30,15 +35,20 @@ class CustomerScenario(CustomerScenarioBase, table=True):
         default=None, sa_column_kwargs={"name": "chat_history"}
     )
 
+    # Store expected queries as JSON string
+    expected_queries_json: Optional[str] = Field(
+        default=None, sa_column_kwargs={"name": "expected_queries"}
+    )
+
     # Foreign keys
     customer_id: UUID = Field(foreign_key="customers.id")
     scenario_id: UUID = Field(foreign_key="scenarios.id")
 
     # Relationships
     customer: Optional["Customer"] = Relationship()
-    scenario: Optional["Scenario"] = Relationship(back_populates="customer_scenarios")
+    scenario: Optional["Scenario"] = Relationship(back_populates="scenario_customers")
     conversations: List["ChatConversation"] = Relationship(
-        back_populates="customer_scenario"
+        back_populates="scenario_customer"
     )
 
     # TODO: user_ratings
@@ -56,33 +66,48 @@ class CustomerScenario(CustomerScenarioBase, table=True):
         """Set the chat history from a list."""
         self.chat_history_json = json.dumps(value)
 
+    @property
+    def expected_queries(self) -> List[str]:
+        """Get the expected queries as a list."""
+        if self.expected_queries_json is None:
+            return []
+        return json.loads(self.expected_queries_json)
 
-class CustomerScenarioRead(CustomerScenarioBase):
+    @expected_queries.setter
+    def expected_queries(self, value: List[str]):
+        """Set the expected queries from a list."""
+        self.expected_queries_json = json.dumps(value) if value else None
+
+
+class ScenarioCustomerRead(ScenarioCustomerBase):
     """Customer scenario model for reading."""
 
     id: UUID
     customer_id: UUID
     scenario_id: UUID
     chat_history: Optional[List[str]] = None
+    expected_queries: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
 
 
-class CustomerScenarioCreate(CustomerScenarioBase):
+class ScenarioCustomerCreate(ScenarioCustomerBase):
     """Customer scenario model for creation."""
 
     customer_id: UUID
     scenario_id: UUID
+    expected_queries: Optional[List[str]] = None
 
 
-class CustomerScenarioUpdate(SQLModel):
+class ScenarioCustomerUpdate(SQLModel):
     """Customer scenario model for updating."""
 
     name: Optional[str] = None
-    profile_prompt: Optional[str] = None
+    scenario_prompt: Optional[str] = None
+    expected_queries: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
 
 
-class CustomerScenarioHistoryUpdate(SQLModel):
+class ScenarioCustomerHistoryUpdate(SQLModel):
     """Customer scenario model for updating chat history."""
 
     chat_history: List[str]

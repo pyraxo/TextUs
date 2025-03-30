@@ -6,10 +6,10 @@ import sqlalchemy as sa
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .customer_scenario import CustomerScenario
+    from .scenario_customer import ScenarioCustomer
+    from .scenario_session import ScenarioSession
     from .scheme import Scheme
     from .user import User
-    from .user_scenario_session import UserScenarioSession
 
 
 class ScenarioBase(SQLModel):
@@ -45,12 +45,10 @@ class Scenario(ScenarioBase, table=True):
     # Relationships
     created_by: Optional["User"] = Relationship()
     scheme: Optional["Scheme"] = Relationship(back_populates="scenarios")
-    customer_scenarios: List["CustomerScenario"] = Relationship(
+    scenario_customers: List["ScenarioCustomer"] = Relationship(
         back_populates="scenario"
     )
-    user_scenario_sessions: List["UserScenarioSession"] = Relationship(
-        back_populates="scenario"
-    )
+    scenario_sessions: List["ScenarioSession"] = Relationship(back_populates="scenario")
 
     def update_timestamp(self):
         """Update the updated_at timestamp."""

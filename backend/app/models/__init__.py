@@ -2,18 +2,18 @@ __all__ = [
     "ChatConversation",
     "ChatMessage",
     "Customer",
-    "CustomerScenario",
     "Scenario",
+    "ScenarioCustomer",
     "Scheme",
     "User",
-    "UserScenarioSession",
-    "UserScenarioSessionChat",
+    "ScenarioSession",
+    "ScenarioSessionChat",
 ]
 
 from .chat import ChatConversation, ChatMessage
 from .customer import Customer
-from .customer_scenario import CustomerScenario
 from .scenario import Scenario
+from .scenario_customer import ScenarioCustomer
+from .scenario_session import ScenarioSession, ScenarioSessionChat
 from .scheme import Scheme
 from .user import User
-from .user_scenario_session import UserScenarioSession, UserScenarioSessionChat

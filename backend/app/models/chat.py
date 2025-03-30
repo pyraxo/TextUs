@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from app.models.customer_scenario import CustomerScenario
-    from app.models.user_scenario_session import UserScenarioSession
+    from app.models.scenario_customer import ScenarioCustomer
+    from app.models.scenario_session import ScenarioSession
 
 
 class MessageType(str, Enum):
@@ -54,7 +54,7 @@ class ChatMessageCreate(ChatMessageBase):
 class ChatConversationBase(SQLModel):
     """Base Chat conversation model with common fields."""
 
-    customer_scenario_id: UUID
+    scenario_customer_id: UUID
 
 
 class ChatConversation(ChatConversationBase, table=True):
@@ -67,16 +67,16 @@ class ChatConversation(ChatConversationBase, table=True):
     ended_at: Optional[datetime] = None
 
     # Foreign keys
-    customer_scenario_id: UUID = Field(foreign_key="customer_scenarios.id")
+    scenario_customer_id: UUID = Field(foreign_key="scenario_customers.id")
 
     # Relationships
-    customer_scenario: Optional["CustomerScenario"] = Relationship(
+    scenario_customer: Optional["ScenarioCustomer"] = Relationship(
         back_populates="conversations"
     )
     messages: List[ChatMessage] = Relationship(back_populates="conversation")
-    user_scenario_session: Optional["UserScenarioSession"] = Relationship(
+    scenario_session: Optional["ScenarioSession"] = Relationship(
         back_populates="chat_conversations",
-        sa_relationship_kwargs={"secondary": "user_scenario_session_chats"},
+        sa_relationship_kwargs={"secondary": "scenario_session_chats"},
     )
 
 

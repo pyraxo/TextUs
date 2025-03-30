@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .user_scenario_session import UserScenarioSession
+    from .scenario_session import ScenarioSession
 
 
 class UserType(str, Enum):
@@ -37,9 +37,7 @@ class User(UserBase, table=True):
     password: str
 
     # Relationships
-    user_scenario_sessions: List["UserScenarioSession"] = Relationship(
-        back_populates="user"
-    )
+    scenario_sessions: List["ScenarioSession"] = Relationship(back_populates="user")
 
 
 class UserRead(UserBase):

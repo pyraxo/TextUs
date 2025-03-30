@@ -2,7 +2,6 @@ from logging import ERROR, basicConfig, getLogger
 from logging.config import fileConfig
 
 from alembic import context
-from app.models import *
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
@@ -11,13 +10,19 @@ config = context.config
 from app.core.config import get_settings
 
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+
+# Remove async drivers from the database URL
+database_url = settings.database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
+
+config.set_main_option("sqlalchemy.url", database_url)
 
 basicConfig()
 getLogger("sqlalchemy").setLevel(ERROR)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+from app.models import *  # noqa
 
 target_metadata = SQLModel.metadata
 
@@ -56,8 +61,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # Handle the engine configuration with the sync URL
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = database_url
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

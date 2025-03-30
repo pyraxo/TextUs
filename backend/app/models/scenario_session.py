@@ -10,21 +10,21 @@ if TYPE_CHECKING:
     from .user import User
 
 
-class UserScenarioSessionChat(SQLModel, table=True):
-    """Association table for UserScenarioSession and ChatConversation."""
+class ScenarioSessionChat(SQLModel, table=True):
+    """Association table for ScenarioSession and ChatConversation."""
 
-    __tablename__ = "user_scenario_session_chats"
+    __tablename__ = "scenario_session_chats"
 
-    user_scenario_session_id: UUID = Field(
-        foreign_key="user_scenario_sessions.id", primary_key=True
+    scenario_session_id: UUID = Field(
+        foreign_key="scenario_sessions.id", primary_key=True
     )
     chat_conversation_id: UUID = Field(
         foreign_key="chat_conversations.id", primary_key=True
     )
 
 
-class UserScenarioSessionBase(SQLModel):
-    """UserScenarioSessionBase model with common fields."""
+class ScenarioSessionBase(SQLModel):
+    """ScenarioSessionBase model with common fields."""
 
     user_id: UUID = Field(foreign_key="users.id")
     scenario_id: UUID = Field(foreign_key="scenarios.id")
@@ -32,21 +32,19 @@ class UserScenarioSessionBase(SQLModel):
     end_timestamp: Optional[datetime] = Field(default=None)
 
 
-class UserScenarioSession(UserScenarioSessionBase, table=True):
-    """UserScenarioSession model for database storage.
+class ScenarioSession(ScenarioSessionBase, table=True):
+    """ScenarioSession model for database storage.
     This model stores users' scenario sessions."""
 
-    __tablename__ = "user_scenario_sessions"
+    __tablename__ = "scenario_sessions"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    user: Optional["User"] = Relationship(back_populates="user_scenario_sessions")
-    scenario: Optional["Scenario"] = Relationship(
-        back_populates="user_scenario_sessions"
-    )
+    user: Optional["User"] = Relationship(back_populates="scenario_sessions")
+    scenario: Optional["Scenario"] = Relationship(back_populates="scenario_sessions")
     chat_conversations: List["ChatConversation"] = Relationship(
-        back_populates="user_scenario_session",
-        sa_relationship_kwargs={"secondary": "user_scenario_session_chats"},
+        back_populates="scenario_session",
+        sa_relationship_kwargs={"secondary": "scenario_session_chats"},
     )
 
     def add_chat_conversation(self, chat_conversation: "ChatConversation"):

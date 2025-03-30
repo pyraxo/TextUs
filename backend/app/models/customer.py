@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .customer_scenario import CustomerScenario
+    from .scenario_customer import ScenarioCustomer
     from .user import User
 
 
@@ -39,7 +39,9 @@ class Customer(CustomerBase, table=True):
     updated_by: Optional["User"] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[Customer.updated_by_id]"}
     )
-    scenarios: List["CustomerScenario"] = Relationship(back_populates="customer")
+    scenario_customers: List["ScenarioCustomer"] = Relationship(
+        back_populates="customer"
+    )
 
     def update_timestamp(self):
         """Update the updated_at timestamp."""

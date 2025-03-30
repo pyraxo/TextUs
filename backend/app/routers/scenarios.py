@@ -14,7 +14,7 @@ from app.models.scenario import (
     ScenarioUpdate,
     ScenarioUpdateHistory,
 )
-from app.models.user_scenario_session import UserScenarioSession
+from app.models.scenario_session import ScenarioSession
 from app.services import scenario_service, trainee_service
 
 router = APIRouter(prefix="/scenarios", tags=["Scenarios"])
@@ -97,7 +97,7 @@ async def start_scenario(
     scenario_id: str,
     scenario_data: ScenarioStart,
     session: Session = Depends(get_session),
-) -> UserScenarioSession:
+) -> ScenarioSession:
     """Start a scenario."""
     return await trainee_service.start_scenario(
         trainee_id=parse_uuid(scenario_data.trainee_id),

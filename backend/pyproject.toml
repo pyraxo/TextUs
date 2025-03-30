@@ -24,4 +24,7 @@ dependencies = [
     "sse-starlette>=2.2.1",
     "asyncio>=3.4.3",
     "openai>=1.67.0",
+    "langgraph>=0.3.21",
+    "langchain-openai>=0.3.11",
+    "greenlet>=3.1.1",
 ]
