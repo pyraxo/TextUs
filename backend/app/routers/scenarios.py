@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends
 
@@ -12,6 +12,7 @@ from app.models.scenario import (
     ScenarioUpdate,
     ScenarioUpdateHistory,
 )
+from app.models.scenario_customer import ScenarioCustomer
 from app.models.scenario_session import ScenarioSession
 from app.services.scenario_service import ScenarioService
 from app.services.trainee_service import TraineeService
@@ -43,6 +44,15 @@ async def get_scenario(
 ) -> Scenario:
     """Get a scenario by ID."""
     return await scenario_service.get_scenario(scenario_id)
+
+
+@router.get("/{scenario_id}/customers")
+async def get_scenario_customers(
+    scenario_id: str,
+    scenario_service: Annotated[ScenarioService, Depends()],
+) -> List[ScenarioCustomer]:
+    """Get all customers for a scenario."""
+    return await scenario_service.get_scenario_customers(scenario_id)
 
 
 @router.put("/{scenario_id}")
