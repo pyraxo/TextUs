@@ -48,7 +48,7 @@ const navTrainer = [
   },
   {
     title: "Manage Scenarios",
-    url: "/trainer/scenarios",
+    url: "/trainer/schemes",
     icon: BotMessageSquare,
   },
   {
@@ -81,9 +81,14 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
 
   const isActive = (url: string) => {
-    // Check if the current path matches the item URL
-    // For exact matches or if the item URL is a prefix of the current path
-    // return pathname === url || (pathname?.startsWith(url) && url !== "/");
+    // Special case for /trainer/schemes to not match sub-routes
+    if (
+      pathname?.includes("/trainer/schemes") &&
+      pathname !== "/trainer/schemes"
+    ) {
+      return url === "/trainer/schemes";
+    }
+    // Check if the current path matches the item URL exactly
     return pathname === url;
   };
 

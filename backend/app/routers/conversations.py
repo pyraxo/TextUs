@@ -1,10 +1,8 @@
-from typing import List
+from typing import Annotated, List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
 
-from app.core.db import get_session
 from app.models.chat import MessageType
 from app.models.response import (
     ConversationDetailResponse,
@@ -12,14 +10,17 @@ from app.models.response import (
     MessageCreate,
     MessageResponse,
 )
-from app.services import conversations
+from app.services.conversations import ConversationService
 
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
 @router.get("/", response_model=List[ConversationListResponse])
-async def get_conversations(session: Session = Depends(get_session)):
-    conv_list = await conversations.get_conversations(session=session)
+async def get_conversations(
+    conversation_service: Annotated[ConversationService, Depends()],
+):
+    """Get all conversations."""
+    conv_list = await conversation_service.get_conversations()
     # Transform to include scenario name and latest message timestamp
     return [
         {
@@ -42,11 +43,11 @@ async def get_conversations(session: Session = Depends(get_session)):
 
 @router.get("/{conversation_id}", response_model=ConversationDetailResponse)
 async def get_conversation(
-    conversation_id: UUID, session: Session = Depends(get_session)
+    conversation_id: UUID,
+    conversation_service: Annotated[ConversationService, Depends()],
 ):
-    conv = await conversations.get_conversation(
-        conversation_id=conversation_id, session=session
-    )
+    """Get a conversation by ID."""
+    conv = await conversation_service.get_conversation(conversation_id)
 
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -87,11 +88,11 @@ async def get_conversation(
 async def create_message(
     conversation_id: UUID,
     message: MessageCreate,
-    session: Session = Depends(get_session),
+    conversation_service: Annotated[ConversationService, Depends()],
 ):
-    msg = await conversations.create_message(
+    """Create a message."""
+    msg = await conversation_service.create_message(
         conversation_id=conversation_id,
         message=message,
-        session=session,
     )
     return msg

@@ -25,6 +25,7 @@ class SchemeBase(SQLModel):
 
     name: str
     description: Optional[str] = None
+    icon: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
@@ -74,4 +75,5 @@ class SchemeUpdate(SQLModel):
 
     name: Optional[str] = None
     description: Optional[str] = None
+    icon: Optional[str] = None
     slug: Optional[str] = None

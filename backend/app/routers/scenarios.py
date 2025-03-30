@@ -1,10 +1,8 @@
-from typing import Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlmodel import Session
 
 from app.core.common import parse_uuid
-from app.core.db import get_session
 from app.models.scenario import (
     Scenario,
     ScenarioAddCustomer,
@@ -15,68 +13,67 @@ from app.models.scenario import (
     ScenarioUpdateHistory,
 )
 from app.models.scenario_session import ScenarioSession
-from app.services import scenario_service, trainee_service
+from app.services.scenario_service import ScenarioService
+from app.services.trainee_service import TraineeService
 
 router = APIRouter(prefix="/scenarios", tags=["Scenarios"])
 
 
 @router.get("/")
 async def get_scenarios(
-    scheme_id: Optional[str] = None, session: Session = Depends(get_session)
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> list[Scenario]:
-    """Get all scenarios, optionally filtered by scheme_id."""
-    return await scenario_service.get_scenarios(scheme_id=scheme_id, session=session)
+    """Get all scenarios."""
+    return await scenario_service.get_scenarios()
 
 
 @router.post("/")
 async def create_scenario(
-    scenario_data: ScenarioCreate, session: Session = Depends(get_session)
+    scenario_data: ScenarioCreate,
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Create a new scenario."""
-    return await scenario_service.create_scenario(scenario_data, session=session)
+    return await scenario_service.create_scenario(scenario_data)
 
 
 @router.get("/{scenario_id}")
 async def get_scenario(
-    scenario_id: str, session: Session = Depends(get_session)
+    scenario_id: str,
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Get a scenario by ID."""
-    return await scenario_service.get_scenario(scenario_id, session=session)
+    return await scenario_service.get_scenario(scenario_id)
 
 
 @router.put("/{scenario_id}")
 async def update_scenario(
     scenario_id: str,
     scenario_data: ScenarioUpdate,
-    session: Session = Depends(get_session),
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Update a scenario."""
-    return await scenario_service.update_scenario(
-        scenario_id, scenario_data, session=session
-    )
+    return await scenario_service.update_scenario(scenario_id, scenario_data)
 
 
 @router.post("/{scenario_id}/customers")
 async def add_customer_to_scenario(
     scenario_id: str,
     customer_data: ScenarioAddCustomer,
-    session: Session = Depends(get_session),
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Add a customer to a scenario."""
-    return await scenario_service.add_customer_to_scenario(
-        scenario_id, customer_data, session=session
-    )
+    return await scenario_service.add_customer_to_scenario(scenario_id, customer_data)
 
 
 @router.delete("/{scenario_id}/customers")
 async def remove_customer_from_scenario(
     scenario_id: str,
     customer_data: ScenarioRemoveCustomer,
-    session: Session = Depends(get_session),
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Remove a customer from a scenario."""
     return await scenario_service.remove_customer_from_scenario(
-        scenario_id, customer_data, session=session
+        scenario_id, customer_data
     )
 
 
@@ -84,23 +81,20 @@ async def remove_customer_from_scenario(
 async def update_scenario_history(
     scenario_id: str,
     history_data: ScenarioUpdateHistory,
-    session: Session = Depends(get_session),
+    scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Update the history of a scenario."""
-    return await scenario_service.update_scenario_history(
-        scenario_id, history_data, session=session
-    )
+    return await scenario_service.update_scenario_history(scenario_id, history_data)
 
 
 @router.post("/{scenario_id}/start")
 async def start_scenario(
     scenario_id: str,
     scenario_data: ScenarioStart,
-    session: Session = Depends(get_session),
+    trainee_service: Annotated[TraineeService, Depends()],
 ) -> ScenarioSession:
     """Start a scenario."""
     return await trainee_service.start_scenario(
         trainee_id=parse_uuid(scenario_data.trainee_id),
         scenario_id=parse_uuid(scenario_id),
-        session=session,
     )

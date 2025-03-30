@@ -2,7 +2,8 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_session
 from app.core.security import get_password_hash
@@ -12,7 +13,7 @@ from app.models.user import User, UserCreate, UserType
 class UserService:
     """Service for user management operations."""
 
-    def __init__(self, session: Session = Depends(get_session)):
+    def __init__(self, session: AsyncSession = Depends(get_session)):
         self.session = session
 
     async def get_users(
@@ -24,11 +25,11 @@ class UserService:
             query = query.where(User.user_type == user_type)
 
         query = query.offset(skip).limit(limit)
-        return self.session.exec(query).all()
+        return (await self.session.exec(query)).all()
 
     async def get_user(self, user_id: UUID) -> User:
         """Get a user by ID."""
-        user = self.session.get(User, user_id)
+        user = await self.session.get(User, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -38,11 +39,15 @@ class UserService:
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
         """Get a user by username."""
-        return self.session.exec(select(User).where(User.username == username)).first()
+        return (
+            await self.session.exec(select(User).where(User.username == username))
+        ).first()
 
     async def get_user_by_email(self, email: str) -> Optional[User]:
         """Get a user by email."""
-        return self.session.exec(select(User).where(User.email == email)).first()
+        return (
+            await self.session.exec(select(User).where(User.email == email))
+        ).first()
 
     async def create_user(self, user: UserCreate) -> User:
         """Create a new user."""
@@ -61,8 +66,8 @@ class UserService:
         )
 
         self.session.add(db_user)
-        self.session.commit()
-        self.session.refresh(db_user)
+        await self.session.commit()
+        await self.session.refresh(db_user)
         return db_user
 
     async def update_user(self, user_id: UUID, update_data: dict) -> User:
@@ -92,13 +97,13 @@ class UserService:
             setattr(user, key, value)
 
         self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+        await self.session.commit()
+        await self.session.refresh(user)
 
         return user
 
     async def delete_user(self, user_id: UUID) -> None:
         """Delete a user."""
         user = await self.get_user(user_id)
-        self.session.delete(user)
-        self.session.commit()
+        await self.session.delete(user)
+        await self.session.commit()

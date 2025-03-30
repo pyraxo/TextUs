@@ -2,7 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import get_settings
 from app.core.db import close_db, get_session
@@ -56,10 +57,10 @@ async def root():
 
 
 @app.get("/db-test")
-async def db_test(session: Session = Depends(get_session)):
+async def db_test(session: AsyncSession = Depends(get_session)):
     """Test database connection."""
     try:
-        session.exec(select(User)).all()
+        (await session.exec(select(User))).all()
         return {"message": "Database connection successful!"}
     except Exception as e:
         return {"message": f"Database connection failed: {e}"}

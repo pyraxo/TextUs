@@ -3,7 +3,8 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import get_settings
 from app.core.db import get_session
@@ -22,13 +23,13 @@ settings = get_settings()
 class AuthService:
     """Service for authentication operations."""
 
-    def __init__(self, session: Session = Depends(get_session)):
+    def __init__(self, session: AsyncSession = Depends(get_session)):
         self.session = session
 
     async def authenticate_user(self, username: str, password: str) -> Optional[User]:
         """Authenticate a user by username and password."""
         query = select(User).where(User.username == username)
-        user = self.session.exec(query).first()
+        user = (await self.session.exec(query)).first()
 
         if not user:
             return None
@@ -36,8 +37,8 @@ class AuthService:
             return None
 
         user.last_login = datetime.now()
-        self.session.commit()
-        self.session.refresh(user)
+        await self.session.commit()
+        await self.session.refresh(user)
         return user
 
     async def create_user(
@@ -50,8 +51,10 @@ class AuthService:
     ) -> User:
         """Create a new user."""
         # Check if user already exists
-        existing_user = self.session.exec(
-            select(User).where((User.username == username) | (User.email == email))
+        existing_user = (
+            await self.session.exec(
+                select(User).where((User.username == username) | (User.email == email))
+            )
         ).first()
 
         if existing_user:
@@ -77,14 +80,14 @@ class AuthService:
         )
 
         self.session.add(new_user)
-        self.session.commit()
-        self.session.refresh(new_user)
+        await self.session.commit()
+        await self.session.refresh(new_user)
 
         return new_user
 
     async def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         """Get user by ID."""
-        return self.session.get(User, user_id)
+        return await self.session.get(User, user_id)
 
     async def create_access_token_for_user(self, user: User) -> Token:
         """Create an access token for a user."""

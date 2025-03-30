@@ -18,18 +18,6 @@ class State(TypedDict):
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=settings.openai_api_key)
 
 
-class Customer:
-    def __init__(self, name: str, personality: str):
-        self.name = name
-        self.personality = personality
-
-    @property
-    def prompt(self) -> str:
-        return f"""
-        You are a customer named {self.name} with the personality of {self.personality}.
-        """
-
-
 def agent_node(state: State) -> State:
     return {"messages": [llm.invoke(state["messages"])]}
 

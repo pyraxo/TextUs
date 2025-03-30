@@ -17,7 +17,6 @@ from app.models.user import User, UserType
 from sqlmodel import Session, SQLModel, create_engine
 
 settings = get_settings()
-# Convert async database URL to sync URL for initialization
 database_url = settings.database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
 engine = create_engine(database_url)
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
@@ -8,6 +9,27 @@ if TYPE_CHECKING:
     from .chat import ChatConversation
     from .scenario import Scenario
     from .user import User
+
+
+class SessionStatus(str, Enum):
+    """Status of a scenario session."""
+
+    COMPLETED = "completed"
+    FAILED = "failed"
+    ABANDONED = "abandoned"
+    TIMED_OUT = "timed_out"
+
+
+class SessionMetrics(SQLModel):
+    """Metrics for a scenario session."""
+
+    duration_seconds: Optional[float]
+    total_messages: int
+    user_messages: int
+    bot_messages: int
+    conversations: int
+    avg_response_time: Optional[float]  # Average time between messages
+    completion_rate: float  # Percentage of customer scenarios attempted
 
 
 class ScenarioSessionChat(SQLModel, table=True):

@@ -12,7 +12,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Filter, Pencil, RefreshCw, Search, Trash } from "lucide-react";
+import { useSchemes } from "@/hooks/use-schemes";
+import {
+  ArrowLeft,
+  Filter,
+  Pencil,
+  RefreshCw,
+  Search,
+  Trash,
+} from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 interface Scenario {
@@ -100,7 +109,12 @@ const mockScenarios: Scenario[] = [
   },
 ];
 
-export default function ScenariosPage() {
+export default function SchemeDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { data: schemes } = useSchemes();
   const handleScenarioCreate = (scenario: any) => {
     console.log("New scenario created:", scenario);
     toast.success(`"${scenario.title}" has been successfully created.`);
@@ -109,8 +123,15 @@ export default function ScenariosPage() {
   return (
     <div className="bg-background min-h-screen">
       {/* Header content area */}
-      <div className="bg-cpf-light-teal pt-8 pb-8">
+      <div className="bg-cpf-light-teal pt-8 pb-10">
         <div className="container mx-auto">
+          <Link
+            href="/trainer/schemes"
+            className="inline-flex items-center text-muted-background hover:text-foreground mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Link>
           {/* Main heading */}
           <h1 className="text-3xl font-bold mb-2">Manage Scenarios</h1>
 
