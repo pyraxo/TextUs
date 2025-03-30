@@ -6,9 +6,12 @@ from fastapi import Depends, HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.chatter.bot import ChatBot
+from app.chatter.scheduler import get_scheduler
 from app.core.db import get_session
-from app.models.chat import MessageType
+from app.models.chat import ChatConversation, ChatMessage, MessageType
 from app.models.scenario import Scenario
+from app.models.scenario_customer import ScenarioCustomer
 from app.models.scenario_session import ScenarioSession, SessionMetrics, SessionStatus
 from app.models.user import User
 
@@ -198,3 +201,80 @@ class TraineeService:
         )
 
         return SessionMetrics(**metrics)
+
+    async def start_trainee_conversation(
+        self, scenario_id: UUID, customer_id: UUID, first_message: Optional[str] = None
+    ) -> ChatConversation:
+        """Start a new trainee conversation with a customer.
+
+        Args:
+            scenario_id: ID of the scenario
+            customer_id: ID of the customer to chat with
+            first_message: Optional first message from trainee
+
+        Returns:
+            The created conversation
+        """
+        # Get the scenario and customer
+        scenario_customer = await self._get_scenario_customer(scenario_id, customer_id)
+
+        # Create a new conversation
+        conv = ChatConversation(
+            scenario_id=scenario_id,
+            customer_id=customer_id,
+        )
+        self.session.add(conv)
+        await self.session.commit()
+        await self.session.refresh(conv)
+
+        if first_message:
+            # Add the user's first message
+            user_msg = ChatMessage(
+                conversation_id=conv.id,
+                sender_id="Trainee",  # Could use user ID here
+                message=first_message,
+                message_type=MessageType.USER,
+            )
+            self.session.add(user_msg)
+            await self.session.commit()
+
+        # Start the chat with the chatbot
+        bot = ChatBot()
+        chat_state = await bot.start_chat(
+            scenario_customer,
+            first_message,
+            conversation_id=conv.id,
+        )
+
+        # Register the conversation with the scheduler
+        scheduler = get_scheduler()
+        await scheduler.register_conversation(chat_state)
+
+        return conv
+
+    async def _get_scenario_customer(
+        self, scenario_id: UUID, customer_id: UUID
+    ) -> ScenarioCustomer:
+        """Get a scenario customer for use in conversation.
+
+        Args:
+            scenario_id: ID of the scenario
+            customer_id: ID of the customer
+
+        Returns:
+            The scenario customer object
+        """
+        # Get the scenario and customer
+        statement = select(ScenarioCustomer).where(
+            ScenarioCustomer.scenario_id == scenario_id,
+            ScenarioCustomer.id == customer_id,
+        )
+        result = await self.session.exec(statement)
+        scenario_customer = result.first()
+
+        if not scenario_customer:
+            raise ValueError(
+                f"No customer found with ID {customer_id} in scenario {scenario_id}"
+            )
+
+        return scenario_customer

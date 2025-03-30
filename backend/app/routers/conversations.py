@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.chatter.scheduler import get_scheduler
 from app.models.chat import MessageType
 from app.models.response import (
     ConversationDetailResponse,
@@ -90,9 +91,22 @@ async def create_message(
     message: MessageCreate,
     conversation_service: Annotated[ConversationService, Depends()],
 ):
-    """Create a message."""
+    """Create a message and notify the scheduler."""
+    # Create the message in the database
     msg = await conversation_service.create_message(
         conversation_id=conversation_id,
         message=message,
     )
+
+    # Only notify scheduler about new user messages
+    if message.message_type == MessageType.USER:
+        # Get the scheduler instance
+        scheduler = get_scheduler()
+
+        # Add the message to the scheduler for processing
+        await scheduler.add_user_message(
+            conversation_id=conversation_id,
+            message=message.content,
+        )
+
     return msg

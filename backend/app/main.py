@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.chatter.scheduler import get_scheduler
 from app.core.config import get_settings
 from app.core.db import close_db, get_session
 from app.core.middleware import AuthCookieMiddleware
@@ -18,7 +19,16 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     # Initialize database and create tables
+
+    # Start the conversation scheduler
+    scheduler = get_scheduler(session_factory=get_session)
+    await scheduler.start()
+
     yield
+
+    # Stop the scheduler before closing database
+    await scheduler.stop()
+
     # Close database connections
     await close_db()
 

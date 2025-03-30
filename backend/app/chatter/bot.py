@@ -526,9 +526,6 @@ Keep it under 15 words."""
     async def schedule_waiting_conversations(self, states: list[State]) -> list[State]:
         """Check all waiting conversations and continue those that are ready.
 
-        This should be called periodically by an external scheduler, like a cron job
-        or a background task in your application.
-
         Args:
             states: List of conversation states to check
 

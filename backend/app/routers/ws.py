@@ -1,4 +1,4 @@
-from typing import Annotated, Dict
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import (
@@ -11,54 +11,14 @@ from fastapi import (
 )
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.chatter.scheduler import get_scheduler
 from app.core.db import get_session
 from app.core.security import get_settings, jwt
+from app.core.ws_manager import manager
 from app.models.chat import ChatConversation, ChatMessage, MessageType
 from app.models.user import User
 
 router = APIRouter()
-
-
-# Store active connections
-class ConnectionManager:
-    """Manage active connections for WebSocket endpoints."""
-
-    def __init__(self):
-        # conversation_id -> set of WebSocket connections
-        self.active_connections: Dict[UUID, set[WebSocket]] = {}
-
-    async def connect(self, websocket: WebSocket, conversation_id: UUID):
-        """Add connection"""
-        if conversation_id not in self.active_connections:
-            self.active_connections[conversation_id] = set()
-        self.active_connections[conversation_id].add(websocket)
-
-    def disconnect(self, websocket: WebSocket, conversation_id: UUID):
-        """Remove connection"""
-        if conversation_id in self.active_connections:
-            self.active_connections[conversation_id].discard(websocket)
-            if not self.active_connections[conversation_id]:
-                del self.active_connections[conversation_id]
-
-    async def broadcast_to_conversation(self, message: dict, conversation_id: UUID):
-        """Broadcast message to connection"""
-        if conversation_id in self.active_connections:
-            disconnected = set()
-            for connection in self.active_connections[conversation_id]:
-                try:
-                    await connection.send_json(message)
-                except WebSocketDisconnect:
-                    disconnected.add(connection)
-                except Exception as e:
-                    print(f"Error broadcasting message: {e}")
-                    disconnected.add(connection)
-
-            # Clean up disconnected clients
-            for connection in disconnected:
-                self.disconnect(connection, conversation_id)
-
-
-manager = ConnectionManager()
 
 
 async def get_current_user_ws(
@@ -228,6 +188,14 @@ async def websocket_endpoint(
                         if message:
                             # Broadcast the message to all clients in the conversation
                             await broadcast_message(message, user)
+
+                            # If this is a user message, notify the scheduler
+                            if message.message_type == MessageType.USER:
+                                scheduler = get_scheduler()
+                                await scheduler.add_user_message(
+                                    conversation_id=message.conversation_id,
+                                    message=message.message,
+                                )
                     except Exception as e:
                         print(f"Error creating message: {e}")
                         continue
