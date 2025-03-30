@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Annotated, Dict
 from uuid import UUID
 
 from fastapi import (
@@ -9,7 +9,7 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
-from sqlmodel import Session
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_session
 from app.core.security import get_settings, jwt
@@ -21,22 +21,27 @@ router = APIRouter()
 
 # Store active connections
 class ConnectionManager:
+    """Manage active connections for WebSocket endpoints."""
+
     def __init__(self):
         # conversation_id -> set of WebSocket connections
         self.active_connections: Dict[UUID, set[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, conversation_id: UUID):
+        """Add connection"""
         if conversation_id not in self.active_connections:
             self.active_connections[conversation_id] = set()
         self.active_connections[conversation_id].add(websocket)
 
     def disconnect(self, websocket: WebSocket, conversation_id: UUID):
+        """Remove connection"""
         if conversation_id in self.active_connections:
             self.active_connections[conversation_id].discard(websocket)
             if not self.active_connections[conversation_id]:
                 del self.active_connections[conversation_id]
 
     async def broadcast_to_conversation(self, message: dict, conversation_id: UUID):
+        """Broadcast message to connection"""
         if conversation_id in self.active_connections:
             disconnected = set()
             for connection in self.active_connections[conversation_id]:
@@ -58,8 +63,9 @@ manager = ConnectionManager()
 
 async def get_current_user_ws(
     websocket: WebSocket,
-    session: Session = Depends(get_session),
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> User:
+    """Get the current user from the WebSocket connection."""
     settings = get_settings()
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -87,7 +93,7 @@ async def get_current_user_ws(
             raise credentials_exception
 
         # Get the user from the database
-        user = session.get(User, UUID(user_id))
+        user = await session.get(User, UUID(user_id))
         if user is None:
             raise credentials_exception
 
@@ -95,18 +101,19 @@ async def get_current_user_ws(
 
     except (jwt.JWTError, Exception) as e:
         print(f"Authentication error: {e}")
-        raise credentials_exception
+        raise credentials_exception from e
 
 
 async def create_message(
-    session: Session,
+    session: Annotated[AsyncSession, Depends(get_session)],
     conversation_id: UUID,
     user_id: UUID,
     content: str,
     message_type: str,
 ) -> dict:
+    """Create a message"""
     # Verify the conversation exists
-    conversation = session.get(ChatConversation, conversation_id)
+    conversation = await session.get(ChatConversation, conversation_id)
     if not conversation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -121,8 +128,8 @@ async def create_message(
         message_type=MessageType(message_type),  # Convert string to enum
     )
     session.add(message)
-    session.commit()
-    session.refresh(message)
+    await session.commit()
+    await session.refresh(message)
 
     # Return a formatted response
     return {
@@ -162,8 +169,9 @@ async def broadcast_message(message: ChatMessage, user: User = None):
 @router.websocket("/ws/conversations")
 async def websocket_endpoint(
     websocket: WebSocket,
-    session: Session = Depends(get_session),
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
+    """WebSocket endpoint for conversations"""
     conversation_id = None
     try:
         # Authenticate the user before accepting the connection
@@ -214,7 +222,9 @@ async def websocket_endpoint(
                         data["payload"].update(message_data)
 
                         # Get the created message object for broadcasting
-                        message = session.get(ChatMessage, UUID(message_data["id"]))
+                        message = await session.get(
+                            ChatMessage, UUID(message_data["id"])
+                        )
                         if message:
                             # Broadcast the message to all clients in the conversation
                             await broadcast_message(message, user)
