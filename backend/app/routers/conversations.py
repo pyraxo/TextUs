@@ -30,8 +30,8 @@ async def get_conversations(
             "customer_id": conv.customer_id,
             "started_at": conv.started_at.isoformat(),
             "ended_at": conv.ended_at.isoformat() if conv.ended_at else None,
-            "scenario_name": conv.customer_scenario.name
-            if conv.customer_scenario
+            "scenario_name": conv.scenario_customer.name
+            if conv.scenario_customer
             else None,
             "latest_message_timestamp": max(
                 (msg.timestamp.isoformat() for msg in conv.messages),
@@ -60,8 +60,8 @@ async def get_conversation(
         "customer_id": conv.customer_id,
         "started_at": conv.started_at.isoformat(),
         "ended_at": conv.ended_at.isoformat() if conv.ended_at else None,
-        "scenario_name": conv.customer_scenario.name
-        if conv.customer_scenario
+        "scenario_name": conv.scenario_customer.name
+        if conv.scenario_customer
         else None,
     }
 
@@ -71,7 +71,7 @@ async def get_conversation(
             "id": msg.id,
             "conversation_id": msg.conversation_id,
             # "sender": f"Customer {conv.customer_id.hex[:8]}" if msg.message_type == MessageType.USER else "Agent",
-            # "sender": conv.customer_scenario.name if msg.message_type == MessageType.USER else "Agent",
+            # "sender": conv.scenario_customer.name if msg.message_type == MessageType.USER else "Agent",
             "sender_id": "Customer"
             if msg.message_type == MessageType.USER
             else "Agent",

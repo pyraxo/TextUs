@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useSchemes } from "@/hooks/use-schemes";
+import { useSchemeScenarios } from "@/hooks/use-scenarios";
+import { Scenario } from "@/types/scenario";
 import {
   ArrowLeft,
   Filter,
@@ -24,97 +25,12 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 
-interface Scenario {
-  id: string;
-  title: string;
-  createdDate: string;
-  assignedTo: string;
-  completionRate: string;
-  avgScore: string;
-  scheme: string;
-}
-
-const mockScenarios: Scenario[] = [
-  {
-    id: "1",
-    title: "It starts with one",
-    createdDate: "15 Jan 2025",
-    assignedTo: "4 Trainees",
-    completionRate: "3/4 (75%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "2",
-    title: "All I know",
-    createdDate: "15 Jan 2025",
-    assignedTo: "3 Trainees",
-    completionRate: "1/3 (33%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "3",
-    title: "It's so unreal",
-    createdDate: "15 Jan 2025",
-    assignedTo: "7 Trainees",
-    completionRate: "5/7 (71%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "4",
-    title: "Watch you go",
-    createdDate: "15 Jan 2025",
-    assignedTo: "2 Trainees",
-    completionRate: "2/2 (100%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "5",
-    title: "I tried so hard and got so far",
-    createdDate: "15 Jan 2025",
-    assignedTo: "4 Trainees",
-    completionRate: "1/4 (25%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "6",
-    title: "But in the end,",
-    createdDate: "15 Jan 2025",
-    assignedTo: "4 Trainees",
-    completionRate: "1/4 (25%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "7",
-    title: "it doesn't even matter",
-    createdDate: "15 Jan 2025",
-    assignedTo: "4 Trainees",
-    completionRate: "4/4 (100%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-  {
-    id: "8",
-    title: "I had to fall to lose it all",
-    createdDate: "15 Jan 2025",
-    assignedTo: "4 Trainees",
-    completionRate: "1/4 (25%)",
-    avgScore: "4.2/5",
-    scheme: "Housing",
-  },
-];
-
 export default function SchemeDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const { data: schemes } = useSchemes();
+  const { data: scenarios } = useSchemeScenarios(params.id);
   const handleScenarioCreate = (scenario: any) => {
     console.log("New scenario created:", scenario);
     toast.success(`"${scenario.title}" has been successfully created.`);
@@ -190,36 +106,37 @@ export default function SchemeDetailPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockScenarios.map((scenario) => (
-                  <TableRow key={scenario.id}>
-                    <TableCell>{scenario.title}</TableCell>
-                    <TableCell>{scenario.createdDate}</TableCell>
-                    {/* <TableCell>{scenario.assignedTo}</TableCell> */}
-                    <TableCell className="text-center">
-                      {scenario.completionRate}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {scenario.avgScore}
-                    </TableCell>
-                    <TableCell className="flex justify-center">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          className="mb-[-4px] mt-[-4px]"
-                        >
-                          <Pencil size={20} />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="mb-[-4px] mt-[-4px]"
-                        >
-                          <Trash size={20} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {scenarios &&
+                  scenarios.map((scenario: Scenario) => (
+                    <TableRow key={scenario.id}>
+                      <TableCell>{scenario.name}</TableCell>
+                      <TableCell>{scenario.created_at}</TableCell>
+                      {/* <TableCell>{scenario.assignedTo}</TableCell> */}
+                      {/* <TableCell className="text-center">
+                        {scenario.completion_rate}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {scenario.avg_score}
+                      </TableCell> */}
+                      <TableCell className="flex justify-center">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="mb-[-4px] mt-[-4px]"
+                          >
+                            <Pencil size={20} />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="mb-[-4px] mt-[-4px]"
+                          >
+                            <Trash size={20} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </CardContent>

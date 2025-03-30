@@ -20,7 +20,7 @@ class ConversationService:
     async def get_conversations(self):
         """Get all conversations."""
         statement = select(ChatConversation).options(
-            selectinload(ChatConversation.customer_scenario),
+            selectinload(ChatConversation.scenario_customer),
             selectinload(ChatConversation.messages),
         )
         results = (await self.session.exec(statement)).all()
@@ -32,7 +32,7 @@ class ConversationService:
             select(ChatConversation)
             .where(ChatConversation.id == conversation_id)
             .options(
-                selectinload(ChatConversation.customer_scenario),
+                selectinload(ChatConversation.scenario_customer),
                 selectinload(ChatConversation.messages),
             )
         )

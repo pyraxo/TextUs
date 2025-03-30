@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
 import { useSchemeScenarios } from "@/hooks/use-scenarios";
+import { useSchemes } from "@/hooks/use-schemes";
 import { startScenario } from "@/lib/api/scenarios";
 import { Scenario } from "@/types/scenario";
 import { UserScenarioSession } from "@/types/user-scenario-session";
@@ -19,26 +20,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-// Map of scheme IDs to their display names
-const schemeNames = {
-  "home-ownership": "Home Ownership",
-  retirement: "Retirement",
-  healthcare: "Healthcare",
-  education: "Education",
-  "employer-services": "Employer Services",
-  "housing-protection": "Housing Protection",
-};
-
-// Map of scheme IDs to their display descriptions
-const schemeDescriptions = {
-  "home-ownership": "Home Ownership Scheme",
-  retirement: "Retirement Scheme",
-  healthcare: "Healthcare Scheme",
-  education: "Education Scheme",
-  "employer-services": "Employer Services Scheme",
-  "housing-protection": "Housing Protection Scheme",
-};
-
 export default function SchemeDetailPage({
   params,
 }: {
@@ -46,6 +27,9 @@ export default function SchemeDetailPage({
 }) {
   const { user } = useAuth();
   const router = useRouter();
+  const { data: schemes } = useSchemes();
+  const scheme = schemes?.find((s) => s.id === params.id);
+
   const [isStarting, setIsStarting] = useState<string | null>(null);
   const isTrainerOrAdmin =
     user?.user_type === "trainer" || user?.user_type === "admin";
@@ -60,12 +44,9 @@ export default function SchemeDetailPage({
   const { data: sessions } = useUserScenarioSessions(user?.id);
 
   // Get scheme name based on ID or use fallback
-  const schemeName =
-    schemeNames[params.id as keyof typeof schemeNames] || "Unknown Scheme";
+  const schemeName = scheme?.name || "Unknown Scheme";
 
-  const schemeDescription =
-    schemeDescriptions[params.id as keyof typeof schemeDescriptions] ||
-    "Unknown Scheme";
+  const schemeDescription = scheme?.description || "";
 
   // Transform scenarios into table items
   const tableItems: ScenarioTableItem[] =
