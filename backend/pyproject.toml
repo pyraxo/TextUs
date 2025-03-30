@@ -28,3 +28,9 @@ dependencies = [
     "langchain-openai>=0.3.11",
     "greenlet>=3.1.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+]
