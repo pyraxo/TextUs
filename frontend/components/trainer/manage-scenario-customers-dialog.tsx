@@ -334,7 +334,16 @@ export const ManageScenarioCustomersDialog: FC<
                     max="1"
                     step="0.1"
                     value={temperature}
-                    onChange={(e) => setTemperature(e.target.value)}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (isNaN(value)) {
+                        setTemperature("");
+                      } else {
+                        setTemperature(
+                          Math.min(Math.max(value, 0), 1).toString()
+                        );
+                      }
+                    }}
                     placeholder="0.7"
                     disabled={isPending}
                   />
