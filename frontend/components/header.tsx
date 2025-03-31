@@ -36,6 +36,15 @@ function getPageInfo(pathname: string, searchParams: URLSearchParams) {
   let mainPath = "/";
   let subPath = "";
 
+  // Special case for conversation sessions
+  if (segments[0] === "conversations" && segments.length > 1) {
+    mainTitle = "Practice";
+    subTitle = "Session";
+    mainPath = "/practice";
+    subPath = `/practice/${segments[1]}`;
+    return { mainTitle, subTitle, mainPath, subPath };
+  }
+
   if (segments.length > 0) {
     // First segment becomes the main title
     mainTitle = formatTitle(segments[0]);
