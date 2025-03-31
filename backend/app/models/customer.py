@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
@@ -25,6 +26,9 @@ class Customer(CustomerBase, table=True):
     __tablename__ = "customers"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+    personality_traits_str: Optional[str] = Field(
+        default=None, sa_column_kwargs={"name": "personality_traits"}
+    )
 
     # Foreign keys
     created_by_id: Optional[UUID] = Field(
@@ -43,6 +47,20 @@ class Customer(CustomerBase, table=True):
         back_populates="customer"
     )
 
+    @property
+    def personality_traits(self) -> List[str]:
+        """Get the personality traits as a list."""
+        return (
+            json.loads(self.personality_traits_str)
+            if self.personality_traits_str
+            else []
+        )
+
+    @personality_traits.setter
+    def personality_traits(self, value: List[str]):
+        """Set the personality traits from a list."""
+        self.personality_traits_str = json.dumps(value) if value else None
+
     def update_timestamp(self):
         """Update the updated_at timestamp."""
         self.updated_at = datetime.now()
@@ -54,6 +72,22 @@ class CustomerRead(CustomerBase):
     id: UUID
     created_by_id: Optional[UUID] = None
     updated_by_id: Optional[UUID] = None
+    personality_traits: List[str] = Field(default_factory=list)
+
+    @classmethod
+    def from_customer(cls, customer: Customer) -> "CustomerRead":
+        """Create a CustomerRead instance from a Customer model."""
+        return cls(
+            id=customer.id,
+            name=customer.name,
+            description=customer.description,
+            profile_prompt=customer.profile_prompt,
+            created_at=customer.created_at,
+            updated_at=customer.updated_at,
+            created_by_id=customer.created_by_id,
+            updated_by_id=customer.updated_by_id,
+            personality_traits=customer.personality_traits,
+        )
 
 
 class CustomerCreate(CustomerBase):
@@ -69,3 +103,4 @@ class CustomerUpdate(SQLModel):
     description: Optional[str] = None
     profile_prompt: Optional[str] = None
     updated_by_id: Optional[UUID] = None
+    personality_traits: Optional[List[str]] = None

@@ -1,5 +1,6 @@
 "use client";
 
+import { NewScenarioDialog } from "@/components/trainer/new-scenario-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,7 +17,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
+import { toast } from "sonner";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -30,6 +31,10 @@ export function DataTable<TData, TValue>({
   title,
   emptyMessage = "No results.",
 }: DataTableProps<TData, TValue>) {
+  const handleScenarioCreate = (scenario: any) => {
+    console.log("New scenario created:", scenario);
+    toast.success(`"${scenario.title}" has been successfully created.`);
+  };
   const table = useReactTable({
     data,
     columns,
@@ -40,6 +45,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {title && <h2 className="text-2xl font-semibold">{title}</h2>}
+      <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
       <div className="rounded-md shadow-md dark:border-0 bg-card">
         <Table>
           <TableHeader>

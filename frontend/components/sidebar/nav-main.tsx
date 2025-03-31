@@ -2,6 +2,7 @@
 import {
   BotMessageSquare,
   ClipboardList,
+  Contact,
   LayoutDashboard,
   PieChart,
   ShieldCheck,
@@ -50,6 +51,11 @@ const navTrainer = [
     title: "Manage Scenarios",
     url: "/trainer/schemes",
     icon: BotMessageSquare,
+  },
+  {
+    title: "Manage Agents",
+    url: "/trainer/agents",
+    icon: Contact,
   },
   {
     title: "Manage Trainees",

@@ -86,7 +86,7 @@ async def get_current_user(
         raise credentials_exception
 
     # Query the database to get the user
-    user = session.get(User, token_data.user_id)
+    user = await session.get(User, token_data.user_id)
     if user is None:
         raise credentials_exception
     return user

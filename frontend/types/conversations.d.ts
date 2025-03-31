@@ -1,19 +1,21 @@
+import { UUID } from 'crypto';
+
 export enum MessageType {
   USER = 'user',
   CUSTOMER = 'customer'
 }
 
 export interface Message {
-  id: string;
+  id: UUID;
   content: string;
   message_type: MessageType;
   timestamp: string;
 }
 
 export interface Conversation {
-  id: string;
-  scenario_id: string;
-  customer_id: string;
+  id: UUID;
+  scenario_id: UUID;
+  customer_id: UUID;
   started_at: string;
   ended_at: string | null;
   scenario_name: string | null;

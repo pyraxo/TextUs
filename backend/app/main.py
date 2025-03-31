@@ -11,14 +11,24 @@ from app.core.db import close_db, get_session
 from app.core.middleware import AuthCookieMiddleware
 from app.core.rate_limiter import RateLimiter
 from app.models.user import User
-from app.routers import admin, auth, conversations, rag, scenarios, schemes, users, ws
+from app.routers import (
+    admin_router,
+    auth_router,
+    conversations_router,
+    customers_router,
+    rag_router,
+    scenarios_router,
+    schemes_router,
+    users_router,
+    ws_router,
+)
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    # Initialize database and create tables
+    """Lifespan for the FastAPI app."""
 
     # Start the conversation scheduler
     scheduler = get_scheduler(session_factory=get_session)
@@ -51,14 +61,15 @@ app.add_middleware(RateLimiter)
 app.add_middleware(AuthCookieMiddleware)
 
 # Include routers
-app.include_router(auth.router)
-app.include_router(admin.router)
-app.include_router(users.router)
-app.include_router(scenarios.router)
-app.include_router(schemes.router)
-app.include_router(rag.router)
-app.include_router(conversations.router)
-app.include_router(ws.router)
+app.include_router(auth_router)
+app.include_router(admin_router)
+app.include_router(users_router)
+app.include_router(scenarios_router)
+app.include_router(schemes_router)
+app.include_router(rag_router)
+app.include_router(conversations_router)
+app.include_router(ws_router)
+app.include_router(customers_router)
 
 
 @app.get("/")

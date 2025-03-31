@@ -100,7 +100,6 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     """Get current authenticated user."""
-    current_user = await current_user
     return UserRead(
         id=current_user.id,
         name=current_user.name,
