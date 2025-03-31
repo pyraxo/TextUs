@@ -12,7 +12,7 @@ from app.models.scenario import (
     ScenarioUpdate,
     ScenarioUpdateHistory,
 )
-from app.models.scenario_customer import ScenarioCustomer
+from app.models.scenario_customer import ScenarioCustomer, ScenarioCustomerUpdate
 from app.models.scenario_session import ScenarioSession
 from app.services.scenario_service import ScenarioService
 from app.services.trainee_service import TraineeService
@@ -108,3 +108,25 @@ async def start_scenario(
         trainee_id=parse_uuid(scenario_data.trainee_id),
         scenario_id=parse_uuid(scenario_id),
     )
+
+
+@router.put("/{scenario_id}/customers/{customer_id}")
+async def update_scenario_customer(
+    scenario_id: str,
+    customer_id: str,
+    customer_data: ScenarioCustomerUpdate,
+    scenario_service: Annotated[ScenarioService, Depends()],
+) -> ScenarioCustomer:
+    """Update a customer in a scenario."""
+    return await scenario_service.update_scenario_customer(
+        scenario_id, customer_id, customer_data
+    )
+
+
+@router.delete("/{scenario_id}")
+async def delete_scenario(
+    scenario_id: str,
+    scenario_service: Annotated[ScenarioService, Depends()],
+) -> None:
+    """Delete a scenario."""
+    return await scenario_service.delete_scenario(scenario_id)

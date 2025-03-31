@@ -14,7 +14,7 @@ from app.models.scenario import (
     ScenarioRemoveCustomer,
     ScenarioUpdate,
 )
-from app.models.scenario_customer import ScenarioCustomer
+from app.models.scenario_customer import ScenarioCustomer, ScenarioCustomerUpdate
 
 
 class ScenarioService:
@@ -90,8 +90,15 @@ class ScenarioService:
         if not customer:
             raise HTTPException(status_code=404, detail="Customer not found")
 
+        # Explicitly load scenario_customers before appending to it
+        await self.session.refresh(scenario, ["scenario_customers"])
+
+        # Use provided name or default to customer name
+        customer_name = customer_data.name if customer_data.name else customer.name
+
+        # Now we can safely append to the relationship
         scenario.scenario_customers.append(
-            ScenarioCustomer(customer=customer, name=customer.name, chat_history=[])
+            ScenarioCustomer(customer=customer, name=customer_name)
         )
 
         self.session.add(scenario)
@@ -106,25 +113,86 @@ class ScenarioService:
     ) -> Scenario:
         """Remove a customer from a scenario."""
         scenario = await self.get_scenario(scenario_id)
+        customer_uuid = customer_data.customer_id
 
-        # Find the customer scenario to remove
-        scenario_customer_index = None
-        for i, cs in enumerate(scenario.scenario_customers):
-            if cs.customer_id == customer_data.customer_id:
-                scenario_customer_index = i
-                break
+        # Explicitly load scenario_customers before accessing it
+        await self.session.refresh(scenario, ["scenario_customers"])
 
-        if scenario_customer_index is None:
+        # Use the id field from customer_data to specifically identify which customer instance to remove
+        if hasattr(customer_data, "id") and customer_data.id:
+            # If specific scenario_customer ID is provided, use it
+            statement = select(ScenarioCustomer).where(
+                ScenarioCustomer.id == customer_data.id,
+                ScenarioCustomer.scenario_id == scenario.id,
+            )
+            scenario_customer = (await self.session.exec(statement)).first()
+        else:
+            # Find the first scenario_customer with matching customer_id
+            # This is the legacy behavior but can cause issues with multiple instances
+            scenario_customer = None
+            for cs in scenario.scenario_customers:
+                if cs.customer_id == customer_uuid:
+                    scenario_customer = cs
+                    break
+
+        if not scenario_customer:
             raise HTTPException(
                 status_code=400, detail="Customer not found in scenario"
             )
 
-        scenario.scenario_customers.pop(scenario_customer_index)
-
-        self.session.add(scenario)
+        # Instead of modifying the relationship directly, delete the scenario_customer
+        await self.session.delete(scenario_customer)
         await self.session.commit()
-        await self.session.refresh(scenario)
+
+        # Refresh the scenario to reflect the changes
+        await self.session.refresh(scenario, ["scenario_customers"])
         return scenario
+
+    async def update_scenario_customer(
+        self,
+        scenario_id: str,
+        customer_id: str,
+        customer_data: ScenarioCustomerUpdate,
+    ) -> ScenarioCustomer:
+        """Update a customer in a scenario."""
+        scenario = await self.get_scenario(scenario_id)
+        customer_uuid = parse_uuid(customer_id)
+
+        # Explicitly load scenario_customers before accessing
+        await self.session.refresh(scenario, ["scenario_customers"])
+
+        # Find the scenario_customer to update
+        scenario_customer = None
+        for cs in scenario.scenario_customers:
+            if cs.customer_id == customer_uuid:
+                scenario_customer = cs
+                break
+
+        if not scenario_customer:
+            raise HTTPException(
+                status_code=404, detail="Customer not found in scenario"
+            )
+
+        # Update scenario_customer fields
+        for key, value in customer_data.model_dump(exclude_unset=True).items():
+            if key == "expected_queries":
+                scenario_customer.expected_queries = value
+            else:
+                setattr(scenario_customer, key, value)
+
+        self.session.add(scenario_customer)
+        await self.session.commit()
+        await self.session.refresh(scenario_customer)
+        return scenario_customer
+
+    async def delete_scenario(self, scenario_id: str) -> None:
+        """Delete a scenario by ID."""
+        scenario = await self.get_scenario(scenario_id)
+
+        # Delete the scenario
+        await self.session.delete(scenario)
+        await self.session.commit()
+        return None
 
     # async def update_scenario_history(
     #     self,

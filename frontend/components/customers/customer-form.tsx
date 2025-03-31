@@ -140,11 +140,13 @@ export function CustomerForm({
   return (
     <ScrollArea className="h-full">
       <div className="space-y-6 p-6">
-        <div>
-          <h2 className="text-2xl font-semibold">Edit Customer</h2>
-          <p className="text-sm text-muted-foreground">
-            Update customer details and profile information
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-semibold">Edit Customer</h2>
+            <p className="text-sm text-muted-foreground">
+              Update customer details and profile information
+            </p>
+          </div>
         </div>
 
         <div className="space-y-4">

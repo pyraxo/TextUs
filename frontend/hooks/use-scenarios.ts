@@ -1,4 +1,4 @@
-import { getScenarios, updateScenario } from '@/lib/api/scenarios';
+import { deleteScenario, getScenarios, updateScenario } from '@/lib/api/scenarios';
 import { Scenario, ScenarioUpdate } from '@/types/scenario';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -39,6 +39,21 @@ export function useUpdateScenario() {
     mutationFn: ({ scenarioId, updates }: { scenarioId: string; updates: ScenarioUpdate }) =>
       updateScenario(scenarioId, updates),
     onSuccess: (_data, { scenarioId }) => {
+      // Invalidate all scenario queries to refetch with updated data
+      queryClient.invalidateQueries({ queryKey: scenarioKeys.all });
+    },
+  });
+}
+
+/**
+ * Hook to delete a scenario
+ */
+export function useDeleteScenario() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (scenarioId: string) => deleteScenario(scenarioId),
+    onSuccess: () => {
       // Invalidate all scenario queries to refetch with updated data
       queryClient.invalidateQueries({ queryKey: scenarioKeys.all });
     },

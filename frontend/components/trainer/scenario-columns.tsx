@@ -1,7 +1,17 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useUpdateScenario } from "@/hooks/use-scenarios";
+import { useDeleteScenario, useUpdateScenario } from "@/hooks/use-scenarios";
 import { Scenario, ScenarioUpdate } from "@/types/scenario";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
@@ -9,14 +19,19 @@ import { Bot, Pencil, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EditScenarioDialog } from "./edit-scenario-dialog";
+import { ManageScenarioCustomersDialog } from "./manage-scenario-customers-dialog";
 
 export type ScenarioTableItem = Scenario;
 
 export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
-  const [editingScenario, setEditingScenario] =
-    useState<ScenarioTableItem | null>(null);
-
-  const { mutate: updateScenario, isPending } = useUpdateScenario();
+  const [editingScenario, setEditingScenario] = useState<Scenario | null>(null);
+  const [managingCustomersScenario, setManagingCustomersScenario] =
+    useState<Scenario | null>(null);
+  const [deletingScenario, setDeletingScenario] = useState<Scenario | null>(
+    null
+  );
+  const { mutate: updateScenario, isPending: isUpdating } = useUpdateScenario();
+  const { mutate: deleteScenario, isPending: isDeleting } = useDeleteScenario();
 
   const handleScenarioEdit = (scenarioId: string, updates: ScenarioUpdate) => {
     updateScenario(
@@ -34,6 +49,22 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
       }
     );
   };
+
+  const handleScenarioDelete = (scenarioId: string) => {
+    deleteScenario(scenarioId, {
+      onSuccess: () => {
+        toast.success("Scenario deleted successfully");
+        setDeletingScenario(null);
+      },
+      onError: (error) => {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to delete scenario"
+        );
+      },
+    });
+  };
+
+  const isPending = isUpdating || isDeleting;
 
   return [
     {
@@ -83,13 +114,18 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
             <Button
               variant="outline"
               className="mb-[-4px] mt-[-4px]"
-              onClick={() => {}}
+              onClick={() => setManagingCustomersScenario(row.original)}
               disabled={isPending}
             >
               <Bot size={20} />
               Bots
             </Button>
-            <Button variant="outline" className="mb-[-4px] mt-[-4px]">
+            <Button
+              variant="outline"
+              className="mb-[-4px] mt-[-4px] hover:bg-red-500 dark:hover:bg-red-500 hover:text-white"
+              onClick={() => setDeletingScenario(row.original)}
+              disabled={isPending}
+            >
               <Trash size={20} />
             </Button>
           </div>
@@ -102,6 +138,43 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
               onScenarioEdit={handleScenarioEdit}
             />
           )}
+
+          {managingCustomersScenario && (
+            <ManageScenarioCustomersDialog
+              scenario={managingCustomersScenario}
+              open={true}
+              onOpenChange={(open) =>
+                !open && setManagingCustomersScenario(null)
+              }
+            />
+          )}
+
+          <AlertDialog
+            open={!!deletingScenario}
+            onOpenChange={(open) => !open && setDeletingScenario(null)}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Scenario</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this scenario? This action
+                  cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() =>
+                    deletingScenario &&
+                    handleScenarioDelete(deletingScenario.id)
+                  }
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       ),
     },

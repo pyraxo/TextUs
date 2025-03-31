@@ -23,6 +23,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   title?: string;
   emptyMessage?: string;
+  showNewScenarioDialog?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -30,6 +31,7 @@ export function DataTable<TData, TValue>({
   data,
   title,
   emptyMessage = "No results.",
+  showNewScenarioDialog = true,
 }: DataTableProps<TData, TValue>) {
   const handleScenarioCreate = (scenario: any) => {
     console.log("New scenario created:", scenario);
@@ -45,7 +47,9 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {title && <h2 className="text-2xl font-semibold">{title}</h2>}
-      <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
+      {showNewScenarioDialog && (
+        <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
+      )}
       <div className="rounded-md shadow-md dark:border-0 bg-card">
         <Table>
           <TableHeader>

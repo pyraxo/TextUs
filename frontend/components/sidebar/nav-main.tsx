@@ -94,6 +94,10 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ) {
       return url === "/trainer/schemes";
     }
+
+    if (pathname?.includes("/practice") && pathname !== "/practice") {
+      return url === "/practice";
+    }
     // Check if the current path matches the item URL exactly
     return pathname === url;
   };

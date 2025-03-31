@@ -169,14 +169,6 @@ export default function SchemeDetailPage({
               </h1>
               <h2 className="text-sm">{schemeDescription}</h2>
             </div>
-            {isTrainerOrAdmin && (
-              <Button
-                variant="default"
-                className="bg-primary text-primary-foreground"
-              >
-                Edit Scheme
-              </Button>
-            )}
           </div>
         </div>
       </div>
@@ -191,6 +183,7 @@ export default function SchemeDetailPage({
               isStarting,
             })}
             data={currentPendingScenarios}
+            showNewScenarioDialog={false}
           />
           {pendingScenarios.length > itemsPerPage && (
             <div className="flex justify-center items-center gap-2">
@@ -250,6 +243,7 @@ export default function SchemeDetailPage({
               onRetry: handleStartScenario,
             })}
             data={currentCompletedScenarios}
+            showNewScenarioDialog={false}
           />
           {completedScenarios.length > itemsPerPage && (
             <div className="flex justify-center items-center gap-2">

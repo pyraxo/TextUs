@@ -85,3 +85,4 @@ class ScenarioCustomerUpdate(SQLModel):
     scenario_prompt: Optional[str] = None
     expected_queries: Optional[List[str]] = None
     feedback_ai: Optional[str] = None
+    temperature: Optional[float] = None

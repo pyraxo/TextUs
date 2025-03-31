@@ -84,12 +84,14 @@ class ScenarioAddCustomer(SQLModel):
     """Model for adding a customer to a scenario."""
 
     customer_id: UUID
+    name: Optional[str] = None
 
 
 class ScenarioRemoveCustomer(SQLModel):
     """Model for removing a customer from a scenario."""
 
     customer_id: UUID
+    id: Optional[UUID] = None  # Specific ScenarioCustomer ID to remove
 
 
 class ScenarioUpdateCustomer(SQLModel):
