@@ -58,7 +58,7 @@ export function CustomerTable({
   return (
     <div className="rounded-none border-0 bg-card">
       <Table className="w-full">
-        <TableHeader className="sticky top-0 bg-card z-10">
+        <TableHeader className="top-0 bg-card z-10">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
