@@ -11,13 +11,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
 import { useSchemeScenarios } from "@/hooks/use-scenarios";
 import { useSchemes } from "@/hooks/use-schemes";
-import { startScenario } from "@/lib/api/scenarios";
+import { getActiveScenarioSession, startScenario } from "@/lib/api/scenarios";
 import { Scenario } from "@/types/scenario";
 import { UserScenarioSession } from "@/types/user-scenario-session";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function SchemeDetailPage({
@@ -31,6 +31,8 @@ export default function SchemeDetailPage({
   const scheme = schemes?.find((s) => s.slug === params.id);
 
   const [isStarting, setIsStarting] = useState<string | null>(null);
+  const [activeSession, setActiveSession] =
+    useState<UserScenarioSession | null>(null);
   const isTrainerOrAdmin =
     user?.user_type === "trainer" || user?.user_type === "admin";
   const [pendingCurrentPage, setPendingCurrentPage] = useState(1);
@@ -42,6 +44,15 @@ export default function SchemeDetailPage({
 
   // Get user scenario sessions data
   const { data: sessions } = useUserScenarioSessions(user?.id);
+
+  // Fetch active session on mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      getActiveScenarioSession(user.id)
+        .then(setActiveSession)
+        .catch(console.error);
+    }
+  }, [user?.id]);
 
   // Get scheme name based on ID or use fallback
   const schemeName = scheme?.name || "Unknown Scheme";
@@ -56,6 +67,12 @@ export default function SchemeDetailPage({
       );
       const isCompleted = session?.end_timestamp != null;
 
+      // Check if this scenario is the active one
+      const isActiveScenario = activeSession?.scenario_id === scenario.id;
+
+      // Check if there's any active scenario at all
+      const activeScenarioExists = activeSession !== null;
+
       return {
         id: scenario.id,
         name: scenario.name,
@@ -63,6 +80,8 @@ export default function SchemeDetailPage({
         status: isCompleted ? "completed" : "pending",
         dateCompleted: session?.end_timestamp || undefined,
         metrics: session?.metrics,
+        isActiveScenario,
+        activeScenarioExists,
       };
     }) || [];
 

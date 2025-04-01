@@ -16,9 +16,17 @@ class MessageType(str, Enum):
     BOT = "bot"
 
 
+class ConversationStatus(str, Enum):
+    IDLE = "idle"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class ChatMessageBase(SQLModel):
     """Base Chat message model with common fields."""
 
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     sender_id: str
     message: str
     message_type: MessageType
@@ -30,20 +38,11 @@ class ChatMessage(ChatMessageBase, table=True):
 
     __tablename__ = "chat_messages"
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-
     # Foreign keys
     conversation_id: UUID = Field(foreign_key="chat_conversations.id")
 
     # Relationships
     conversation: Optional["ChatConversation"] = Relationship(back_populates="messages")
-
-
-class ChatMessageRead(ChatMessageBase):
-    """Chat message model for reading."""
-
-    id: UUID
-    conversation_id: UUID
 
 
 class ChatMessageCreate(ChatMessageBase):
@@ -55,6 +54,7 @@ class ChatMessageCreate(ChatMessageBase):
 class ChatConversationBase(SQLModel):
     """Base Chat conversation model with common fields."""
 
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     scenario_customer_id: UUID
 
 
@@ -63,7 +63,6 @@ class ChatConversation(ChatConversationBase, table=True):
 
     __tablename__ = "chat_conversations"
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
     started_at: datetime = Field(default_factory=datetime.now)
     ended_at: Optional[datetime] = None
 
@@ -98,22 +97,7 @@ class ChatConversation(ChatConversationBase, table=True):
         self.messages_json = json.dumps(value)
 
 
-class ChatConversationRead(ChatConversationBase):
-    """Chat conversation model for reading."""
-
-    id: UUID
-    started_at: datetime
-    ended_at: Optional[datetime] = None
-    messages: List[ChatMessageRead]
-
-
 class ChatConversationCreate(ChatConversationBase):
     """Chat conversation model for creation."""
 
-    initial_message: Optional[ChatMessageCreate] = None
-
-
-class ConversationResponse(ChatConversationBase):
-    id: UUID
-    started_at: datetime
-    ended_at: Optional[datetime] = None
+    pass

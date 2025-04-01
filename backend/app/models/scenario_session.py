@@ -52,6 +52,24 @@ class ScenarioSessionBase(SQLModel):
     scenario_id: UUID = Field(foreign_key="scenarios.id")
     start_timestamp: datetime = Field(default_factory=datetime.now)
     end_timestamp: Optional[datetime] = Field(default=None)
+    status: Optional[SessionStatus] = Field(default=None)
+    # metrics_json: Optional[str] = Field(default=None)
+
+    # @property
+    # def metrics(self) -> Optional[SessionMetrics]:
+    #     """Get the session metrics."""
+    #     if not self.metrics_json:
+    #         return None
+    #     metrics_dict = json.loads(self.metrics_json)
+    #     return SessionMetrics(**metrics_dict)
+
+    # @metrics.setter
+    # def metrics(self, value: SessionMetrics):
+    #     """Set the session metrics."""
+    #     if value is None:
+    #         self.metrics_json = None
+    #     else:
+    #         self.metrics_json = json.dumps(value.model_dump())
 
 
 class ScenarioSession(ScenarioSessionBase, table=True):
@@ -71,6 +89,8 @@ class ScenarioSession(ScenarioSessionBase, table=True):
 
     def add_chat_conversation(self, chat_conversation: "ChatConversation"):
         """Add a chat conversation to the session."""
+        if self.chat_conversations is None:
+            self.chat_conversations = []
         self.chat_conversations.append(chat_conversation)
 
     def get_all_conversations(self):
@@ -80,7 +100,9 @@ class ScenarioSession(ScenarioSessionBase, table=True):
     def get_scenario_conversations(self, scenario_id: UUID):
         """Get all conversations for a specific scenario."""
         return [
-            conv for conv in self.chat_conversations if conv.scenario_id == scenario_id
+            conv
+            for conv in self.chat_conversations
+            if conv.scenario_customer.scenario_id == scenario_id
         ]
 
     def get_customer_scenario_conversation(

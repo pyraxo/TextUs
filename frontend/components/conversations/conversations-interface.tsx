@@ -384,8 +384,8 @@ export function ConversationsInterface() {
                     <div
                       className={`rounded-lg px-4 py-2 max-w-[80%] ${
                         msg.message_type === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          ? "bg-cpf-light-teal text-primary-foreground"
+                          : "bg-card shadow-sm"
                       }`}
                     >
                       <div className="flex items-baseline gap-2">
@@ -393,7 +393,7 @@ export function ConversationsInterface() {
                           className={`text-sm font-medium ${
                             msg.message_type === "user"
                               ? "text-foreground"
-                              : "text-primary-foreground"
+                              : "text-card-foreground"
                           }`}
                         >
                           {msg.message_type === "user" ? "You" : "Customer"}
@@ -402,7 +402,7 @@ export function ConversationsInterface() {
                           className={`text-xs opacity-70 ${
                             msg.message_type === "user"
                               ? "text-foreground"
-                              : "text-primary-foreground"
+                              : "text-card-foreground"
                           }`}
                         >
                           {formatMessageTime(msg.timestamp)}
@@ -412,7 +412,7 @@ export function ConversationsInterface() {
                         className={`mt-1 text-sm ${
                           msg.message_type === "user"
                             ? "text-foreground"
-                            : "text-primary-foreground"
+                            : "text-card-foreground"
                         }`}
                       >
                         {msg.content}

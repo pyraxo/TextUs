@@ -11,7 +11,6 @@ from fastapi import (
 )
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.chatter.scheduler import get_scheduler
 from app.core.db import get_session
 from app.core.security import get_settings, jwt
 from app.core.ws_manager import manager
@@ -190,12 +189,12 @@ async def websocket_endpoint(
                             await broadcast_message(message, user)
 
                             # If this is a user message, notify the scheduler
-                            if message.message_type == MessageType.USER:
-                                scheduler = get_scheduler()
-                                await scheduler.add_user_message(
-                                    conversation_id=message.conversation_id,
-                                    message=message.message,
-                                )
+                            # if message.message_type == MessageType.USER:
+                            #     scheduler = get_scheduler(session_factory=get_session)
+                            #     await scheduler.add_user_message(
+                            #         conversation_id=message.conversation_id,
+                            #         message=message.message,
+                            #     )
                     except Exception as e:
                         print(f"Error creating message: {e}")
                         continue

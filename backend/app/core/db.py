@@ -8,7 +8,8 @@ settings = get_settings()
 
 engine = create_async_engine(
     settings.database_url,
-    echo=settings.environment == "development",
+    # echo=settings.environment == "development",
+    echo=False,
     future=True,
 )
 

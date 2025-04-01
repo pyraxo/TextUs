@@ -1,17 +1,19 @@
+import { UUID } from "crypto";
+
 export enum UserType {
   TRAINEE = "trainee",
   TRAINER = "trainer",
-  ADMIN = "admin"
+  ADMIN = "admin",
 }
 
 export interface User {
-  id: string;
+  id: UUID;
   name: string;
   username: string;
   email: string;
   user_type: UserType;
-  joined_at: string;
-  last_login: string;
+  joined_at: Date;
+  last_login: Date;
 }
 
 export interface UserCreate {

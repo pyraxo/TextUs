@@ -18,29 +18,54 @@ Guidelines for maintaining this changelog:
 4. Keep entries clear and concise
 5. Reference relevant issue/PR numbers when applicable
 
-## [2025-03-30]
+## [2025-03-31]
+
+### Added
+
+- Implemented Running Customer Scenarios feature:
+  - Enhanced scenario start endpoint to initialize multiple concurrent conversations
+  - Added automatic chat initialization for all scenario customers
+  - Implemented dynamic delay mechanism based on message length and AI personality
+  - Added conversation state management with patience levels
+  - Added impatient follow-up mechanism for more realistic interactions
 
 ### Enhanced
 
-- Updated Data Model documentation in PRD:
-  - Clarified relationships between Schemes, Scenarios, Customers, and ScenarioCustomers
-  - Added detailed explanation of Customer adaptation in scenarios
-  - Added Data Flow section explaining scenario creation and training flow
-- Updated ScenarioCustomer model:
-  - Renamed profile_prompt to scenario_prompt for clarity
-  - Added expected_queries field for scenario-specific questions
-  - Enhanced documentation of customer adaptation mechanism
-- Refactored codebase:
-  - Implemented dedicated type files
-  - Created Trainee management service
-  - Enhanced UUID parsing
-- Improved UI/UX:
-  - Implemented Sonner for toast notifications
-  - Fixed table row background color in dark mode
+- Updated TraineeService to handle multiple concurrent conversations
+- Improved ChatBot workflow with state machine for conversation management
+- Enhanced ConversationScheduler to manage multiple active chats
+- Added comprehensive documentation for Running Customer Scenarios feature
+
+## [2025-03-30]
+
+### Added
+
+- Implemented scenario customer management features
+- Added Customers service and router
+- Added Agents management view
+- Added conversation scheduler and WebSocket connection management
+- Added new chatbot workflow
+- Added endpoint to GET customers for scenario_id
+- Added testing framework and user service tests
+
+### Enhanced
+
+- Enhanced SchemeDetailPage with dynamic scenario management
+- Improved data loading with Skeleton components in Welcome page
+- Updated routing to use slugs instead of IDs for practice pages
+- Refactored conversation and scheme handling
+- Updated WebSocket router to use AsyncSession
+- Moved chat history from scenario_customer to chat model
+- Added scheme icon picker and updated scheme model
+- Updated database connection handling
+- Introduced new models
 
 ### Fixed
 
-- Fixed authentication token expiration handling
+- Fixed header title
+- Fixed temperature range to be between 0 and 1
+- Fixed sticky header behavior in customer table
+- Fixed UUID parsing issues
 
 ## [2025-03-27]
 
