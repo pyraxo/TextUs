@@ -70,7 +70,7 @@ Database configuration is controlled by environment variables:
 - Development: `ENVIRONMENT=development` (SQLite)
 
   ```
-  DATABASE_URL=sqlite:///./data/textus.db
+  DATABASE_URL=sqlite+aiosqlite:///./data/textus.db
   ```
 
 - Production: `ENVIRONMENT=production` (PostgreSQL)
@@ -90,14 +90,14 @@ uv run alembic upgrade head
 2. Seed the database with initial test data (development only):
 
 ```sh
-uv run python scripts/seed_db.py
+uv run python scripts/init_all.py
 ```
 
 This will create test users with the following credentials:
 
-- Admin: username=admin, password=secure_password
-- Trainer: username=trainer, password=password
-- Trainee: username=trainee, password=password
+- Admin: username=admin, password=admin
+- Trainer: username=trainer, password=123
+- Trainee: username=test, password=test
 
 ### Database Migrations
 
@@ -120,6 +120,16 @@ uv run alembic upgrade head
 ```sh
 uv run alembic downgrade -1  # Rollback one step
 uv run alembic downgrade base  # Rollback all migrations
+```
+
+### Running Tests
+
+We use pytest for our test suite. Tests are completed in `tests/`
+
+1. Run the test suite:
+
+```sh
+pytest tests
 ```
 
 ## API Documentation
