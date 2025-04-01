@@ -1,5 +1,6 @@
 import os
 from functools import lru_cache
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,7 +9,7 @@ class Settings(BaseSettings):
     """Application settings."""
 
     # API Keys
-    openai_api_key: str
+    openai_api_key: Optional[str] = None
 
     # Environment
     environment: str = "development"  # "development" or "production"
