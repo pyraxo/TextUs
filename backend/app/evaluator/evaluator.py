@@ -3,7 +3,7 @@ import logging
 from dotenv import load_dotenv
 from openai import OpenAI
 from app.evaluator.eval_types import Chat_Transcript
-from app.services.chroma_db import query_chroma
+from app.services.chroma_db import query_chroma, load_fixed_csv_to_chroma
 
 #for the RAG to work, ensure that the knowledge base has been loaded into chroma
 
@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+#only load the csv once
+#load_fixed_csv_to_chroma()
 
 def extract_customer_queries(chat_transcript: str) -> str:
     """
@@ -30,7 +32,7 @@ def extract_customer_queries(chat_transcript: str) -> str:
                 {"role": "system", "content": "You are an AI assistant that extracts customer queries from chat transcripts."},
                 {"role": "user", "content": extraction_prompt}
             ],
-            max_tokens=300,
+            max_tokens=500,
         )
 
         extracted_queries = response.choices[0].message.content.strip()
@@ -83,7 +85,7 @@ def evaluate_agent_response(chat_transcript: Chat_Transcript):
     system_message = (
         f"{prompt}\n\n"
         f"---\n"
-        f"Additional Knowledge (RAG Results):\n"
+        f"Below is the retrieved context for the customer's query, the accuracy of the agent's response should be graded based on the context below:\n"
         f"{knowledge_text}"
     )
 
@@ -114,6 +116,5 @@ chat_transcript = Chat_Transcript(
     timestamps=""
 )
 
-# Call the evaluation function
 evaluation_result = evaluate_agent_response(chat_transcript)
 print("\nEvaluation Result:\n", evaluation_result)
