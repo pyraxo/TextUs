@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from app.services.chroma_db import query_chroma
+from app.services.chroma_db import query_chroma , answer_query
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
 
