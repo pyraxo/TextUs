@@ -76,10 +76,6 @@ async def resume_chatbot(
         chat_message: ChatMessage = await session.get(ChatMessage, message_id)
         user = await session.get(User, chat_message.trainee_id)
 
-        from app.routers.ws import broadcast_message
-
-        await broadcast_message(chat_message, user)
-
         await chatbot.ainvoke(
             Command(resume=user_message),
             config={
@@ -89,3 +85,7 @@ async def resume_chatbot(
                 },
             },
         )
+
+        from app.routers.ws import broadcast_message
+
+        await broadcast_message(chat_message, user)

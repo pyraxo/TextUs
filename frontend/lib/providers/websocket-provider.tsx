@@ -8,7 +8,7 @@ export type WebSocketMessage = {
   type: "MESSAGE" | "TYPING" | "STATUS_CHANGE";
   conversationId: string;
   payload: any;
-  timestamp: string;
+  timestamp?: string;
 };
 
 // Define WebSocket connection states
@@ -101,7 +101,18 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
       ws.onmessage = (event) => {
         try {
+          console.log("Raw WebSocket message:", event.data);
           const message = JSON.parse(event.data) as WebSocketMessage;
+
+          console.log("Received packet:", message);
+          console.log("Message type:", message.type);
+          console.log("Message format check:", {
+            hasType: !!message.type,
+            hasConversationId: !!message.conversationId,
+            hasPayload: !!message.payload,
+            hasTimestamp: !!message.timestamp,
+            payloadProps: message.payload ? Object.keys(message.payload) : [],
+          });
 
           // Update conversation state if it's a message
           if (

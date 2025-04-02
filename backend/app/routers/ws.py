@@ -105,6 +105,8 @@ async def create_message(
         await session.commit()
         await session.refresh(message)
 
+        await broadcast_message(message)
+
         # Return a formatted response
         return {
             "id": str(message.id),
@@ -141,6 +143,8 @@ async def broadcast_message(message: ChatMessage, user: User = None):
             "id": str(user.id),
             "name": user.name,
         }
+
+    print(f"i DON'T KNOW WHAT'S GOING ON {message_data}")
 
     await manager.broadcast_to_conversation(message_data, message.conversation_id)
 

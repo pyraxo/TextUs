@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -30,19 +30,6 @@ class SessionMetrics(SQLModel):
     conversations: int
     avg_response_time: Optional[float]  # Average time between messages
     completion_rate: float  # Percentage of customer scenarios attempted
-
-
-class ScenarioSessionChat(SQLModel, table=True):
-    """Association table for ScenarioSession and ChatConversation."""
-
-    __tablename__ = "scenario_session_chats"
-
-    scenario_session_id: UUID = Field(
-        foreign_key="scenario_sessions.id", primary_key=True
-    )
-    chat_conversation_id: UUID = Field(
-        foreign_key="chat_conversations.id", primary_key=True
-    )
 
 
 class ScenarioSessionBase(SQLModel):
@@ -82,34 +69,34 @@ class ScenarioSession(ScenarioSessionBase, table=True):
 
     user: Optional["User"] = Relationship(back_populates="scenario_sessions")
     scenario: Optional["Scenario"] = Relationship(back_populates="scenario_sessions")
-    chat_conversations: List["ChatConversation"] = Relationship(
-        back_populates="scenario_session",
-        sa_relationship_kwargs={"secondary": "scenario_session_chats"},
+    chat_conversation: Optional["ChatConversation"] = Relationship(
+        back_populates="scenario_session"
     )
 
     def add_chat_conversation(self, chat_conversation: "ChatConversation"):
         """Add a chat conversation to the session."""
-        if self.chat_conversations is None:
-            self.chat_conversations = []
-        self.chat_conversations.append(chat_conversation)
+        self.chat_conversation = chat_conversation
 
     def get_all_conversations(self):
         """Get all conversations for the session."""
-        return self.chat_conversations
+        return [self.chat_conversation] if self.chat_conversation else []
 
     def get_scenario_conversations(self, scenario_id: UUID):
         """Get all conversations for a specific scenario."""
-        return [
-            conv
-            for conv in self.chat_conversations
-            if conv.scenario_customer.scenario_id == scenario_id
-        ]
+        if (
+            not self.chat_conversation
+            or self.chat_conversation.scenario_customer.scenario_id != scenario_id
+        ):
+            return []
+        return [self.chat_conversation]
 
     def get_customer_scenario_conversation(
         self, customer_scenario_id: UUID
     ) -> Optional["ChatConversation"]:
         """Find the chat conversation associated with a specific customer scenario."""
-        for conv in self.chat_conversations:
-            if conv.customer_scenario_id == customer_scenario_id:
-                return conv
-        return None
+        if (
+            not self.chat_conversation
+            or self.chat_conversation.scenario_customer_id != customer_scenario_id
+        ):
+            return None
+        return self.chat_conversation
