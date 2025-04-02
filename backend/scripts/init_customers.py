@@ -39,6 +39,12 @@ Your background:
 - Has been working for 5 years
 - Single and living with parents
 - Interested in retirement planning""",
+            "personality_traits": [
+                "detail-oriented",
+                "analytical",
+                "anxious",
+                "inquisitive",
+            ],
         },
         {
             "name": "Michael Lee",
@@ -55,6 +61,7 @@ Your background:
 - Married with one child
 - Previously worked in corporate job
 - Interested in investment options""",
+            "personality_traits": ["methodical", "thorough", "analytical", "concerned"],
         },
         {
             "name": "Mrs. Wong",
@@ -71,6 +78,7 @@ Your background:
 - Married with adult children
 - Owns fully paid HDB flat
 - Interested in CPF LIFE options""",
+            "personality_traits": ["conservative", "forgetful", "worried", "cautious"],
         },
         {
             "name": "Ahmad bin Ibrahim",
@@ -87,6 +95,12 @@ Your background:
 - Two children aged 12 and 15
 - Planning for children's education
 - Interested in using CPF for education""",
+            "personality_traits": [
+                "detail-oriented",
+                "comparative",
+                "deliberate",
+                "family-oriented",
+            ],
         },
         {
             "name": "Grace Lim",
@@ -103,6 +117,12 @@ Your background:
 - Single with elderly parents
 - Has substantial CPF savings
 - Interested in safe investment options""",
+            "personality_traits": [
+                "risk-averse",
+                "thorough",
+                "cautious",
+                "inquisitive",
+            ],
         },
         {
             "name": "John Doe",
@@ -119,6 +139,12 @@ Your background:
 - Monthly salary: $8,000
 - Single
 - New to CPF system""",
+            "personality_traits": [
+                "eager",
+                "comparative",
+                "overwhelmed",
+                "inquisitive",
+            ],
         },
         {
             "name": "Mdm. Lakshmi",
@@ -135,6 +161,12 @@ Your background:
 - Widow with adult children
 - Has diabetes and heart condition
 - Concerned about healthcare costs""",
+            "personality_traits": [
+                "anxious",
+                "detail-oriented",
+                "clarification-seeking",
+                "concerned",
+            ],
         },
     ]
 
@@ -159,6 +191,7 @@ Your background:
                 customer = Customer(
                     id=uuid4(),
                     created_by_id=admin_user.id,
+                    updated_by_id=admin_user.id,
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
                     **customer_data,

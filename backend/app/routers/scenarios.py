@@ -10,7 +10,6 @@ from app.models.scenario import (
     ScenarioRemoveCustomer,
     ScenarioStart,
     ScenarioUpdate,
-    ScenarioUpdateHistory,
 )
 from app.models.scenario_customer import ScenarioCustomer, ScenarioCustomerUpdate
 from app.models.scenario_session import ScenarioSession
@@ -87,16 +86,6 @@ async def remove_customer_from_scenario(
     )
 
 
-@router.put("/{scenario_id}/history")
-async def update_scenario_history(
-    scenario_id: str,
-    history_data: ScenarioUpdateHistory,
-    scenario_service: Annotated[ScenarioService, Depends()],
-) -> Scenario:
-    """Update the history of a scenario."""
-    return await scenario_service.update_scenario_history(scenario_id, history_data)
-
-
 @router.post("/{scenario_id}/start")
 async def start_scenario(
     scenario_id: str,
@@ -108,6 +97,15 @@ async def start_scenario(
         trainee_id=parse_uuid(scenario_data.trainee_id),
         scenario_id=parse_uuid(scenario_id),
     )
+
+
+@router.get("/{scenario_id}/session")
+async def get_scenario_session(
+    trainee_id: str,
+    trainee_service: Annotated[TraineeService, Depends()],
+) -> ScenarioSession:
+    """Get the active scenario session for a trainee."""
+    return await trainee_service.get_active_session(trainee_id)
 
 
 @router.put("/{scenario_id}/customers/{customer_id}")

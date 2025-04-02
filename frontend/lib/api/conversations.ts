@@ -1,4 +1,4 @@
-import { Conversation, ConversationResponse } from "@/types/conversations.d";
+import { Conversation, ConversationResponse, MessageType } from "@/types/conversations.d";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -39,22 +39,6 @@ export async function getConversations(): Promise<Conversation[]> {
   return fetchApi<Conversation[]>('/conversations');
 }
 
-// API Error class
-export class ApiError extends Error {
-  status: number;
-
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-    this.name = 'ApiError';
-  }
-}
-
-export enum MessageType {
-  USER = 'user',
-  BOT = 'bot'
-}
-
 export interface Message {
   id: string;
   conversation_id: string;
@@ -66,6 +50,7 @@ export interface Message {
 
 /**
  * Create a new message in a conversation
+ * DEPRECATED: Use the websocket to send messages instead
  */
 export async function createMessage(
   conversationId: string,
@@ -75,7 +60,7 @@ export async function createMessage(
   const payload = {
     conversation_id: conversationId,
     content,
-    sender_id: sender,
+    trainee_id: sender,
     message_type: 'user'
   };
   console.log('Sending message payload:', payload);

@@ -21,6 +21,8 @@ export type ScenarioTableItem = {
     avg_response_time?: number;
     completion_rate: number;
   };
+  isActiveScenario?: boolean;
+  activeScenarioExists?: boolean;
 };
 
 type ColumnProps = {
@@ -52,14 +54,28 @@ export const getPendingColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const scenario = row.original;
+
+      // Determine if button should be disabled
+      // Button is disabled if:
+      // 1. This scenario is starting
+      // 2. This scenario is not active but there is an active scenario somewhere else
+      const hasActiveScenario = scenario.isActiveScenario === true;
+      const isDisabled =
+        isStarting === scenario.id || // Disable while starting
+        (!hasActiveScenario && scenario.activeScenarioExists); // Disable non-active if ANY scenario is active
+
       return (
         <Button
           variant="outline"
           size="sm"
-          disabled={isStarting === scenario.id}
+          disabled={isDisabled}
           onClick={() => onStart?.(scenario.id)}
         >
-          {isStarting === scenario.id ? "Starting..." : "Start Now"}
+          {isStarting === scenario.id
+            ? "Starting..."
+            : hasActiveScenario
+            ? "Resume"
+            : "Start Now"}
         </Button>
       );
     },
