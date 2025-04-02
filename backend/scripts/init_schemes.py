@@ -33,12 +33,12 @@ async def init_schemes() -> None:
         {
             "name": "Healthcare",
             "description": "Healthcare-related CPF schemes including MediSave and MediShield Life.",
-            "icon": "heartbeat",
+            "icon": "heart-pulse",
         },
         {
             "name": "Retirement Planning",
             "description": "Retirement schemes including CPF LIFE.",
-            "icon": "umbrella-beach",
+            "icon": "umbrella",
         },
         {
             "name": "Education Financing",
