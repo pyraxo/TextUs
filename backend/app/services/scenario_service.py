@@ -110,7 +110,12 @@ class ScenarioService:
 
         # Now we can safely append to the relationship
         scenario.scenario_customers.append(
-            ScenarioCustomer(customer=customer, name=customer_name)
+            ScenarioCustomer(
+                customer=customer,
+                name=customer_name,
+                scenario_prompt=customer.profile_prompt,
+                temperature=1.0,
+            )
         )
 
         self.session.add(scenario)

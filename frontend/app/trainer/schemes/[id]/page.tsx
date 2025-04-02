@@ -57,6 +57,8 @@ export default function SchemeDetailPage({
           columns={getScenarioColumns()}
           data={tableData}
           title="Scenarios"
+          schemeId={scheme?.id}
+          schemeName={scheme?.name}
         />
       </main>
     </div>

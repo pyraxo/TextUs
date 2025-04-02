@@ -78,7 +78,9 @@ export default function SchemeDetailPage({
         name: scenario.name,
         description: scenario.description || undefined,
         status: isCompleted ? "completed" : "pending",
-        dateCompleted: session?.end_timestamp || undefined,
+        dateCompleted: session?.end_timestamp
+          ? new Date(session.end_timestamp).toISOString()
+          : undefined,
         metrics: session?.metrics,
         isActiveScenario,
         activeScenarioExists,
