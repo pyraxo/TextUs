@@ -69,7 +69,7 @@ class ChatConversation(ChatConversationBase, table=True):
     scenario_customer_id: UUID = Field(foreign_key="scenario_customers.id")
     trainee_id: UUID = Field(foreign_key="users.id")
     scenario_session_id: Optional[UUID] = Field(
-        default=None, foreign_key="scenario_sessions.id"
+        foreign_key="scenario_sessions.id", default=None
     )
 
     # Relationships
@@ -78,7 +78,7 @@ class ChatConversation(ChatConversationBase, table=True):
     )
     messages: List[ChatMessage] = Relationship(back_populates="conversation")
     scenario_session: Optional["ScenarioSession"] = Relationship(
-        back_populates="chat_conversation"
+        back_populates="chat_conversations"
     )
     trainee: Optional["User"] = Relationship(back_populates="chat_conversations")
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -69,34 +69,33 @@ class ScenarioSession(ScenarioSessionBase, table=True):
 
     user: Optional["User"] = Relationship(back_populates="scenario_sessions")
     scenario: Optional["Scenario"] = Relationship(back_populates="scenario_sessions")
-    chat_conversation: Optional["ChatConversation"] = Relationship(
+    chat_conversations: List["ChatConversation"] = Relationship(
         back_populates="scenario_session"
     )
 
     def add_chat_conversation(self, chat_conversation: "ChatConversation"):
         """Add a chat conversation to the session."""
-        self.chat_conversation = chat_conversation
+        if self.chat_conversations is None:
+            self.chat_conversations = []
+        self.chat_conversations.append(chat_conversation)
 
     def get_all_conversations(self):
         """Get all conversations for the session."""
-        return [self.chat_conversation] if self.chat_conversation else []
+        return self.chat_conversations
 
     def get_scenario_conversations(self, scenario_id: UUID):
         """Get all conversations for a specific scenario."""
-        if (
-            not self.chat_conversation
-            or self.chat_conversation.scenario_customer.scenario_id != scenario_id
-        ):
-            return []
-        return [self.chat_conversation]
+        return [
+            conv
+            for conv in self.chat_conversations
+            if conv.scenario_customer.scenario_id == scenario_id
+        ]
 
     def get_customer_scenario_conversation(
         self, customer_scenario_id: UUID
     ) -> Optional["ChatConversation"]:
         """Find the chat conversation associated with a specific customer scenario."""
-        if (
-            not self.chat_conversation
-            or self.chat_conversation.scenario_customer_id != customer_scenario_id
-        ):
-            return None
-        return self.chat_conversation
+        for conv in self.chat_conversations:
+            if conv.customer_scenario_id == customer_scenario_id:
+                return conv
+        return None
