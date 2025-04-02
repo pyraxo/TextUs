@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 from uuid import UUID
 
@@ -28,8 +29,12 @@ class ConnectionManager:
         """Broadcast message to connection"""
         if conversation_id in self.active_connections:
             disconnected = set()
+            logging.info(
+                f"Broadcasting message to {len(self.active_connections[conversation_id])} connections"
+            )
             for connection in self.active_connections[conversation_id]:
                 try:
+                    logging.info("Broadcasting message to connection")
                     await connection.send_json(message)
                 except WebSocketDisconnect:
                     disconnected.add(connection)

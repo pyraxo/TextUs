@@ -36,8 +36,8 @@ async def init_users() -> None:
                 email="admin@example.com",
                 name="Admin User",
                 user_type=UserType.ADMIN,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+                joined_at=datetime.now(),
+                last_login=datetime.now(),
                 password=get_password_hash("admin"),
                 username="admin",
             )
@@ -53,8 +53,8 @@ async def init_users() -> None:
                 email="trainer@example.com",
                 name="Trainer User",
                 user_type=UserType.TRAINER,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+                joined_at=datetime.now(),
+                last_login=datetime.now(),
                 password=get_password_hash("123"),
                 username="trainer",
             )
@@ -72,8 +72,8 @@ async def init_users() -> None:
                 email="test@example.com",
                 name="Test User",
                 user_type=UserType.TRAINEE,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+                joined_at=datetime.now(),
+                last_login=datetime.now(),
                 username="test",
                 password=get_password_hash("test"),
             )

@@ -61,6 +61,16 @@ uv run fastapi dev
 uv run fastapi run app/main.py
 ```
 
+#### With Reduced Logging Verbosity
+
+To run with reduced logging verbosity (recommended for development):
+
+```sh
+uv run uvicorn app.main:app --log-config uvicorn_config.py
+```
+
+This uses a custom logging configuration that greatly simplifies error output and reduces noise in the console logs.
+
 ## Database Management
 
 ### Configuration

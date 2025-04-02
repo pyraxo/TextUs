@@ -112,19 +112,25 @@ The CPF Board TextUs application is a standalone training system that simulates 
 
 - **User**: Represents system users with authentication details and roles (admin, trainer, trainee)
 - **Scheme**: Represents broad CPF-related categories that organize scenarios (e.g., Housing, Healthcare)
+  - Includes customizable icons for visual identification
+  - Supports slug-based routing for better URL readability
 - **Scenario**: Represents specific training situations within a scheme, with configuration settings
 - **Customer**: Represents base AI customer profiles with:
   - Basic information (name, description)
   - Personality traits and temperament
   - Communication habits
   - Base profile prompt defining general behavior
+  - Managed through dedicated Customers service
 - **ScenarioCustomer**: Specialized adaptation of a Customer for a specific Scenario:
   - Inherits base Customer traits
   - Adds scenario-specific prompt building upon base prompt
   - Contains expected queries/concerns for this scenario
-  - Configurable temperature for response variability
+  - Configurable temperature (0 to 1) for response variability
 - **ChatConversation**: Represents a practice session conversation
+  - Includes complete chat history
+  - Managed by conversation scheduler
 - **ChatMessage**: Represents individual messages in a conversation
+- **Agent**: Represents system agents for specialized handling of conversations
 
 ### 4.2 Entity Relationships
 
@@ -212,14 +218,16 @@ The CPF Board TextUs application is a standalone training system that simulates 
 ### 6.2 Backend
 
 - FastAPI Python framework (v0.100+)
-  - Async request handling
+  - Async request handling with AsyncSession support
   - OpenAPI documentation
   - WebSocket support for real-time chat
   - Rate limiting middleware
+  - Comprehensive testing framework
 - SQLModel for database operations
   - Type-safe database interactions
   - Automatic schema generation
   - User scenario session tracking
+  - Enhanced connection handling with connection pooling
 - Alembic for database migrations
   - Version-controlled schema changes
   - Automated migration scripts
@@ -227,7 +235,11 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - JWT-based authentication with password hashing
 - OpenAI integration for AI chat simulation
 - RAG system for improved response accuracy
-- Chatter bot system for dynamic conversations
+- Enhanced conversation management:
+  - Dedicated conversation scheduler
+  - WebSocket connection management
+  - Chat history tracking
+  - Agent-based conversation handling
 
 ### 6.3 Database
 
@@ -278,6 +290,15 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - Service availability
   - Database connectivity
   - External API status
+
+### 6.5 Performance Optimizations
+
+- Skeleton loading components for improved perceived performance
+- Optimized database queries with AsyncSession
+- Efficient WebSocket connection management
+- Slug-based routing for better SEO and URL readability
+- Dynamic scenario management with real-time updates
+- Temperature-controlled response generation (0 to 1 range)
 
 ## 7. Future Enhancements
 

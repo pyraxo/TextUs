@@ -57,6 +57,18 @@ class ScenarioService:
         )
         return (await self.session.exec(scenario_customers)).all()
 
+    async def get_scenario_customer(
+        self, scenario_id: str, customer_id: str
+    ) -> ScenarioCustomer:
+        """Get a scenario-specific customer."""
+        scenario_uuid = parse_uuid(scenario_id)
+        customer_uuid = parse_uuid(customer_id)
+        scenario_customer = select(ScenarioCustomer).where(
+            ScenarioCustomer.scenario_id == scenario_uuid,
+            ScenarioCustomer.customer_id == customer_uuid,
+        )
+        return (await self.session.exec(scenario_customer)).first()
+
     async def update_scenario(
         self,
         scenario_id: str,

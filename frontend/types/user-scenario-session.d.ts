@@ -3,11 +3,11 @@ import { Scenario } from './scenario';
 import { User } from './user';
 
 export interface UserScenarioSession {
-  id: string;
-  user_id: string;
-  scenario_id: string;
-  start_timestamp: string;  // ISO datetime string
-  end_timestamp: string | null;  // ISO datetime string
+  id: UUID;
+  user_id: UUID;
+  scenario_id: UUID;
+  start_timestamp: Date;
+  end_timestamp: Date | null;
 
   // Metrics
   metrics?: {
