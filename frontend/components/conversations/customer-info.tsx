@@ -1,15 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AlertCircle,
-  Check,
-  Clock,
-  MessageSquare,
-  Tag,
-  User,
-  X,
-} from "lucide-react";
+import { AlertCircle, Check, Clock, MessageSquare, Tag, X } from "lucide-react";
 
 // Dummy data - replace with your actual data
 const customerInfo = {
@@ -73,9 +65,6 @@ export function CustomerInfo() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-6 w-6 text-primary" />
-            </div>
             <div>
               <h2 className="text-xl font-semibold">{customerInfo.name}</h2>
               <div className="flex items-center gap-3 mt-1">
@@ -86,9 +75,9 @@ export function CustomerInfo() {
                   <Clock className="h-4 w-4" />
                   {customerInfo.startTime}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                {/* <div className="text-sm text-muted-foreground">
                   Case ID: {customerInfo.caseId}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -98,21 +87,21 @@ export function CustomerInfo() {
         <TabsList className="grid w-full grid-cols-3 p-0 bg-transparent border-b rounded-none h-[45px]">
           <TabsTrigger
             value="chat-info"
-            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-foreground rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
+            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
           >
             <MessageSquare className="h-4 w-4 mr-2" />
             Chat Info
           </TabsTrigger>
           <TabsTrigger
             value="feedback"
-            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-foreground rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
+            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
           >
             <AlertCircle className="h-4 w-4 mr-2" />
             Feedback
           </TabsTrigger>
           <TabsTrigger
             value="scores"
-            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-foreground rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
+            className="relative data-[state=active]:bg-[#004D40] data-[state=active]:text-white rounded-none border-b-2 border-transparent data-[state=active]:border-[#004D40] bg-transparent px-6 py-3 h-[45px] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-transparent data-[state=active]:after:bg-[#004D40]"
           >
             <Tag className="h-4 w-4 mr-2" />
             Scores
