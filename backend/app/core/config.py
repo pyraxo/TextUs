@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # API Keys
     openai_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
 
     # Environment
     environment: str = "development"  # "development" or "production"
