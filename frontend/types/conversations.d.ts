@@ -2,7 +2,7 @@ import { UUID } from 'crypto';
 
 export enum MessageType {
   USER = 'user',
-  CUSTOMER = 'customer'
+  BOT = 'bot'
 }
 
 export interface Message {
@@ -19,7 +19,7 @@ export interface Conversation {
   started_at: Date;
   ended_at: Date | null;
   scenario_name: string | null;
-  latest_message_timestamp: Date;
+  latest_message_timestamp: string;
 }
 
 // Extend Conversation type but make latest_message_timestamp optional since it's calculated

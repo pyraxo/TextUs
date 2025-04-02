@@ -1,16 +1,15 @@
 from typing import Annotated, List
 from uuid import UUID
 
-from app.core.common import parse_uuid
-from app.models.chat import ChatMessage, MessageType
+from fastapi import APIRouter, Depends
+
 from app.models.response import (
     ConversationDetailResponse,
     ConversationListResponse,
-    MessageCreate,
+    ConversationResponse,
     MessageResponse,
 )
 from app.services.conversation_service import ConversationService
-from fastapi import APIRouter, Depends
 
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
@@ -48,7 +47,7 @@ async def get_conversation(
     conv = await conversation_service.get_conversation(conversation_id)
 
     # Format conversation
-    conversation = {
+    conversation: ConversationResponse = {
         "id": conv.id,
         "scenario_id": conv.scenario_customer.scenario_id,
         "customer_id": conv.scenario_customer.customer_id,
@@ -58,14 +57,12 @@ async def get_conversation(
     }
 
     # Format messages
-    messages = [
+    messages: List[MessageResponse] = [
         {
             "id": msg.id,
             "conversation_id": msg.conversation_id,
-            "sender_id": "Customer"
-            if msg.message_type == MessageType.USER
-            else "Agent",
-            "content": msg.message,
+            "trainee_id": msg.trainee_id,
+            "content": msg.content,
             "timestamp": msg.timestamp.isoformat(),
             "message_type": msg.message_type.value,
         }
@@ -73,19 +70,3 @@ async def get_conversation(
     ]
 
     return {"conversation": conversation, "messages": messages}
-
-
-@router.post("/{conversation_id}/messages", response_model=MessageResponse)
-async def create_message(
-    conversation_id: UUID,
-    message: MessageCreate,
-    conversation_service: Annotated[ConversationService, Depends()],
-) -> ChatMessage:
-    """Create a message and notify the scheduler."""
-    conversation_uuid = parse_uuid(conversation_id)
-    # Create the message in the database
-    msg = await conversation_service.create_message(
-        conversation_id=conversation_uuid,
-        message=message,
-    )
-    return msg

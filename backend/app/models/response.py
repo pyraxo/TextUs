@@ -12,17 +12,17 @@ class MessageResponse(SQLModel):
 
     id: UUID
     conversation_id: UUID
-    sender_id: str
     content: str
     timestamp: datetime
     message_type: MessageType
+    trainee_id: UUID
 
 
 class MessageCreate(SQLModel):
     """Request model for creating a new message."""
 
     content: str
-    sender_id: UUID
+    trainee_id: UUID
     message_type: MessageType
 
 

@@ -7,6 +7,8 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
 
+from app.models.chat import MessageType
+
 
 class QueryEvaluation(BaseModel):
     """Evaluation of which queries have been answered."""
@@ -36,14 +38,19 @@ class State(TypedDict):
     """State management for the chatbot."""
 
     messages: Annotated[Sequence[BaseMessage], add_messages]
-    trainee_id: UUID
-    customer_id: UUID
+    trainee_id: UUID | str
+    customer_id: UUID | str
     scenario_prompt: str
-    conversation_id: UUID
+    conversation_id: UUID | str
 
+    # last_message_time: Optional[datetime] = None
+    # last_user_message_time: Optional[datetime] = None
+    # next_response_time: Optional[datetime] = (
+    #     None  # When the next response should be sent
+    # )
     last_message_time: datetime
     last_user_message_time: datetime
-    next_response_time: datetime  # When the next response should be sent
+    next_response_time: datetime
 
     unanswered_queries: list[str] = []
 
@@ -52,3 +59,6 @@ class State(TypedDict):
 
     conversation_history: list[str] = []
     status: ChatStatus = ChatStatus.INIT
+
+    to_send: str = ""
+    to_send_from: MessageType = MessageType.BOT

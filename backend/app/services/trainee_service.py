@@ -1,24 +1,29 @@
 from datetime import datetime, timedelta
+from functools import partial
 from typing import Optional, Tuple
 from uuid import UUID
 
 from fastapi import Depends, HTTPException
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.chatter.chat_types import State
 from app.chatter.utils import get_patience_level
-from app.chatter.workflow import get_chatbot
+from app.chatter.workflow import CHECKPOINT_DB_URL, workflow
 from app.core.common import parse_uuid
+from app.core.config import get_settings
 from app.core.db import get_session
 from app.models.chat import ChatConversation, MessageType
-from app.models.response import MessageCreate
 from app.models.scenario import Scenario
 from app.models.scenario_session import ScenarioSession, SessionMetrics, SessionStatus
 from app.models.user import User
+from app.routers.ws import create_message
 from app.services.conversation_service import ConversationService
 from app.services.scenario_service import ScenarioService
 from app.services.user_service import UserService
+
+settings = get_settings()
 
 
 class TraineeService:
@@ -30,12 +35,6 @@ class TraineeService:
         self._user_service = UserService(session=session)
         self._conversation_service = ConversationService(session=session)
         self._bot = None
-
-    async def _get_bot(self):
-        """Lazy-load the chatbot when needed."""
-        if self._bot is None:
-            self._bot = await get_chatbot()
-        return self._bot
 
     async def validate_scenario_prerequisites(
         self, trainee_id: str, scenario_id: str
@@ -180,9 +179,6 @@ class TraineeService:
         for conversation in scenario_session.chat_conversations:
             if not conversation.ended_at:
                 conversation.ended_at = now
-                # Remove from scheduler
-                # await self._scheduler.remove_conversation(conversation.id)
-                # self.session.add(conversation)
 
         # Complete the session
         scenario_session.end_timestamp = now
@@ -285,41 +281,6 @@ class TraineeService:
 
         return SessionMetrics(**metrics)
 
-    async def _send_message(
-        self,
-        conversation_id: str,
-        sender_id: str,
-        trainee_id: str,
-        content: str,
-        message_type: MessageType,
-    ):
-        """Send a message to a conversation.
-
-        This is used in the agent, from state["configurable"]["send_message"].
-        """
-        conversation = await self._conversation_service.get_conversation(
-            conversation_id
-        )
-        if conversation:
-            # Only try to parse as UUID if it's not "Agent" or other special identifiers
-            if sender_id in ["Agent", "Customer"]:
-                # Use trainee_id or customer_id from the conversation
-                actual_sender_id = (
-                    conversation.scenario_customer.customer_id
-                    if sender_id == "Customer"
-                    else trainee_id
-                )
-            else:
-                # Otherwise parse as UUID
-                actual_sender_id = parse_uuid(sender_id)
-
-            message = MessageCreate(
-                content=content,
-                sender_id=actual_sender_id,
-                message_type=message_type,
-            )
-            await self._conversation_service.create_message(conversation.id, message)
-
     async def start_trainee_conversation(
         self, trainee_id: UUID, scenario_id: UUID, customer_id: UUID
     ) -> ChatConversation:
@@ -344,8 +305,6 @@ class TraineeService:
                 detail=f"Customer {customer_id} not found in scenario {scenario_id}",
             )
 
-        print(f"Scenario customer: {scenario_customer}")
-
         conv = None
 
         # First await the exec() call to get the result
@@ -359,54 +318,49 @@ class TraineeService:
 
         if existing_conversation:
             conv = existing_conversation
+            print(f"Conversation found: {conv.id}")
         else:
             # Create a new conversation
             conv = ChatConversation(
                 scenario_customer_id=scenario_customer.id,
-                scenario_id=scenario_id,
+                trainee_id=trainee_id,
                 customer_id=customer_id,
                 started_at=datetime.now(),
             )
+            print(f"Conversation created: {conv.id}")
         self.session.add(conv)
         await self.session.commit()
         await self.session.refresh(conv)
 
-        print(f"Conversation created: {conv.id}")
-
-        # Get the scenario
-        scenario = await self._scenario_service.get_scenario(scenario_id)
-
-        print(f"Scenario: {scenario_id}")
-        print(f"Scenario customer: {scenario_customer.id}")
-
         # Get bot instance
-        bot = await self._get_bot()
-        chat_state = State(
-            scenario=scenario,
-            conversation_id=conv.id,
-            trainee_id=trainee_id,
-            customer_id=customer_id,
-            # Use system_prompt as fallback when scenario_prompt is None
-            scenario_prompt=scenario_customer.scenario_prompt or scenario.system_prompt,
-            patience_level=get_patience_level(
-                scenario_customer.scenario_prompt or scenario.system_prompt,
-                name=scenario_customer.name,
-            ),
-        )
-        print(f"Chat state: {chat_state}")
+        async with AsyncSqliteSaver.from_conn_string(CHECKPOINT_DB_URL) as checkpointer:
+            bot = workflow.compile(checkpointer=checkpointer)
 
-        print(f"Starting chat with chatbot {conv.id}")
+            chat_state = State(
+                scenario_id=str(scenario_id),
+                conversation_id=str(conv.id),
+                trainee_id=str(trainee_id),
+                customer_id=str(customer_id),
+                scenario_prompt=scenario_customer.scenario_prompt,
+                patience_level=get_patience_level(
+                    scenario_customer.scenario_prompt,
+                    name=scenario_customer.name,
+                ),
+                conversation_history=[],
+            )
 
-        # Start the chat with the chatbot
-        await bot.ainvoke(
-            input=chat_state,
-            config={
-                "configurable": {
-                    "send_message": self._send_message,
-                    "thread_id": conv.id,
-                    "recursion_limit": 50,
-                }
-            },
-        )
+            print(f"INVOKING CHAT: {conv.id}")
 
-        return conv
+            # Start the chat with the chatbot
+            await bot.ainvoke(
+                input=chat_state,
+                config={
+                    "configurable": {
+                        "send_message": partial(create_message, self.session),
+                        "thread_id": str(conv.id),
+                    }
+                },
+            )
+            # NOTE: This outputs the interrupt value
+
+            return conv

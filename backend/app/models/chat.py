@@ -9,6 +9,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from app.models.scenario_customer import ScenarioCustomer
     from app.models.scenario_session import ScenarioSession
+    from app.models.user import User
 
 
 class MessageType(str, Enum):
@@ -27,10 +28,11 @@ class ChatMessageBase(SQLModel):
     """Base Chat message model with common fields."""
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    sender_id: str
-    message: str
+    content: str
     message_type: MessageType
     timestamp: datetime = Field(default_factory=datetime.now)
+    conversation_id: UUID
+    trainee_id: UUID
 
 
 class ChatMessage(ChatMessageBase, table=True):
@@ -40,15 +42,11 @@ class ChatMessage(ChatMessageBase, table=True):
 
     # Foreign keys
     conversation_id: UUID = Field(foreign_key="chat_conversations.id")
+    trainee_id: UUID = Field(foreign_key="users.id")
 
     # Relationships
     conversation: Optional["ChatConversation"] = Relationship(back_populates="messages")
-
-
-class ChatMessageCreate(ChatMessageBase):
-    """Chat message model for creation."""
-
-    conversation_id: Optional[UUID] = None
+    trainee: Optional["User"] = Relationship(back_populates="chat_messages")
 
 
 class ChatConversationBase(SQLModel):
@@ -56,6 +54,7 @@ class ChatConversationBase(SQLModel):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     scenario_customer_id: UUID
+    trainee_id: UUID
 
 
 class ChatConversation(ChatConversationBase, table=True):
@@ -68,6 +67,7 @@ class ChatConversation(ChatConversationBase, table=True):
 
     # Foreign keys
     scenario_customer_id: UUID = Field(foreign_key="scenario_customers.id")
+    trainee_id: UUID = Field(foreign_key="users.id")
 
     # Relationships
     scenario_customer: Optional["ScenarioCustomer"] = Relationship(
@@ -78,6 +78,7 @@ class ChatConversation(ChatConversationBase, table=True):
         back_populates="chat_conversations",
         sa_relationship_kwargs={"secondary": "scenario_session_chats"},
     )
+    trainee: Optional["User"] = Relationship(back_populates="chat_conversations")
 
     # Store chat history as JSON string
     messages_json: Optional[str] = Field(
@@ -95,9 +96,3 @@ class ChatConversation(ChatConversationBase, table=True):
     def chat_history(self, value: List[str]):
         """Set the chat history from a list."""
         self.messages_json = json.dumps(value)
-
-
-class ChatConversationCreate(ChatConversationBase):
-    """Chat conversation model for creation."""
-
-    pass

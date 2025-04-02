@@ -1,3 +1,5 @@
+import logging
+from functools import partial
 from typing import Annotated
 from uuid import UUID
 
@@ -9,15 +11,24 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.chatter.workflow import resume_chatbot
+from app.core.common import parse_uuid
 from app.core.db import get_session
 from app.core.security import get_settings, jwt
 from app.core.ws_manager import manager
 from app.models.chat import ChatConversation, ChatMessage, MessageType
 from app.models.user import User
 
+# Set up logger for websockets with concise formatting
+ws_logger = logging.getLogger("websocket")
+ws_logger.setLevel(logging.INFO)
+
 router = APIRouter()
+
+# TODO: UPDATE THIS FILE! IT'S REPEATED CODE!
 
 
 async def get_current_user_ws(
@@ -59,46 +70,55 @@ async def get_current_user_ws(
         return user
 
     except (jwt.JWTError, Exception) as e:
-        print(f"Authentication error: {e}")
+        ws_logger.error(f"Authentication error: {e}")
         raise credentials_exception from e
 
 
 async def create_message(
     session: Annotated[AsyncSession, Depends(get_session)],
     conversation_id: UUID,
-    user_id: UUID,
+    trainee_id: UUID,
     content: str,
     message_type: str,
 ) -> dict:
     """Create a message"""
-    # Verify the conversation exists
-    conversation = await session.get(ChatConversation, conversation_id)
-    if not conversation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Conversation not found",
+    try:
+        # Verify the conversation exists
+        conversation_id = parse_uuid(conversation_id)
+        trainee_id = parse_uuid(trainee_id)
+
+        conversation = await session.get(ChatConversation, conversation_id)
+        if not conversation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found",
+            )
+
+        # Create and save the message
+        message = ChatMessage(
+            conversation_id=conversation_id,
+            trainee_id=trainee_id,  # Fixed: don't convert to string here
+            content=content,  # Note: field is 'message' not 'content'
+            message_type=MessageType(message_type),  # Convert string to enum
         )
+        session.add(message)
+        await session.commit()
+        await session.refresh(message)
 
-    # Create and save the message
-    message = ChatMessage(
-        conversation_id=conversation_id,
-        sender_id=str(user_id),  # Convert UUID to string as per schema
-        message=content,  # Note: field is 'message' not 'content'
-        message_type=MessageType(message_type),  # Convert string to enum
-    )
-    session.add(message)
-    await session.commit()
-    await session.refresh(message)
-
-    # Return a formatted response
-    return {
-        "id": str(message.id),
-        "conversation_id": str(message.conversation_id),
-        "sender_id": message.sender_id,
-        "content": message.message,
-        "timestamp": str(message.timestamp),
-        "message_type": message.message_type.value,
-    }
+        # Return a formatted response
+        return {
+            "id": str(message.id),
+            "conversation_id": str(message.conversation_id),
+            "trainee_id": str(message.trainee_id),
+            "content": message.content,
+            "timestamp": str(message.timestamp),
+            "message_type": message.message_type.value,
+        }
+    except SQLAlchemyError as e:
+        ws_logger.error(
+            f"Database error in create_message: {type(e).__name__}: {str(e)}"
+        )
+        raise
 
 
 async def broadcast_message(message: ChatMessage, user: User = None):
@@ -109,8 +129,8 @@ async def broadcast_message(message: ChatMessage, user: User = None):
         "payload": {
             "id": str(message.id),
             "conversation_id": str(message.conversation_id),
-            "sender_id": message.sender_id,
-            "content": message.message,
+            "trainee_id": str(message.trainee_id),
+            "content": message.content,
             "timestamp": str(message.timestamp),
             "message_type": message.message_type.value,
         },
@@ -132,21 +152,22 @@ async def websocket_endpoint(
 ):
     """WebSocket endpoint for conversations"""
     conversation_id = None
+    user = None
     try:
         # Authenticate the user before accepting the connection
         user = await get_current_user_ws(websocket, session)
 
         # Accept the connection only after successful authentication
         await websocket.accept()
-        print(f"WebSocket connection accepted for user {user.name}")
+        ws_logger.info(f"WebSocket connection accepted for user {user.name}")
 
         while True:
             # Wait for messages
             data = await websocket.receive_json()
-            print(f"Received WebSocket message: {data}")
+            ws_logger.debug(f"Received WebSocket message: {data}")
 
             # Extract conversation ID from the message
-            conversation_id = UUID(data.get("conversationId"))
+            conversation_id = parse_uuid(data.get("conversationId"))
 
             # Connect to the conversation if not already connected
             await manager.connect(websocket, conversation_id)
@@ -169,50 +190,51 @@ async def websocket_endpoint(
                 # Create the message in the database for regular messages
                 payload = data.get("payload", {})
                 if payload.get("content") and payload.get("message_type"):
-                    try:
-                        message_data = await create_message(
-                            session,
-                            conversation_id,
-                            user.id,
-                            payload["content"],
-                            payload["message_type"],
-                        )
-                        # Update the payload with the created message data
-                        data["payload"].update(message_data)
+                    message_data = await create_message(
+                        session=session,
+                        conversation_id=conversation_id,
+                        trainee_id=user.id,
+                        content=payload["content"],
+                        message_type=payload["message_type"],
+                    )
+                    # Update the payload with the created message data
+                    data["payload"].update(message_data)
 
-                        # Get the created message object for broadcasting
-                        message = await session.get(
-                            ChatMessage, UUID(message_data["id"])
-                        )
-                        if message:
-                            # Broadcast the message to all clients in the conversation
-                            await broadcast_message(message, user)
-
-                            # If this is a user message, notify the scheduler
-                            # if message.message_type == MessageType.USER:
-                            #     scheduler = get_scheduler(session_factory=get_session)
-                            #     await scheduler.add_user_message(
-                            #         conversation_id=message.conversation_id,
-                            #         message=message.message,
-                            #     )
-                    except Exception as e:
-                        print(f"Error creating message: {e}")
-                        continue
+                    # Get the created message object for broadcasting
+                    chat_message = await session.get(
+                        ChatMessage, UUID(message_data["id"])
+                    )
+                    if chat_message:
+                        # Broadcast the message to all clients in the conversation
+                        await broadcast_message(chat_message, user)
+                        try:
+                            if chat_message.message_type == MessageType.USER:
+                                print("LET'S RESUME BABY")
+                                await resume_chatbot(
+                                    session=session,
+                                    create_message=partial(create_message, session),
+                                    conversation_id=conversation_id,
+                                    user_message=chat_message.content,
+                                    message_id=chat_message.id,
+                                )
+                        except Exception as e:
+                            ws_logger.error("Error creating message: %s", e)
+                            continue
 
             elif data["type"] in ["TYPING", "STATUS_CHANGE"]:
                 # Broadcast these messages to everyone including the sender
                 await manager.broadcast_to_conversation(data, conversation_id)
 
     except WebSocketDisconnect:
-        print(
-            f"WebSocket disconnected for user {user.name if 'user' in locals() else 'unknown'}"
+        ws_logger.info(
+            f"WebSocket disconnected for user {user.name if user else 'unknown'}"
         )
         if conversation_id:
             manager.disconnect(websocket, conversation_id)
     except HTTPException as e:
-        print(f"Authentication error: {e.detail}")
+        ws_logger.error(f"Authentication error: {e.detail}")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        ws_logger.error(f"WebSocket error: {type(e).__name__}: {str(e)}")
         if not websocket.client_state.DISCONNECTED:
             await websocket.close()

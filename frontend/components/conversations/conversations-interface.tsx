@@ -67,10 +67,11 @@ export function ConversationsInterface() {
         );
 
         // Calculate latest message timestamp
-        const latestMessageTimestamp =
+        const latestMessageTimestamp = new Date(
           data.messages.length > 0
             ? data.messages[data.messages.length - 1].timestamp
-            : data.conversation.started_at;
+            : data.conversation.started_at
+        );
 
         setActiveConversations((prev) => {
           const newMap = new Map(prev);
@@ -78,7 +79,7 @@ export function ConversationsInterface() {
             messages: data.messages,
             conversation: {
               ...data.conversation,
-              latest_message_timestamp: latestMessageTimestamp,
+              latest_message_timestamp: latestMessageTimestamp.toISOString(),
             },
             unreadCount: 0,
           });
@@ -133,6 +134,8 @@ export function ConversationsInterface() {
   useEffect(() => {
     if (!lastMessage) return;
 
+    console.log("Received WebSocket message:", lastMessage);
+
     const { conversationId } = lastMessage;
 
     if (
@@ -140,6 +143,8 @@ export function ConversationsInterface() {
       lastMessage.payload &&
       !lastMessage.payload.action
     ) {
+      console.log("Processing new message for conversation:", conversationId);
+
       const newMessage: Message = {
         id: lastMessage.payload.id,
         content: lastMessage.payload.content,
@@ -147,47 +152,91 @@ export function ConversationsInterface() {
         timestamp: lastMessage.payload.timestamp,
       };
 
+      // If we don't have the conversation loaded yet, load it first
+      if (!activeConversations.has(conversationId)) {
+        console.log(
+          "New message for unloaded conversation, loading:",
+          conversationId
+        );
+        loadConversation(conversationId);
+        return;
+      }
+
       setActiveConversations((prev) => {
         const newMap = new Map(prev);
         const conv = newMap.get(conversationId);
-        if (conv) {
-          // Check if message with this ID already exists
-          const messageExists = conv.messages.some(
-            (msg) => msg.id === newMessage.id
-          );
-          if (!messageExists) {
-            conv.messages = [...conv.messages, newMessage];
-            // Increment unread count if not the active conversation
-            if (conversationId !== activeConversationId) {
-              conv.unreadCount += 1;
-            } else {
-              // Mark message as read if it's the active conversation
-              markConversationAsRead(conversationId, newMessage.id);
-            }
+
+        if (!conv) return prev; // Safety check
+
+        // Check if message with this ID already exists
+        const messageExists = conv.messages.some(
+          (msg) => msg.id === newMessage.id
+        );
+
+        if (!messageExists) {
+          console.log("Adding new message to conversation:", newMessage);
+
+          // Create a new conversation object to ensure state update
+          const updatedConv = {
+            messages: [...conv.messages, newMessage],
+            unreadCount:
+              conversationId !== activeConversationId
+                ? (conv.unreadCount || 0) + 1
+                : 0,
+            conversation: conv.conversation
+              ? {
+                  ...conv.conversation,
+                  latest_message_timestamp: new Date(
+                    newMessage.timestamp
+                  ).toISOString(),
+                }
+              : null,
+          };
+
+          newMap.set(conversationId, updatedConv);
+
+          // Mark as read if it's the active conversation
+          if (conversationId === activeConversationId) {
+            markConversationAsRead(conversationId, newMessage.id);
           }
-          newMap.set(conversationId, conv);
+
+          // Schedule a refresh of the conversation list
+          setTimeout(debouncedRefresh, 0);
+        } else {
+          console.log("Message already exists, skipping:", newMessage.id);
         }
+
         return newMap;
       });
-
-      // Refresh conversation list to update latest message
-      debouncedRefresh();
     }
-  }, [lastMessage, activeConversationId, markConversationAsRead]);
+  }, [
+    lastMessage,
+    activeConversationId,
+    markConversationAsRead,
+    loadConversation,
+  ]);
 
   // Debounced refresh function
   const debouncedRefresh = useCallback(() => {
     const now = Date.now();
-    if (now - lastRefreshTimeRef.current < 2000) {
+    const timeSinceLastRefresh = now - lastRefreshTimeRef.current;
+
+    if (timeSinceLastRefresh < 2000) {
+      // Clear any pending refresh
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
+
+      // Schedule a new refresh
       refreshTimeoutRef.current = setTimeout(() => {
         mutate();
         lastRefreshTimeRef.current = Date.now();
-      }, 2000 - (now - lastRefreshTimeRef.current));
+      }, 2000 - timeSinceLastRefresh);
+
       return;
     }
+
+    // If enough time has passed, refresh immediately
     mutate();
     lastRefreshTimeRef.current = now;
   }, [mutate]);
@@ -257,7 +306,7 @@ export function ConversationsInterface() {
       payload: {
         content: messageInput.trim(),
         message_type: MessageType.USER,
-        sender_id: user.id,
+        trainee_id: user.id,
         timestamp: new Date().toISOString(),
       },
       timestamp: new Date().toISOString(),
@@ -338,7 +387,9 @@ export function ConversationsInterface() {
                       ) : null}
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {formatListTime(conversation.latest_message_timestamp)}
+                      {formatListTime(
+                        conversation.latest_message_timestamp as string
+                      )}
                     </span>
                   </div>
                 </button>
@@ -405,7 +456,9 @@ export function ConversationsInterface() {
                               : "text-card-foreground"
                           }`}
                         >
-                          {formatMessageTime(msg.timestamp)}
+                          {formatMessageTime(
+                            new Date(msg.timestamp).toISOString()
+                          )}
                         </span>
                       </div>
                       <p
