@@ -88,11 +88,12 @@ class TraineeService:
         """Start or resumes a scenario session for a trainee.
 
         This will:
-        1. Create or get a ScenarioSession
-        2. Load all ScenarioCustomers for the scenario
-        3. Create ChatConversations for each ScenarioCustomer
-        4. Initialize the ChatBot for each conversation
-        5. Register conversations with the scheduler
+        1. Check for any active sessions and validate they match the requested scenario
+        2. Create or get a ScenarioSession
+        3. Load all ScenarioCustomers for the scenario
+        4. Create ChatConversations for each ScenarioCustomer
+        5. Initialize the ChatBot for each conversation
+        6. Register conversations with the scheduler
 
         Args:
             trainee_id: UUID of the trainee
@@ -100,16 +101,35 @@ class TraineeService:
 
         Returns:
             The created/updated ScenarioSession
+
+        Raises:
+            HTTPException: If user has an active session for a different scenario
         """
+        # Check for active session first
+        active_session = await self.get_active_session(trainee_id)
+        if active_session and active_session.scenario_id != scenario_id:
+            raise HTTPException(
+                status_code=400,
+                detail="You have an active scenario in progress. Please complete it before starting a new one.",
+            )
 
         # Validate scenario exists and get trainee
         trainee, scenario = await self.validate_scenario_prerequisites(
             trainee_id, scenario_id
         )
 
-        scenario_session = await self.create_or_get_session(trainee.id, scenario.id)
+        # If we have an active session for this scenario, return it
+        if active_session and active_session.scenario_id == scenario_id:
+            await self.session.refresh(active_session, ["chat_conversations"])
+            return active_session
 
-        # Explicitly load the chat_conversations relationship
+        # Create new session if no active session exists
+        scenario_session = ScenarioSession(
+            user_id=trainee.id,
+            scenario_id=scenario.id,
+        )
+        self.session.add(scenario_session)
+        await self.session.commit()
         await self.session.refresh(scenario_session, ["chat_conversations"])
 
         # Get all scenario customers

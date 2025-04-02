@@ -7,17 +7,19 @@ import {
 } from "@/components/scenarios/columns";
 import { DataTable } from "@/components/scenarios/data-table";
 import { Button } from "@/components/ui/button";
+import { useActiveSession } from "@/hooks/use-active-session";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
 import { useSchemeScenarios } from "@/hooks/use-scenarios";
 import { useSchemes } from "@/hooks/use-schemes";
-import { getActiveScenarioSession, startScenario } from "@/lib/api/scenarios";
+import { startScenario } from "@/lib/api/scenarios";
 import { Scenario } from "@/types/scenario";
 import { UserScenarioSession } from "@/types/user-scenario-session";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function SchemeDetailPage({
@@ -27,12 +29,12 @@ export default function SchemeDetailPage({
 }) {
   const { user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: schemes } = useSchemes();
   const scheme = schemes?.find((s) => s.slug === params.id);
 
   const [isStarting, setIsStarting] = useState<string | null>(null);
-  const [activeSession, setActiveSession] =
-    useState<UserScenarioSession | null>(null);
+  const { data: activeSession } = useActiveSession(user?.id);
   const isTrainerOrAdmin =
     user?.user_type === "trainer" || user?.user_type === "admin";
   const [pendingCurrentPage, setPendingCurrentPage] = useState(1);
@@ -44,15 +46,6 @@ export default function SchemeDetailPage({
 
   // Get user scenario sessions data
   const { data: sessions } = useUserScenarioSessions(user?.id);
-
-  // Fetch active session on mount and when user changes
-  useEffect(() => {
-    if (user?.id) {
-      getActiveScenarioSession(user.id)
-        .then(setActiveSession)
-        .catch(console.error);
-    }
-  }, [user?.id]);
 
   // Get scheme name based on ID or use fallback
   const schemeName = scheme?.name || "Unknown Scheme";
@@ -156,16 +149,29 @@ export default function SchemeDetailPage({
 
     try {
       setIsStarting(scenarioId);
-      await startScenario(scenarioId, user.id);
+      const response = await startScenario(scenarioId, user.id);
+
+      // If we get here, the scenario started successfully
+      // Update the active session in the query cache
+      queryClient.setQueryData(["active-session", user.id], response);
+
       // Redirect to the scenario page
       router.push(`/conversations/${scenarioId}`);
     } catch (error) {
       console.error("Failed to start scenario:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to start scenario. Please try again."
-      );
+
+      // Try to get the specific error message from the backend
+      let errorMessage = "Failed to start scenario. Please try again.";
+      if (error instanceof Error) {
+        try {
+          const parsed = JSON.parse(error.message);
+          errorMessage = parsed.detail || error.message;
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsStarting(null);
     }

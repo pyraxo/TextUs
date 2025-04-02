@@ -1,8 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { ActivitySquare } from "lucide-react";
 
 // This type is used to define the shape of our data.
 export type ScenarioTableItem = {
@@ -39,13 +46,19 @@ export const getPendingColumns = ({
     accessorKey: "name",
     header: "Scenario",
     cell: ({ row }) => {
-      const description = row.original.description;
+      const scenario = row.original;
+      const description = scenario.description;
       return (
-        <div>
-          <div className="font-medium">{row.getValue("name")}</div>
-          {description && (
-            <div className="text-sm text-muted-foreground">{description}</div>
+        <div className="flex items-start gap-2">
+          {scenario.isActiveScenario && (
+            <ActivitySquare className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           )}
+          <div>
+            <div className="font-medium">{row.getValue("name")}</div>
+            {description && (
+              <div className="text-sm text-muted-foreground">{description}</div>
+            )}
+          </div>
         </div>
       );
     },
@@ -56,20 +69,18 @@ export const getPendingColumns = ({
       const scenario = row.original;
 
       // Determine if button should be disabled
-      // Button is disabled if:
-      // 1. This scenario is starting
-      // 2. This scenario is not active but there is an active scenario somewhere else
       const hasActiveScenario = scenario.isActiveScenario === true;
       const isDisabled =
         isStarting === scenario.id || // Disable while starting
         (!hasActiveScenario && scenario.activeScenarioExists); // Disable non-active if ANY scenario is active
 
-      return (
+      const button = (
         <Button
           variant="outline"
           size="sm"
           disabled={isDisabled}
           onClick={() => onStart?.(scenario.id)}
+          className={hasActiveScenario ? "bg-primary/10" : ""}
         >
           {isStarting === scenario.id
             ? "Starting..."
@@ -78,6 +89,21 @@ export const getPendingColumns = ({
             : "Start Now"}
         </Button>
       );
+
+      if (isDisabled && !hasActiveScenario && scenario.activeScenarioExists) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>{button}</TooltipTrigger>
+              <TooltipContent>
+                <p>Complete your active scenario before starting a new one</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      return button;
     },
   },
 ];
@@ -89,13 +115,19 @@ export const getCompletedColumns = ({
     accessorKey: "name",
     header: "Scenario",
     cell: ({ row }) => {
-      const description = row.original.description;
+      const scenario = row.original;
+      const description = scenario.description;
       return (
-        <div>
-          <div className="font-medium">{row.getValue("name")}</div>
-          {description && (
-            <div className="text-sm text-muted-foreground">{description}</div>
+        <div className="flex items-start gap-2">
+          {scenario.isActiveScenario && (
+            <ActivitySquare className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           )}
+          <div>
+            <div className="font-medium">{row.getValue("name")}</div>
+            {description && (
+              <div className="text-sm text-muted-foreground">{description}</div>
+            )}
+          </div>
         </div>
       );
     },
@@ -121,15 +153,33 @@ export const getCompletedColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const scenario = row.original;
-      return (
+      const isDisabled = scenario.activeScenarioExists;
+
+      const button = (
         <Button
           variant="outline"
           size="sm"
+          disabled={isDisabled}
           onClick={() => onRetry?.(scenario.id)}
         >
           Retry
         </Button>
       );
+
+      if (isDisabled) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>{button}</TooltipTrigger>
+              <TooltipContent>
+                <p>Complete your active scenario before retrying this one</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      return button;
     },
   },
 ];
