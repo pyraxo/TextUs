@@ -55,7 +55,7 @@ class State(TypedDict):
     unanswered_queries: list[str] = []
 
     patience_level: float = 0.5  # 0.0-1.0, where lower means more impatient
-    end_chat: bool = False
+    should_end_chat: bool = False
 
     conversation_history: list[str] = []
     status: ChatStatus = ChatStatus.INIT

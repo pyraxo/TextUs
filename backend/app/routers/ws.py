@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from functools import partial
 from typing import Annotated
 from uuid import UUID
@@ -20,6 +21,7 @@ from app.core.db import get_session
 from app.core.security import get_settings, jwt
 from app.core.ws_manager import manager
 from app.models.chat import ChatConversation, ChatMessage, MessageType
+from app.models.scenario_session import ScenarioSession, SessionStatus
 from app.models.user import User
 
 # Set up logger for websockets with concise formatting
@@ -59,8 +61,6 @@ async def get_current_user_ws(
             access_token, settings.secret_key, algorithms=[settings.algorithm]
         )
         user_id: str = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
 
         # Get the user from the database
         user = await session.get(User, UUID(user_id))
@@ -72,6 +72,47 @@ async def get_current_user_ws(
     except (jwt.JWTError, Exception) as e:
         ws_logger.error(f"Authentication error: {e}")
         raise credentials_exception from e
+
+
+async def end_chat(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    conversation_id: UUID,
+    trainee_id: UUID,
+):
+    """End the chat"""
+    conversation_id = parse_uuid(conversation_id)
+    conversation = await session.get(ChatConversation, conversation_id)
+    print(f"ENDING CHAT: {conversation_id}")
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found",
+        )
+    conversation.ended_at = datetime.now()
+    scenario_session = await session.get(
+        ScenarioSession, conversation.scenario_session_id
+    )
+    scenario_session.status = SessionStatus.COMPLETED
+    session.add(conversation)
+    session.add(scenario_session)
+    await session.commit()
+    await session.refresh(conversation)
+
+    await manager.broadcast_to_conversation(
+        {
+            "type": "END_CHAT",
+            "conversationId": str(conversation_id),
+            "payload": {
+                "id": str(conversation.id),
+                "scenario_session_id": str(conversation.scenario_session_id),
+                "trainee_id": str(conversation.trainee_id),
+                "timestamp": str(conversation.ended_at),
+            },
+        },
+        conversation_id,
+    )
+
+    return conversation
 
 
 async def create_message(
@@ -144,8 +185,6 @@ async def broadcast_message(message: ChatMessage, user: User = None):
             "name": user.name,
         }
 
-    print(f"i DON'T KNOW WHAT'S GOING ON {message_data}")
-
     await manager.broadcast_to_conversation(message_data, message.conversation_id)
 
 
@@ -216,10 +255,11 @@ async def websocket_endpoint(
                                 print("LET'S RESUME BABY")
                                 await resume_chatbot(
                                     session=session,
-                                    create_message=partial(create_message, session),
+                                    send_message_func=partial(create_message, session),
                                     conversation_id=conversation_id,
                                     user_message=chat_message.content,
                                     message_id=chat_message.id,
+                                    end_chat_func=partial(end_chat, session),
                                 )
                         except Exception as e:
                             ws_logger.error("Error creating message: %s", e)

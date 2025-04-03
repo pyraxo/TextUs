@@ -23,6 +23,7 @@ from app.routers import (
     customers_router,
     scenarios_router,
     schemes_router,
+    trainees_router,
     users_router,
     ws_router,
 )
@@ -119,6 +120,7 @@ app.include_router(schemes_router)
 app.include_router(conversations_router)
 app.include_router(ws_router)
 app.include_router(customers_router)
+app.include_router(trainees_router)
 
 
 @app.get("/")

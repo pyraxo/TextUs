@@ -1,3 +1,4 @@
+from typing import Callable
 from uuid import UUID
 
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
@@ -7,6 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.chatter.chat_nodes import (
     check_termination,
+    end_chat,
     generate_customer_response,
     handle_agent_input,
     send_message,
@@ -32,6 +34,7 @@ def create_workflow():
         "handle_agent_input": handle_agent_input,
         "generate_customer_response": generate_customer_response,
         "check_termination": check_termination,
+        "end_chat": end_chat,
     }
 
     for node_name, node_func in nodes.items():
@@ -42,11 +45,13 @@ def create_workflow():
     graph.add_edge("handle_agent_input", "generate_customer_response")
     graph.add_edge("generate_customer_response", "send_message")
     graph.add_edge("send_message", "check_termination")
+    graph.add_edge("end_chat", END)
 
     graph.add_conditional_edges(
         "check_termination",
-        lambda state: END if state.get("end_chat", False) else "handle_agent_input",
-        {"handle_agent_input": "handle_agent_input", END: END},
+        lambda state: "end_chat"
+        if state.get("should_end_chat", False)
+        else "handle_agent_input",
     )
 
     return graph
@@ -59,10 +64,11 @@ CHECKPOINT_DB_URL = "sqlite+aiosqlite:///../data/checkpoints.db"
 
 async def resume_chatbot(
     session: AsyncSession,
-    create_message,
+    send_message_func: Callable,
     conversation_id: UUID,
     user_message: str,
     message_id: UUID,
+    end_chat_func: Callable,
 ):
     # First load the conversation history
     conversation_id = parse_uuid(conversation_id)
@@ -81,11 +87,8 @@ async def resume_chatbot(
             config={
                 "configurable": {
                     "thread_id": str(conversation_id),
-                    "send_message": create_message,
+                    "send_message_func": send_message_func,
+                    "end_chat_func": end_chat_func,
                 },
             },
         )
-
-        from app.routers.ws import broadcast_message
-
-        await broadcast_message(chat_message, user)

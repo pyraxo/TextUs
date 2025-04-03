@@ -5,6 +5,7 @@ __all__ = [
     "customers_router",
     "scenarios_router",
     "schemes_router",
+    "trainees_router",
     "users_router",
     "ws_router",
 ]
@@ -15,5 +16,6 @@ from .conversations import router as conversations_router
 from .customers import router as customers_router
 from .scenarios import router as scenarios_router
 from .schemes import router as schemes_router
+from .trainees import router as trainees_router
 from .users import router as users_router
 from .ws import router as ws_router

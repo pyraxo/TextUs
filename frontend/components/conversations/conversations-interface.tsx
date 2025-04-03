@@ -58,6 +58,11 @@ export function ConversationsInterface() {
     markConversationAsRead,
   } = useWebSocket();
 
+  // Get conversation state for active conversation
+  const activeConversationState = activeConversationId
+    ? getConversationState(activeConversationId)
+    : null;
+
   // Load conversation data when selected
   const loadConversation = useCallback(
     async (conversationId: string) => {
@@ -65,6 +70,9 @@ export function ConversationsInterface() {
         const data: ConversationResponse = await getConversation(
           conversationId
         );
+
+        // Get the current state from the WebSocket provider
+        const conversationState = getConversationState(conversationId);
 
         // Calculate latest message timestamp
         const latestMessageTimestamp = new Date(
@@ -79,6 +87,10 @@ export function ConversationsInterface() {
             messages: data.messages,
             conversation: {
               ...data.conversation,
+              // If WebSocket says it's ended but API doesn't yet, trust WebSocket
+              ended_at: conversationState?.ended
+                ? conversationState.endedAt
+                : data.conversation.ended_at,
               latest_message_timestamp: latestMessageTimestamp.toISOString(),
             },
             unreadCount: 0,
@@ -99,16 +111,27 @@ export function ConversationsInterface() {
         toast.error("Failed to load conversation. Please try again.");
       }
     },
-    [subscribeToConversation, markConversationAsRead]
+    [subscribeToConversation, markConversationAsRead, getConversationState]
   );
 
   // Handle conversation selection
   const handleConversationSelect = useCallback(
     (conversationId: string) => {
+      console.log("Selecting conversation:", conversationId);
+      console.log(
+        "Conversation state from WebSocket:",
+        getConversationState(conversationId)
+      );
+
       setActiveConversationId(conversationId);
       if (!activeConversations.has(conversationId)) {
+        console.log("Loading conversation for the first time");
         loadConversation(conversationId);
       } else {
+        console.log(
+          "Conversation already loaded:",
+          activeConversations.get(conversationId)
+        );
         // Reset unread count and mark latest message as read
         setActiveConversations((prev) => {
           const newMap = new Map(prev);
@@ -137,6 +160,12 @@ export function ConversationsInterface() {
     console.log("Received WebSocket message:", lastMessage);
 
     const { conversationId } = lastMessage;
+
+    if (lastMessage.type === "END_CHAT") {
+      console.log("END_CHAT received for conversation:", conversationId);
+      // Skip processing - WebSocket provider already handles this
+      return;
+    }
 
     if (
       lastMessage.type === "MESSAGE" &&
@@ -416,6 +445,31 @@ export function ConversationsInterface() {
               <h2 className="font-semibold">
                 {activeConversation.conversation?.scenario_name || "Customer"}
               </h2>
+              {(activeConversationState?.ended ||
+                activeConversation.conversation?.ended_at) && (
+                <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                  <span>Chat ended</span>
+                  <time
+                    dateTime={
+                      activeConversationState?.ended
+                        ? activeConversationState.endedAt.toISOString()
+                        : new Date(
+                            activeConversation.conversation?.ended_at ||
+                              Date.now()
+                          ).toISOString()
+                    }
+                  >
+                    {formatMessageTime(
+                      activeConversationState?.ended
+                        ? activeConversationState.endedAt.toISOString()
+                        : new Date(
+                            activeConversation.conversation?.ended_at ||
+                              Date.now()
+                          ).toISOString()
+                    )}
+                  </time>
+                </div>
+              )}
               {connectionState !== "connected" && (
                 <p className="text-sm text-yellow-500">Reconnecting...</p>
               )}
@@ -423,56 +477,66 @@ export function ConversationsInterface() {
             <Separator className="bg-muted" />
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {activeConversation.messages.map((msg, index) => (
-                  <div
-                    key={msg.id || index}
-                    className={`flex ${
-                      msg.message_type === "user"
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
+                {activeConversation.messages.map((msg, index) => {
+                  // For bot messages, split content by double newlines
+                  const messageContents =
+                    msg.message_type === MessageType.BOT
+                      ? msg.content
+                          .split("\n\n")
+                          .filter((content) => content.trim())
+                      : [msg.content];
+
+                  return messageContents.map((content, contentIndex) => (
                     <div
-                      className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                      key={`${msg.id || index}-${contentIndex}`}
+                      className={`flex ${
                         msg.message_type === "user"
-                          ? "bg-cpf-light-teal text-primary-foreground"
-                          : "bg-card shadow-sm"
+                          ? "justify-end"
+                          : "justify-start"
                       }`}
                     >
-                      <div className="flex items-baseline gap-2">
-                        <span
-                          className={`text-sm font-medium ${
-                            msg.message_type === "user"
-                              ? "text-foreground"
-                              : "text-card-foreground"
-                          }`}
-                        >
-                          {msg.message_type === "user" ? "You" : "Customer"}
-                        </span>
-                        <span
-                          className={`text-xs opacity-70 ${
-                            msg.message_type === "user"
-                              ? "text-foreground"
-                              : "text-card-foreground"
-                          }`}
-                        >
-                          {formatMessageTime(
-                            new Date(msg.timestamp).toISOString()
-                          )}
-                        </span>
-                      </div>
-                      <p
-                        className={`mt-1 text-sm ${
+                      <div
+                        className={`rounded-lg px-4 py-2 max-w-[80%] ${
                           msg.message_type === "user"
-                            ? "text-foreground"
-                            : "text-card-foreground"
+                            ? "bg-cpf-light-teal text-primary-foreground"
+                            : "bg-card shadow-sm"
                         }`}
                       >
-                        {msg.content}
-                      </p>
+                        <div className="flex items-baseline gap-2">
+                          <span
+                            className={`text-sm font-medium ${
+                              msg.message_type === "user"
+                                ? "text-foreground"
+                                : "text-card-foreground"
+                            }`}
+                          >
+                            {msg.message_type === "user" ? "You" : "Customer"}
+                          </span>
+                          <span
+                            className={`text-xs opacity-70 ${
+                              msg.message_type === "user"
+                                ? "text-foreground"
+                                : "text-card-foreground"
+                            }`}
+                          >
+                            {formatMessageTime(
+                              new Date(msg.timestamp).toISOString()
+                            )}
+                          </span>
+                        </div>
+                        <p
+                          className={`mt-1 text-sm ${
+                            msg.message_type === "user"
+                              ? "text-foreground"
+                              : "text-card-foreground"
+                          }`}
+                        >
+                          {content}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ));
+                })}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
@@ -482,8 +546,17 @@ export function ConversationsInterface() {
                 <Textarea
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder="Type your message..."
+                  placeholder={
+                    activeConversationState?.ended ||
+                    activeConversation.conversation?.ended_at
+                      ? "This conversation has ended"
+                      : "Type your message..."
+                  }
                   className="min-h-[80px]"
+                  disabled={
+                    !!activeConversationState?.ended ||
+                    !!activeConversation.conversation?.ended_at
+                  }
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -492,14 +565,24 @@ export function ConversationsInterface() {
                   }}
                 />
                 <div className="flex flex-col gap-2">
-                  <Button size="icon" variant="ghost">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    disabled={
+                      !!activeConversationState?.ended ||
+                      !!activeConversation.conversation?.ended_at
+                    }
+                  >
                     <Paperclip className="h-4 w-4" />
                   </Button>
                   <Button
                     size="icon"
                     onClick={handleSendMessage}
                     disabled={
-                      connectionState !== "connected" || !messageInput.trim()
+                      connectionState !== "connected" ||
+                      !messageInput.trim() ||
+                      !!activeConversationState?.ended ||
+                      !!activeConversation.conversation?.ended_at
                     }
                   >
                     <SendHorizontal className="h-4 w-4" />
