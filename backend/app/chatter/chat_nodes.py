@@ -1,5 +1,6 @@
 from asyncio import sleep
 from datetime import datetime, timedelta
+from random import random
 
 import instructor
 from langchain_core.messages import BaseMessage, HumanMessage
@@ -108,7 +109,7 @@ async def start_chat(state: State, config: RunnableConfig) -> State:
 async def send_message(state: State, config: RunnableConfig) -> State:
     """Send a message"""
 
-    send_message_func = config.get("configurable").get("send_message", None)
+    send_message_func = config.get("configurable").get("send_message_func", None)
 
     # Print all keys in state and their type'
     print("THIS IS THE STATE:")
@@ -142,7 +143,7 @@ async def send_message(state: State, config: RunnableConfig) -> State:
 
 async def handle_agent_input(state: State, config: RunnableConfig) -> State:
     """Handle the agent input"""
-    if state.get("end_chat", False):
+    if state.get("should_end_chat", False):
         return state
 
     # # TODO: Nudge delay will never be reached, as we're not waiting for a response
@@ -171,7 +172,7 @@ async def handle_agent_input(state: State, config: RunnableConfig) -> State:
 
 async def generate_customer_response(state: State, config: RunnableConfig) -> State:
     """Generate the customer response"""
-    if state.get("end_chat", False):
+    if state.get("should_end_chat", False):
         return state
 
     last_user_message_time = state.get("last_user_message_time", None)
@@ -189,13 +190,6 @@ async def generate_customer_response(state: State, config: RunnableConfig) -> St
 
     print(f"Customer: {customer_response.content}")
 
-    # TODO: Randomised end chat chance for now, replace later
-    # state["end_chat"] = random.random() < (1 - state["patience_level"])
-    # if state["end_chat"]:
-    #     print("Customer has ended the chat.")
-    # else:
-    #     print("Customer has not ended the chat.")
-
     state["conversation_history"] += [f"Customer: {customer_response.content}"]
     state["messages"] += [customer_response]
     state["last_message_time"] = datetime.now()
@@ -206,8 +200,25 @@ async def generate_customer_response(state: State, config: RunnableConfig) -> St
 async def check_termination(state: State) -> State:
     """Check if the conversation should be terminated"""
     print("CHECK_TERMINATION")
-    for key, value in state.items():
-        print(f"{key}: {value} ({type(value)})")
+    state["should_end_chat"] = random() < (1 - state["patience_level"])
+    if state["should_end_chat"]:
+        print("Customer has ended the chat.")
+    else:
+        print("Customer has not ended the chat.")
+    return state
+
+
+async def end_chat(state: State, config: RunnableConfig):
+    """End the chat"""
+    end_chat_func = config.get("configurable").get("end_chat_func", None)
+
+    await sleep(1)
+
+    await end_chat_func(
+        conversation_id=state.get("conversation_id"),
+        trainee_id=state.get("trainee_id"),
+    )
+
     return state
 
 

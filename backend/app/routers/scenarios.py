@@ -99,15 +99,6 @@ async def start_scenario(
     )
 
 
-@router.get("/{scenario_id}/session")
-async def get_scenario_session(
-    trainee_id: str,
-    trainee_service: Annotated[TraineeService, Depends()],
-) -> ScenarioSession:
-    """Get the active scenario session for a trainee."""
-    return await trainee_service.get_active_session(trainee_id)
-
-
 @router.put("/{scenario_id}/customers/{customer_id}")
 async def update_scenario_customer(
     scenario_id: str,

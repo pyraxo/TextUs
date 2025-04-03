@@ -82,7 +82,7 @@ export async function startScenario(
 export async function getActiveScenarioSession(
   traineeId: string,
 ): Promise<UserScenarioSession | null> {
-  return await fetchApi<UserScenarioSession>(`/scenarios/${traineeId}/session`);
+  return await fetchApi<UserScenarioSession>(`/trainees/${traineeId}/session`);
 }
 
 /**

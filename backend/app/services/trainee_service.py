@@ -18,7 +18,7 @@ from app.models.chat import ChatConversation, MessageType
 from app.models.scenario import Scenario
 from app.models.scenario_session import ScenarioSession, SessionMetrics, SessionStatus
 from app.models.user import User
-from app.routers.ws import create_message
+from app.routers.ws import create_message, end_chat
 from app.services.conversation_service import ConversationService
 from app.services.scenario_service import ScenarioService
 from app.services.user_service import UserService
@@ -219,12 +219,16 @@ class TraineeService:
         # Check for sessions without end timestamp and not too old
         timeout_threshold = datetime.now() - timedelta(hours=24)  # 24 hour timeout
 
+        print("Getting active session for trainee", trainee_uuid)
+
         statement = select(ScenarioSession).where(
             ScenarioSession.user_id == trainee_uuid,
             ScenarioSession.end_timestamp == None,  # noqa: E711
             ScenarioSession.start_timestamp > timeout_threshold,
         )
         results = (await self.session.exec(statement)).first()
+
+        print("Results", results)
 
         if results and results.start_timestamp <= timeout_threshold:
             # Auto-complete timed out session
@@ -325,6 +329,8 @@ class TraineeService:
                 detail=f"Customer {customer_id} not found in scenario {scenario_id}",
             )
 
+        active_session = await self.create_or_get_session(trainee_id, scenario_id)
+
         conv = None
 
         # First await the exec() call to get the result
@@ -348,9 +354,13 @@ class TraineeService:
                 started_at=datetime.now(),
             )
             print(f"Conversation created: {conv.id}")
-        self.session.add(conv)
-        await self.session.commit()
-        await self.session.refresh(conv)
+
+        # Add conversation to session
+        if conv not in active_session.chat_conversations:
+            active_session.chat_conversations.append(conv)
+            self.session.add(active_session)
+            await self.session.commit()
+            await self.session.refresh(conv)
 
         # Get bot instance
         async with AsyncSqliteSaver.from_conn_string(CHECKPOINT_DB_URL) as checkpointer:
@@ -376,8 +386,9 @@ class TraineeService:
                 input=chat_state,
                 config={
                     "configurable": {
-                        "send_message": partial(create_message, self.session),
+                        "send_message_func": partial(create_message, self.session),
                         "thread_id": str(conv.id),
+                        "end_chat_func": partial(end_chat, self.session),
                     }
                 },
             )
