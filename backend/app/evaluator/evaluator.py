@@ -2,14 +2,20 @@ import os
 import logging
 from dotenv import load_dotenv
 from openai import OpenAI
-from app.evaluator.eval_types import Chat_Transcript
+import instructor  # Import Instructor for structured responses
+from app.evaluator.eval_types import Chat_Transcript, EvaluationResult  # Import structured response model
 from app.services.chroma_db import answer_query
 
 # Load environment variables and configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# regular enquiry for customer responses
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# structured query for data format
+structured_client = instructor.from_openai(client)
+
+# Define evaluation metrics
 EVALUATION_METRICS = ["accuracy", "comprehension", "tone", "chat_handling"]
 
 def load_prompt(metric: str) -> str:
@@ -22,9 +28,10 @@ def load_prompt(metric: str) -> str:
 
 def evaluate_chat_transcript(chat_transcript: Chat_Transcript) -> dict:
     """
-    Evaluates the chat transcript across multiple metrics and returns separate results.
+    Evaluates the chat transcript across multiple metrics and returns structured results.
     """
     try:
+        # Step 1: Extract customer queries (NO STRUCTURED RESPONSE NEEDED)
         extraction_prompt = (
             "Extract only the customer's questions or queries from the following chat transcript. "
             "Ignore agent responses and any other irrelevant details. "
@@ -32,13 +39,13 @@ def evaluate_chat_transcript(chat_transcript: Chat_Transcript) -> dict:
             f"Chat Transcript:\n{chat_transcript.text}"
         )
 
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+        response = client.chat.completions.create(  # Using standard OpenAI client
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an AI assistant that extracts customer queries from chat transcripts."},
                 {"role": "user", "content": extraction_prompt}
             ],
-            max_tokens=500,
+            max_tokens=2000,
         )
 
         customer_queries = response.choices[0].message.content.strip()
@@ -50,46 +57,41 @@ def evaluate_chat_transcript(chat_transcript: Chat_Transcript) -> dict:
 
         evaluation_results = {}
 
+        # Step 2: Evaluate each metric (ENSURE STRUCTURED RESPONSE)
         for metric in EVALUATION_METRICS:
             logging.info(f"Evaluating {metric}...")
 
             prompt = load_prompt(metric)
             system_message = prompt  # Default system message
 
-            # RAG only required for accuracy metric
+            # RAG retrieval only for accuracy
             if metric == "accuracy":
                 retrieved_docs = answer_query(customer_queries)
 
                 # Ensure retrieved_docs is a properly formatted string
-                if isinstance(retrieved_docs, list):
-                    knowledge_text = "\n".join(map(str, retrieved_docs))
-                else:
-                    knowledge_text = "No additional knowledge available."
+                knowledge_text = "\n".join(map(str, retrieved_docs)) if isinstance(retrieved_docs, list) else "No additional knowledge available."
 
-                # Log retrieved knowledge correctly
                 logging.info(f"Retrieved Knowledge from RAG:\n{knowledge_text}")
-
                 system_message = f"{prompt}\n\n---\nRelevant Knowledge:\n{knowledge_text}"
 
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            # Structured response using Instructor
+            evaluation_results[metric] = structured_client.chat.completions.create(
+                model="gpt-4o-mini",
+                response_model=EvaluationResult,
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": f"Chat Transcript: {chat_transcript.text}"}
-                ], 
-                max_tokens=500,
+                ],
+                max_tokens=2000,
             )
 
-            raw_evaluation = response.choices[0].message.content.strip()
-
-            # Only save the evaluation (no additional details or suggested improvements)
-            evaluation_results[metric] = {
-                "evaluation": raw_evaluation
-            }
-
-        logging.info("Final Evaluation Results:\n" + str(evaluation_results))
-
-        return evaluation_results
+            result_instance = evaluation_results[metric]  
+            print(result_instance.metric)
+            print(result_instance.score)
+            print(result_instance.justification)
+            print(result_instance.problematic_responses)
+            print(result_instance.revised_response)
+        return evaluation_results[metric]
 
     except Exception as e:
         logging.error(f"Error evaluating chat transcript: {e}")
@@ -110,7 +112,4 @@ chat_transcript = Chat_Transcript(text=(
 
 # Test in terminal
 evaluation_output = evaluate_chat_transcript(chat_transcript)
-print("\nCleaned Output:")
-for metric, result in evaluation_output.items():
-    print(f"\n{metric.capitalize()}:")
-    print(f"Evaluation: {result['evaluation']}")
+

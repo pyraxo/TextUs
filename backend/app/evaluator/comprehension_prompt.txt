@@ -22,7 +22,7 @@ A score (1-5 out of 5) for comprehension.
 
 A justification for the score.
 
-Identification of parts of the officer's response that shows the officer misunderstood the customer query, if any.
+Any Problematic sections of the transcript.
 
 A revised response that better addresses the customer’s intent.
 
@@ -44,7 +44,7 @@ The response directly addresses the query and provides an explanation of how the
 
 No signs of misunderstanding or misinterpretation are present.
 
-Misunderstood Parts of the Response: None.
+Problematic responses: None.
 
 Revised Response (for clarity, but not necessary for comprehension):
 "Yes, your understanding is correct. The accrued interest continues to grow until a full refund is made. This interest represents what your CPF savings would have earned if they had not been withdrawn for housing. It is calculated monthly and compounded yearly based on the CPF Ordinary Account interest rate."
@@ -63,7 +63,7 @@ However, the response does not anticipate potential concerns such as delays due 
 
 While the answer is factually correct, it could be more comprehensive in covering possible variations in processing times.
 
-Misunderstood Parts of the Response:
+Problematic responses:
 
 The agent assumes a standard processing time without acknowledging that the timeline may vary based on factors such as verification requirements.
 
@@ -84,7 +84,7 @@ However, the response lacks depth. The agent does not clarify the full range of 
 
 The response does not fully explore whether the customer qualifies for any early withdrawal options, which may leave them with incomplete information.
 
-Misunderstood Parts of the Response:
+Problematic responses:
 
 The agent assumes that the customer is ineligible without first identifying whether they meet any exceptions.
 

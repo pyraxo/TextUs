@@ -22,7 +22,7 @@ A score (1-5 out of 5) for chat handling.
 
 A justification for the score.
 
-Identification of parts of the officer's response that make it a poor response, if any.
+Any Problematic sections of the transcript.
 
 A revised response that improves chat handling.
 
@@ -44,7 +44,7 @@ The response is well-structured and follows a logical sequence, making it easy t
 
 The closing message is polite, though slightly repetitive.
 
-Parts of the Response That Could Be Improved:
+Problematic responses:
 
 The agent could have directly asked if the customer needed more clarification instead of a generic closing message.
 
@@ -65,7 +65,7 @@ However, the agent does not acknowledge any potential customer concerns about de
 
 The transition between the answer and suggesting next steps could have been smoother.
 
-Parts of the Response That Could Be Improved:
+Problematic responses:
 
 The agent could have acknowledged any concerns the customer might have about the timeline and provided guidance on what to do in case of delays.
 
@@ -86,7 +86,7 @@ It does not acknowledge the customer’s possible need for guidance or clarifica
 
 Redirecting the customer to a website instead of offering direct help weakens the engagement.
 
-Parts of the Response That Could Be Improved:
+Problematic responses:
 
 The agent should have guided the customer on what exceptional conditions might allow for early withdrawal.
 

@@ -23,7 +23,7 @@ A score (1-5 out of 5) for tone.
 
 A justification for the score.
 
-Identification of parts of the officer's response that make it a poor response, if any.
+Any Problematic sections of the transcript.
 
 A revised response that improves tone.
 
@@ -45,7 +45,7 @@ The explanation is clear, but it feels somewhat formal and robotic rather than c
 
 The closing message is courteous, but it repeats "further questions" unnecessarily, making it slightly less natural.
 
-Parts of the Response That Could Be Improved:
+Problematic responses:
 
 The explanation, while informative, could be more engaging.
 
@@ -68,7 +68,7 @@ The response is direct yet maintains a helpful tone.
 
 The offer to check the status or reach out to support adds a customer-focused approach, showing care and assistance.
 
-Parts of the Response That Could Be Improved:
+Problematic responses:
 
 No major issues, but the response could feel slightly more engaging.
 
@@ -89,7 +89,7 @@ Starting with "Unfortunately" makes the response sound dismissive rather than he
 
 The agent directs the customer to a website instead of offering further assistance, which could feel unhelpful.
 
-Parts of the Response That Could Be Improved:
+Problematic responses:
 
 The tone could be more empathetic, acknowledging the customer's possible concerns.
 

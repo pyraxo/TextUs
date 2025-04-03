@@ -22,7 +22,7 @@ A score (1-5 out of 5) for accuracy.
 
 A justification for the score.
 
-Identification of incorrect or misleading parts of the transcript if any.
+Any Problematic sections of the transcript.
 
 A revised response that improves accuracy if possible.
 
@@ -45,7 +45,7 @@ The explanation about how accrued interest is computed aligns with CPF policies.
 
 There are no factual inaccuracies or misleading statements in the response.
 
-Incorrect or Misleading Information: None.
+Problematic responses: None.
 
 Revised Response (for clarity, but not necessary for accuracy):
 "Yes, your understanding is correct. Accrued interest continues to grow until the full refund is made. This interest represents what your CPF savings would have earned if they had not been withdrawn for housing. It is calculated monthly based on the CPF Ordinary Account interest rate and compounded yearly."
@@ -64,7 +64,7 @@ However, the response does not account for potential exceptions such as addition
 
 The CPF website may list specific factors that affect processing times, which the agent should mention for completeness.
 
-Incorrect or Misleading Information:
+Problematic responses:
 
 The response does not acknowledge potential delays due to verification, missing documents, or different CPF schemes.
 
@@ -85,7 +85,7 @@ However, it oversimplifies the exceptions. While medical reasons are a valid con
 
 The response lacks details on key conditions, which could mislead customers into thinking they have no options when, in fact, some exist.
 
-Incorrect or Misleading Information:
+Problematic responses:
 
 The phrase "unless they meet specific medical or exceptional conditions" is too vague and does not cover all possible early withdrawal scenarios.
 

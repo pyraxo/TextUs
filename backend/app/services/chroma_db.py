@@ -1,6 +1,7 @@
 import os
 import re
 import pandas as pd
+from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.documents import Document
@@ -10,6 +11,7 @@ from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplat
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
+load_dotenv()
 BASE_DIR = "backend/data"
 CSV_FILE_PATH = os.path.join(BASE_DIR, "faq_cat_for_embed.csv")
 DB_PATH = os.path.join(BASE_DIR, "chroma_db")
