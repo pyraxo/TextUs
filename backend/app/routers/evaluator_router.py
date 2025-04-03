@@ -1,17 +1,19 @@
-# routing for evaluator ai
-from fastapi import APIRouter
 from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from app.evaluator.evaluator import evaluate_chat_transcript
 
-from app.evaluator.evaluator import evaluate_response  # import logic
+class ChatTranscriptRequest(BaseModel):
+    text: str
 
+# Initialize API router
 router = APIRouter()
 
-
-class UserResponse(BaseModel):
-    response: str
-
-
 @router.post("/evaluate")
-async def evaluate(user_input: UserResponse):
-    feedback = evaluate_response("Placeholder text", user_input.response)
-    return {"feedback": feedback}
+async def evaluate_chat(request: ChatTranscriptRequest):
+    """
+    API endpoint to evaluate a chat transcript.
+    """
+    try:
+        return evaluate_chat_transcript(request.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
