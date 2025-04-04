@@ -42,7 +42,7 @@ def load_fixed_csv_to_chroma():
             ))
     splitter = NLTKTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = splitter.split_documents(documents)
-    Chroma.from_documents(chunks, embedding_model, persist_directory=DB_PATH).persist()
+    Chroma.from_documents( documents=chunks, embedding=embedding_model, persist_directory=DB_PATH)
 
 if not os.path.exists(DB_PATH):
     load_fixed_csv_to_chroma()
@@ -76,3 +76,5 @@ rag_chain = (
 
 def answer_query(query: str) -> str:
     return rag_chain.invoke(query)
+
+print(answer_query("Premium? So, smaller payouts *now* for more later? "))

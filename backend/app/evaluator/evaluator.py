@@ -67,12 +67,8 @@ def evaluate_chat_transcript(chat_transcript: Chat_Transcript) -> dict:
             # RAG retrieval only for accuracy
             if metric == "accuracy":
                 retrieved_docs = answer_query(customer_queries)
-
-                # Ensure retrieved_docs is a properly formatted string
-                knowledge_text = "\n".join(map(str, retrieved_docs)) if isinstance(retrieved_docs, list) else "No additional knowledge available."
-
-                logging.info(f"Retrieved Knowledge from RAG:\n{knowledge_text}")
-                system_message = f"{prompt}\n\n---\nRelevant Knowledge:\n{knowledge_text}"
+                logging.info(f"Retrieved Knowledge from RAG:\n{retrieved_docs}")
+                system_message = f"{prompt}\n\n---\nRelevant Knowledge:\n{retrieved_docs}"
 
             # Structured response using Instructor
             evaluation_results[metric] = structured_client.chat.completions.create(
