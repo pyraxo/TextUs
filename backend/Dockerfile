@@ -1,14 +1,29 @@
-FROM python:3.9
+FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY ./requirements.txt /app/requirements.txt
+# Install build dependencies for certain packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+# Copy requirements first for better caching
+COPY backend/requirements.txt /app/requirements.txt
 
-COPY ./app /app/app
+# Install dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+# Copy application code
+COPY backend/app /app/app
+
+# Expose the port that matches docker-compose
+EXPOSE 3001
+
+# Use uvicorn to run the FastAPI app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3001"]
 
 # If running behind a proxy like Nginx or Traefik add --proxy-headers
 # CMD ["fastapi", "run", "app/main.py", "--port", "80", "--proxy-headers"]

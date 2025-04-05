@@ -78,10 +78,14 @@ async def resume_chatbot(
     async with AsyncSqliteSaver.from_conn_string(CHECKPOINT_DB_URL) as checkpointer:
         chatbot = workflow.compile(checkpointer=checkpointer)
         print(f"Resuming chatbot for conversation: {conversation_id}")
+        print(f"With user message: {user_message}")
+        print("Using multitask strategy: INTERRUPT")
 
         chat_message: ChatMessage = await session.get(ChatMessage, message_id)
         user = await session.get(User, chat_message.trainee_id)
 
+        # This will interrupt the current run and start a new one with the user message
+        # The message will be passed to the handle_agent_input node via resumed_with
         await chatbot.ainvoke(
             Command(resume=user_message),
             config={
@@ -90,5 +94,8 @@ async def resume_chatbot(
                     "send_message_func": send_message_func,
                     "end_chat_func": end_chat_func,
                 },
+                # Use the interrupt multitask strategy to interrupt any ongoing run
+                # and start a new one with the user message
+                "multitask_strategy": "interrupt",
             },
         )
