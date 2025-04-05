@@ -120,7 +120,7 @@ export const ManageScenarioCustomersDialog: FC<
           toast.success(`Added ${uniqueName} to scenario`);
         },
         onError: (error) => {
-          toast.error(`Failed to add bot: ${error.message}`);
+          toast.error(`Failed to add agent: ${error.message}`);
         },
       }
     );
@@ -144,11 +144,11 @@ export const ManageScenarioCustomersDialog: FC<
           if (editingCustomer?.id === deletingCustomer.id) {
             setEditingCustomer(null);
           }
-          toast.success("Bot removed from scenario");
+          toast.success("Agent removed from scenario");
           setDeletingCustomer(null);
         },
         onError: (error) => {
-          toast.error(`Failed to remove bot: ${error.message}`);
+          toast.error(`Failed to remove agent: ${error.message}`);
           setDeletingCustomer(null);
         },
       }
@@ -178,7 +178,7 @@ export const ManageScenarioCustomersDialog: FC<
             toast.success("Bot settings updated successfully");
           },
           onError: (error) => {
-            toast.error(`Failed to update bot: ${error.message}`);
+            toast.error(`Failed to update agent: ${error.message}`);
           },
         }
       );
@@ -192,16 +192,16 @@ export const ManageScenarioCustomersDialog: FC<
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] border-0 h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Manage Bots</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Manage Agents</DialogTitle>
           <DialogDescription>
-            Add, remove, and configure bots for this scenario.
+            Add, remove, and configure agents for this scenario.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 flex overflow-hidden">
           {/* Left side - List of scenario customers */}
           <div className="w-1/2 border-r pr-4 overflow-hidden flex flex-col">
-            <div className="font-semibold mb-2">Current Bots</div>
+            <div className="font-semibold mb-2">Current Agents</div>
             <ScrollArea className="flex-1 pr-4">
               {isLoadingScenarioCustomers ? (
                 <div className="flex items-center justify-center py-4">
@@ -239,14 +239,14 @@ export const ManageScenarioCustomersDialog: FC<
                 </div>
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
-                  No bots added to this scenario yet
+                  No agents added to this scenario yet
                 </div>
               )}
             </ScrollArea>
 
             <Separator className="my-4" />
 
-            <div className="font-semibold mb-2">Add Bots</div>
+            <div className="font-semibold mb-2">Add Agents</div>
             <ScrollArea className="h-40 pr-4">
               <div className="space-y-3">
                 {allCustomers?.map((customer) => (
@@ -286,7 +286,7 @@ export const ManageScenarioCustomersDialog: FC<
                 className="space-y-4 flex-1 overflow-auto"
               >
                 <div className="font-semibold mb-2 flex justify-between items-center">
-                  <span>Configure Bot</span>
+                  <span>Configure Agent</span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -298,12 +298,12 @@ export const ManageScenarioCustomersDialog: FC<
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="name">Bot Name</Label>
+                  <Label htmlFor="name">Agent Name</Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter bot name"
+                    placeholder="Enter agent name"
                     required
                     disabled={isPending}
                   />
@@ -317,7 +317,7 @@ export const ManageScenarioCustomersDialog: FC<
                     id="scenarioPrompt"
                     value={scenarioPrompt}
                     onChange={(e) => setScenarioPrompt(e.target.value)}
-                    placeholder="Bot-specific prompt for this scenario"
+                    placeholder="Agent-specific prompt for this scenario"
                     rows={4}
                     disabled={isPending}
                   />
@@ -383,7 +383,7 @@ export const ManageScenarioCustomersDialog: FC<
               </form>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                Select a bot to configure its settings
+                Select an agent to configure its settings
               </div>
             )}
           </div>
@@ -396,7 +396,7 @@ export const ManageScenarioCustomersDialog: FC<
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Bot</AlertDialogTitle>
+              <AlertDialogTitle>Delete Agent</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to remove {deletingCustomer?.name} from
                 this scenario? This action cannot be undone.

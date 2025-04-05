@@ -118,7 +118,7 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
               disabled={isPending}
             >
               <Bot size={20} />
-              Bots
+              Agents
             </Button>
             <Button
               variant="outline"

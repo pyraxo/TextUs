@@ -28,6 +28,10 @@ dependencies = [
     "langchain-openai>=0.3.11",
     "greenlet>=3.1.1",
     "instructor>=1.7.8",
+    "langgraph-checkpoint-sqlite>=2.0.6",
+    "langgraph-checkpoint-postgres>=2.0.19",
+    "psycopg[binary,pool]>=3.2.6",
+    "psycopg-pool>=3.2.6",
 ]
 
 [dependency-groups]

@@ -9,6 +9,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from app.models.scenario_customer import ScenarioCustomer
     from app.models.scenario_session import ScenarioSession
+    from app.models.user import User
 
 
 class MessageType(str, Enum):
@@ -16,13 +17,22 @@ class MessageType(str, Enum):
     BOT = "bot"
 
 
+class ConversationStatus(str, Enum):
+    IDLE = "idle"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class ChatMessageBase(SQLModel):
     """Base Chat message model with common fields."""
 
-    sender_id: str
-    message: str
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    content: str
     message_type: MessageType
     timestamp: datetime = Field(default_factory=datetime.now)
+    conversation_id: UUID
+    trainee_id: UUID
 
 
 class ChatMessage(ChatMessageBase, table=True):
@@ -30,32 +40,21 @@ class ChatMessage(ChatMessageBase, table=True):
 
     __tablename__ = "chat_messages"
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-
     # Foreign keys
     conversation_id: UUID = Field(foreign_key="chat_conversations.id")
+    trainee_id: UUID = Field(foreign_key="users.id")
 
     # Relationships
     conversation: Optional["ChatConversation"] = Relationship(back_populates="messages")
-
-
-class ChatMessageRead(ChatMessageBase):
-    """Chat message model for reading."""
-
-    id: UUID
-    conversation_id: UUID
-
-
-class ChatMessageCreate(ChatMessageBase):
-    """Chat message model for creation."""
-
-    conversation_id: Optional[UUID] = None
+    trainee: Optional["User"] = Relationship(back_populates="chat_messages")
 
 
 class ChatConversationBase(SQLModel):
     """Base Chat conversation model with common fields."""
 
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     scenario_customer_id: UUID
+    trainee_id: UUID
 
 
 class ChatConversation(ChatConversationBase, table=True):
@@ -63,12 +62,15 @@ class ChatConversation(ChatConversationBase, table=True):
 
     __tablename__ = "chat_conversations"
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
     started_at: datetime = Field(default_factory=datetime.now)
     ended_at: Optional[datetime] = None
 
     # Foreign keys
     scenario_customer_id: UUID = Field(foreign_key="scenario_customers.id")
+    trainee_id: UUID = Field(foreign_key="users.id")
+    scenario_session_id: Optional[UUID] = Field(
+        foreign_key="scenario_sessions.id", default=None
+    )
 
     # Relationships
     scenario_customer: Optional["ScenarioCustomer"] = Relationship(
@@ -76,9 +78,9 @@ class ChatConversation(ChatConversationBase, table=True):
     )
     messages: List[ChatMessage] = Relationship(back_populates="conversation")
     scenario_session: Optional["ScenarioSession"] = Relationship(
-        back_populates="chat_conversations",
-        sa_relationship_kwargs={"secondary": "scenario_session_chats"},
+        back_populates="chat_conversations"
     )
+    trainee: Optional["User"] = Relationship(back_populates="chat_conversations")
 
     # Store chat history as JSON string
     messages_json: Optional[str] = Field(
@@ -96,24 +98,3 @@ class ChatConversation(ChatConversationBase, table=True):
     def chat_history(self, value: List[str]):
         """Set the chat history from a list."""
         self.messages_json = json.dumps(value)
-
-
-class ChatConversationRead(ChatConversationBase):
-    """Chat conversation model for reading."""
-
-    id: UUID
-    started_at: datetime
-    ended_at: Optional[datetime] = None
-    messages: List[ChatMessageRead]
-
-
-class ChatConversationCreate(ChatConversationBase):
-    """Chat conversation model for creation."""
-
-    initial_message: Optional[ChatMessageCreate] = None
-
-
-class ConversationResponse(ChatConversationBase):
-    id: UUID
-    started_at: datetime
-    ended_at: Optional[datetime] = None

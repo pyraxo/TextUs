@@ -73,12 +73,11 @@ export default function CustomersPage() {
         <div className="bg-cpf-light-teal pt-8 pb-8">
           <div className="container mx-auto">
             {/* Main heading */}
-            <h1 className="text-3xl font-bold mb-2">Manage Trainees</h1>
+            <h1 className="text-3xl font-bold mb-2">Manage Agents</h1>
 
             {/* Subheading */}
             <h2 className="text-sm">
-              Monitor, evaluate, and support the progress of your assigned
-              trainees
+              Create, edit and manage the customer profile templates
             </h2>
           </div>
         </div>
