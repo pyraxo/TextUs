@@ -262,7 +262,7 @@ async def websocket_endpoint(
                                     end_chat_func=partial(end_chat, session),
                                 )
                         except Exception as e:
-                            ws_logger.error("Error creating message: %s", e)
+                            ws_logger.error("Error resuming chatbot: %s", e)
                             continue
 
             elif data["type"] in ["TYPING", "STATUS_CHANGE"]:

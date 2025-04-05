@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1000" height="1200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1000" height="1200" fill="#f8f9fa" />
+  
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial" font-size="24" text-anchor="middle" font-weight="bold">CPF Board TextUs - Directory Structure</text>
+  
+  <!-- Root folder -->
+  <g id="root-folder">
+    <!-- Root directory with main folders -->
+    <rect x="50" y="80" width="900" height="80" rx="5" ry="5" fill="#f0f0f0" stroke="#888888" stroke-width="2" />
+    <text x="70" y="110" font-family="monospace" font-size="18" font-weight="bold">sds_cpf/</text>
+    <text x="200" y="110" font-family="monospace" font-size="16" fill="#555555">(Root Directory)</text>
+    
+    <text x="70" y="135" font-family="monospace" font-size="14">README.md  docker-compose.yml  .gitignore</text>
+    
+    <!-- Documentation -->
+    <rect x="80" y="190" width="240" height="140" rx="5" ry="5" fill="#e3f2fd" stroke="#1565c0" stroke-width="1" />
+    <text x="100" y="220" font-family="monospace" font-size="18" font-weight="bold">docs/</text>
+    
+    <text x="100" y="250" font-family="monospace" font-size="14">changelog.md</text>
+    <text x="100" y="275" font-family="monospace" font-size="14">prd.md</text>
+    <text x="100" y="300" font-family="monospace" font-size="14">README.md</text>
+    
+    <!-- Frontend -->
+    <rect x="80" y="350" width="240" height="420" rx="5" ry="5" fill="#fff3e0" stroke="#e65100" stroke-width="1" />
+    <text x="100" y="380" font-family="monospace" font-size="18" font-weight="bold">frontend/</text>
+    
+    <text x="100" y="410" font-family="monospace" font-size="14">package.json</text>
+    <text x="100" y="435" font-family="monospace" font-size="14">next.config.mjs</text>
+    <text x="100" y="460" font-family="monospace" font-size="14">tsconfig.json</text>
+    <text x="100" y="485" font-family="monospace" font-size="14">Dockerfile</text>
+    <text x="100" y="510" font-family="monospace" font-size="14">.env, .env.example</text>
+    
+    <rect x="120" y="530" width="180" height="50" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="135" y="560" font-family="monospace" font-size="14" font-weight="bold">app/</text>
+    
+    <rect x="120" y="590" width="180" height="50" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="135" y="620" font-family="monospace" font-size="14" font-weight="bold">components/</text>
+    
+    <rect x="120" y="650" width="180" height="50" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="135" y="680" font-family="monospace" font-size="14" font-weight="bold">hooks/</text>
+    
+    <rect x="120" y="710" width="180" height="50" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="135" y="740" font-family="monospace" font-size="14" font-weight="bold">lib/</text>
+    
+    <!-- Backend -->
+    <rect x="350" y="190" width="240" height="850" rx="5" ry="5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1" />
+    <text x="370" y="220" font-family="monospace" font-size="18" font-weight="bold">backend/</text>
+    
+    <text x="370" y="250" font-family="monospace" font-size="14">pyproject.toml</text>
+    <text x="370" y="275" font-family="monospace" font-size="14">README.md</text>
+    <text x="370" y="300" font-family="monospace" font-size="14">uvicorn_config.py</text>
+    <text x="370" y="325" font-family="monospace" font-size="14">alembic.ini</text>
+    <text x="370" y="350" font-family="monospace" font-size="14">Dockerfile</text>
+    <text x="370" y="375" font-family="monospace" font-size="14">.env, .env.example</text>
+    
+    <rect x="390" y="400" width="180" height="50" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="405" y="430" font-family="monospace" font-size="14" font-weight="bold">app/</text>
+    
+    <rect x="430" y="460" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="485" font-family="monospace" font-size="12" font-weight="bold">main.py</text>
+    
+    <rect x="430" y="505" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="530" font-family="monospace" font-size="12" font-weight="bold">routers/</text>
+    
+    <rect x="430" y="550" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="575" font-family="monospace" font-size="12" font-weight="bold">models/</text>
+    
+    <rect x="430" y="595" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="620" font-family="monospace" font-size="12" font-weight="bold">services/</text>
+    
+    <rect x="430" y="640" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="665" font-family="monospace" font-size="12" font-weight="bold">chatter/</text>
+    
+    <rect x="430" y="685" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="710" font-family="monospace" font-size="12" font-weight="bold">evaluator/</text>
+    
+    <rect x="430" y="730" width="140" height="35" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="445" y="755" font-family="monospace" font-size="12" font-weight="bold">core/</text>
+    
+    <rect x="390" y="790" width="180" height="50" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="405" y="820" font-family="monospace" font-size="14" font-weight="bold">tests/</text>
+    
+    <rect x="390" y="850" width="180" height="50" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="405" y="880" font-family="monospace" font-size="14" font-weight="bold">alembic/</text>
+    
+    <rect x="390" y="910" width="180" height="50" rx="3" ry="3" fill="#c8e6c9" stroke="#388e3c" stroke-width="1" />
+    <text x="405" y="940" font-family="monospace" font-size="14" font-weight="bold">data/</text>
+    
+    <!-- Frontend app -->
+    <rect x="620" y="350" width="240" height="420" rx="5" ry="5" fill="#fff3e0" stroke="#e65100" stroke-width="1" />
+    <text x="640" y="380" font-family="monospace" font-size="18" font-weight="bold">frontend/app/</text>
+    
+    <text x="640" y="410" font-family="monospace" font-size="14">layout.tsx</text>
+    <text x="640" y="435" font-family="monospace" font-size="14">globals.css</text>
+    <text x="640" y="460" font-family="monospace" font-size="14">page.tsx</text>
+    <text x="640" y="485" font-family="monospace" font-size="14">not-found.tsx</text>
+    
+    <rect x="660" y="515" width="180" height="35" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="675" y="540" font-family="monospace" font-size="14" font-weight="bold">dashboard/</text>
+    
+    <rect x="660" y="560" width="180" height="35" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="675" y="585" font-family="monospace" font-size="14" font-weight="bold">login/</text>
+    
+    <rect x="660" y="605" width="180" height="35" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="675" y="630" font-family="monospace" font-size="14" font-weight="bold">trainer/</text>
+    
+    <rect x="660" y="650" width="180" height="35" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="675" y="675" font-family="monospace" font-size="14" font-weight="bold">admin/</text>
+    
+    <rect x="660" y="695" width="180" height="35" rx="3" ry="3" fill="#ffe0b2" stroke="#f57c00" stroke-width="1" />
+    <text x="675" y="720" font-family="monospace" font-size="14" font-weight="bold">practice/</text>
+    
+    <!-- Legend -->
+    <g id="legend" transform="translate(620, 190)">
+      <rect x="0" y="0" width="240" height="130" fill="white" stroke="#ccc" stroke-width="1" rx="5" ry="5" />
+      <text x="10" y="25" font-family="Arial" font-size="14" font-weight="bold">Directory Types</text>
+      
+      <rect x="10" y="40" width="20" height="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1" />
+      <text x="40" y="48" font-family="Arial" font-size="12">Documentation</text>
+      
+      <rect x="10" y="60" width="20" height="10" fill="#fff3e0" stroke="#e65100" stroke-width="1" />
+      <text x="40" y="68" font-family="Arial" font-size="12">Frontend</text>
+      
+      <rect x="10" y="80" width="20" height="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1" />
+      <text x="40" y="88" font-family="Arial" font-size="12">Backend</text>
+      
+      <rect x="10" y="100" width="20" height="10" fill="#f0f0f0" stroke="#888888" stroke-width="1" />
+      <text x="40" y="108" font-family="Arial" font-size="12">Root Directory</text>
+    </g>
+  </g>
+</svg> 

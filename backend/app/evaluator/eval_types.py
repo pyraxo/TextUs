@@ -1,8 +1,13 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 
-class Chat_Transcript(BaseModel):
-    text: str
+from pydantic import BaseModel
+
+from app.models.chat import ChatMessage
+
+
+class ChatTranscript(BaseModel):
+    messages: List[ChatMessage]
+
 
 class EvaluationResult(BaseModel):
     metric: str

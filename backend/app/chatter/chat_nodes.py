@@ -160,8 +160,18 @@ async def handle_agent_input(state: State, config: RunnableConfig) -> State:
     #     state["last_message_time"] = current_time
     #     state["conversation_history"].append(f"Customer: {nudge_message.content}")
 
-    user_response = interrupt({"id": config.get("configurable").get("thread_id", None)})
-    print("RETURNED FROM INTERRUPT")
+    # Check if this is a resumed run with a message (interrupt)
+    thread_id = config.get("configurable", {}).get("thread_id", None)
+
+    if config.get("is_resumed", False) and config.get("resumed_with", None):
+        # When we're resumed with a message directly (from the double texting implementation)
+        user_response = config.get("resumed_with")
+        print(f"Resumed with message: {user_response}")
+    else:
+        # Traditional interrupt to wait for user input
+        user_response = interrupt({"id": thread_id})
+        print("RETURNED FROM INTERRUPT")
+
     state["conversation_history"] += [f"Agent: {user_response}"]
     human_message = HumanMessage(content=user_response)
     # TODO: Dynamically affect patience level?
@@ -177,12 +187,17 @@ async def generate_customer_response(state: State, config: RunnableConfig) -> St
 
     last_user_message_time = state.get("last_user_message_time", None)
     if not last_user_message_time:
-        print("SOMETHING WRONG! NO LAST USER MESSAGE TIME")
-        return state
-
-    if datetime.now() - last_user_message_time < timedelta(seconds=5):
-        print("Waiting 5 seconds before customer response...")
-        await sleep(5)
+        print("Warning: No last user message time, continuing without delay")
+    else:
+        # Apply a short delay if this is a normal flow (not from a double-texting interrupt)
+        # We want to reduce delay when double-texting to be more responsive
+        if not config.get("is_resumed", False):
+            time_since_last_message = datetime.now() - last_user_message_time
+            if time_since_last_message < timedelta(seconds=2):
+                delay_time = 2 - time_since_last_message.total_seconds()
+                if delay_time > 0:
+                    print(f"Adding a short {delay_time:.1f}s delay for realism...")
+                    await sleep(delay_time)
 
     customer_response = await generate_response(state)
     state["to_send"] = customer_response.content

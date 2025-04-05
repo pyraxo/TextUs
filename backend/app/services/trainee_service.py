@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from sqlmodel import select
+from sqlmodel import delete, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.chatter.chat_types import State
@@ -14,7 +14,7 @@ from app.chatter.workflow import CHECKPOINT_DB_URL, workflow
 from app.core.common import parse_uuid
 from app.core.config import get_settings
 from app.core.db import get_session
-from app.models.chat import ChatConversation, MessageType
+from app.models.chat import ChatConversation, ChatMessage, MessageType
 from app.models.scenario import Scenario
 from app.models.scenario_session import ScenarioSession, SessionMetrics, SessionStatus
 from app.models.user import User
@@ -304,6 +304,27 @@ class TraineeService:
         )
 
         return SessionMetrics(**metrics)
+
+    async def delete_active_session(self, trainee_id: str) -> None:
+        """Delete the active scenario session for a trainee."""
+
+        # Delete the active session, any attached conversations, and any messages
+        active_session = await self.get_active_session(trainee_id)
+        for conversation in active_session.chat_conversations:
+            await self.session.exec(
+                delete(ChatMessage).where(
+                    ChatMessage.conversation_id == conversation.id
+                )
+            )
+            await self.session.exec(
+                delete(ChatConversation).where(
+                    ChatConversation.scenario_customer_id == None
+                )
+            )
+        await self.session.exec(
+            delete(ScenarioSession).where(ScenarioSession.user_id == trainee_id)
+        )
+        await self.session.commit()
 
     async def start_trainee_conversation(
         self, trainee_id: UUID, scenario_id: UUID, customer_id: UUID

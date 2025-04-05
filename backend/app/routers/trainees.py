@@ -15,3 +15,12 @@ async def get_scenario_session(
 ) -> Optional[ScenarioSession]:
     """Get the active scenario session for a trainee."""
     return await trainee_service.get_active_session(trainee_id)
+
+
+@router.delete("/{trainee_id}/session")
+async def delete_scenario_session(
+    trainee_id: str,
+    trainee_service: Annotated[TraineeService, Depends()],
+) -> None:
+    """Delete the active scenario session for a trainee."""
+    await trainee_service.delete_active_session(trainee_id)

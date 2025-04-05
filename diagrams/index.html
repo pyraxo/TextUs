@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPF Board TextUs - System Architecture</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #1565c0;
+        border-bottom: 2px solid #e3f2fd;
+        padding-bottom: 10px;
+      }
+      h2 {
+        color: #2e7d32;
+        margin-top: 30px;
+      }
+      .diagram-container {
+        margin: 30px 0;
+        text-align: center;
+      }
+      .diagram-container svg {
+        max-width: 100%;
+        height: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .component-description {
+        background-color: #f8f9fa;
+        border-left: 4px solid #1565c0;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .layer-description {
+        margin-bottom: 30px;
+      }
+      /* Tab styles */
+      .tabs {
+        display: flex;
+        margin-top: 30px;
+        border-bottom: 2px solid #1565c0;
+      }
+      .tab {
+        padding: 10px 20px;
+        background-color: #e3f2fd;
+        cursor: pointer;
+        margin-right: 5px;
+        border-radius: 5px 5px 0 0;
+        font-weight: bold;
+      }
+      .tab.active {
+        background-color: #1565c0;
+        color: white;
+      }
+      .tab-content {
+        display: none;
+        padding: 20px 0;
+      }
+      .tab-content.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CPF Board TextUs - System Architecture & Structure</h1>
+
+    <p>
+      This document provides an overview of the architecture and directory
+      structure for the CPF Board TextUs application, a training simulator
+      designed to help customer service officers master concepts relevant to
+      providing accurate and efficient responses to customer inquiries about the
+      Central Provident Fund (CPF) in Singapore.
+    </p>
+
+    <!-- Tab headers -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('architecture')">
+        System Architecture
+      </div>
+      <div class="tab" onclick="switchTab('monorepo')">Monorepo Structure</div>
+      <div class="tab" onclick="switchTab('simplified')">
+        Simplified Structure
+      </div>
+    </div>
+
+    <!-- Architecture tab content -->
+    <div id="architecture" class="tab-content active">
+      <div class="diagram-container">
+        <iframe
+          src="cpf_textus_architecture.svg"
+          width="1000"
+          height="800"
+          style="border: none"
+        ></iframe>
+      </div>
+
+      <h2>Architecture Overview</h2>
+
+      <p>
+        The CPF Board TextUs application follows a modern, layered architecture
+        that separates concerns and provides a scalable foundation for the
+        training platform. The system is designed with the following key layers:
+      </p>
+
+      <div class="layer-description">
+        <h3>Frontend Layer (Next.js)</h3>
+        <div class="component-description">
+          <p>
+            The frontend is built using Next.js, providing a responsive and
+            interactive user interface for trainees, administrators, and
+            managers. It includes several key components:
+          </p>
+          <ul>
+            <li>
+              <strong>Dashboard:</strong> Displays performance metrics,
+              recommended practice sessions, and quick access to start new
+              sessions.
+            </li>
+            <li>
+              <strong>Chat Interface:</strong> Provides a real-time messaging
+              interface for practice sessions with AI-simulated customers.
+            </li>
+            <li>
+              <strong>Scenario Browser:</strong> Allows users to select from
+              available scenarios and configure practice sessions.
+            </li>
+            <li>
+              <strong>Admin Interface:</strong> Enables administrators to manage
+              scenarios, customer profiles, and monitor system performance.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>API Layer (FastAPI)</h3>
+        <div class="component-description">
+          <p>
+            The API layer is implemented using FastAPI, a modern Python
+            framework that supports async requests and provides OpenAPI
+            documentation. Key components include:
+          </p>
+          <ul>
+            <li>
+              <strong>Auth API:</strong> Handles user authentication,
+              authorization, and session management.
+            </li>
+            <li>
+              <strong>Chat API:</strong> Manages chat messages and interactions
+              between trainees and simulated customers.
+            </li>
+            <li>
+              <strong>WebSocket:</strong> Supports real-time chat functionality
+              through WebSocket connections.
+            </li>
+            <li>
+              <strong>Scenario API:</strong> Provides endpoints for scenario
+              management and selection.
+            </li>
+            <li>
+              <strong>Customer API:</strong> Handles customer profile management
+              and customization.
+            </li>
+            <li>
+              <strong>Analytics API:</strong> Provides endpoints for performance
+              analytics and reporting.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Services Layer</h3>
+        <div class="component-description">
+          <p>
+            The services layer contains the core business logic of the
+            application. Key components include:
+          </p>
+          <ul>
+            <li>
+              <strong>Auth Service:</strong> Implements JWT-based authentication
+              and rate limiting.
+            </li>
+            <li>
+              <strong>Conversation Scheduler:</strong> Manages chat
+              conversations, including history tracking, WebSocket handling, and
+              agent-based conversation management.
+            </li>
+            <li>
+              <strong>AI Service:</strong> Integrates with OpenAI for AI chat
+              simulation and implements RAG (Retrieval Augmented Generation) for
+              improved response accuracy.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Data Layer</h3>
+        <div class="component-description">
+          <p>
+            The data layer handles persistent storage and caching for the
+            application. Key components include:
+          </p>
+          <ul>
+            <li>
+              <strong>PostgreSQL Database:</strong> Stores users, scenarios,
+              customers, conversations, and analytics data. Provides full-text
+              search capabilities for efficient data retrieval.
+            </li>
+            <li>
+              <strong>Redis Cache:</strong> Handles rate limiting, session
+              management, and WebSocket state. Provides high-performance caching
+              for temporary data.
+            </li>
+            <li>
+              <strong>Vector Database:</strong> Stores document embeddings for
+              the RAG system and CPF knowledge base information to enhance AI
+              responses.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>External Integrations</h2>
+
+      <div class="component-description">
+        <p>The system integrates with external services:</p>
+        <ul>
+          <li>
+            <strong>OpenAI API:</strong> Provides AI models for simulating
+            customer interactions and generating contextually appropriate
+            responses.
+          </li>
+        </ul>
+      </div>
+
+      <h2>Data Flow</h2>
+
+      <p>
+        The system follows a standard request-response pattern, with data
+        flowing through the layers as follows:
+      </p>
+      <ol>
+        <li>
+          User requests originate from the Frontend Layer and are sent to the
+          appropriate API endpoint.
+        </li>
+        <li>
+          The API Layer validates the request and passes it to the relevant
+          Service.
+        </li>
+        <li>
+          The Service Layer processes the request, communicating with the Data
+          Layer as needed.
+        </li>
+        <li>
+          For AI-driven customer simulations, the AI Service communicates with
+          the OpenAI API and retrieves context from the Vector Database.
+        </li>
+        <li>Responses flow back through the layers to the user interface.</li>
+        <li>
+          Real-time chat functionality utilizes WebSocket connections for
+          immediate message delivery.
+        </li>
+      </ol>
+    </div>
+
+    <!-- Monorepo tab content -->
+    <div id="monorepo" class="tab-content">
+      <div class="diagram-container">
+        <iframe
+          src="cpf_textus_monorepo.svg"
+          width="1000"
+          height="800"
+          style="border: none"
+        ></iframe>
+      </div>
+
+      <h2>Monorepo Structure Overview</h2>
+
+      <p>
+        The CPF Board TextUs application uses a monorepo structure to organize
+        its codebase, bringing together frontend, backend, and infrastructure
+        components in a single repository. This approach simplifies development,
+        deployment, and maintenance.
+      </p>
+
+      <div class="layer-description">
+        <h3>Documentation (/docs)</h3>
+        <div class="component-description">
+          <p>Contains project documentation including:</p>
+          <ul>
+            <li>
+              <strong>prd.md:</strong> Product Requirements Document detailing
+              the application's purpose, features, and requirements.
+            </li>
+            <li>
+              <strong>architecture.md:</strong> Technical architecture
+              documentation.
+            </li>
+            <li>
+              <strong>changelog.md:</strong> Record of changes and updates to
+              the application.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Frontend (/frontend)</h3>
+        <div class="component-description">
+          <p>The Next.js-based frontend application with:</p>
+          <ul>
+            <li>
+              <strong>Configuration Files:</strong> package.json,
+              next.config.js, tsconfig.json for project settings.
+            </li>
+            <li>
+              <strong>app/:</strong> Pages, layouts, routes, and client-side
+              rendering components using Next.js App Router.
+            </li>
+            <li>
+              <strong>components/:</strong> Reusable UI components including
+              dialogs, buttons, inputs, and cards.
+            </li>
+            <li>
+              <strong>lib/:</strong> Utilities, custom hooks, and API client for
+              backend communication.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Backend (/backend)</h3>
+        <div class="component-description">
+          <p>The FastAPI-based backend with:</p>
+          <ul>
+            <li>
+              <strong>Configuration Files:</strong> pyproject.toml,
+              requirements.txt for Python dependencies.
+            </li>
+            <li>
+              <strong>main.py:</strong> Application entry point and
+              initialization.
+            </li>
+            <li>
+              <strong>api/:</strong> API route handlers for auth, chat,
+              scenarios, and customers.
+            </li>
+            <li>
+              <strong>services/:</strong> Core business logic including auth,
+              conversation management, and AI integration.
+            </li>
+            <li>
+              <strong>models/:</strong> Data models for users, scenarios,
+              customers, and conversations.
+            </li>
+            <li>
+              <strong>db/:</strong> Database migrations, session management, and
+              model definitions.
+            </li>
+            <li>
+              <strong>rag/:</strong> Retrieval Augmented Generation components
+              including embeddings and vector storage.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Infrastructure (/infrastructure)</h3>
+        <div class="component-description">
+          <p>Deployment and infrastructure configuration:</p>
+          <ul>
+            <li>
+              <strong>docker-compose.yml:</strong> Local development environment
+              setup.
+            </li>
+            <li>
+              <strong>docker/:</strong> Dockerfiles for frontend and backend
+              containers.
+            </li>
+            <li>
+              <strong>k8s/:</strong> Kubernetes deployment files and service
+              definitions for cloud deployment.
+            </li>
+            <li>
+              <strong>scripts/:</strong> Utility scripts for setup, deployment,
+              and database migrations.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Project Files (Root Directory)</h3>
+        <div class="component-description">
+          <p>Root-level project files:</p>
+          <ul>
+            <li>
+              <strong>README.md:</strong> Project overview and getting started
+              guide.
+            </li>
+            <li><strong>LICENSE:</strong> Project license information.</li>
+            <li><strong>.gitignore:</strong> Git ignore rules for project.</li>
+            <li>
+              <strong>.env.example:</strong> Example environment variable
+              configuration.
+            </li>
+            <li>
+              <strong>.github/workflows/:</strong> CI/CD pipeline configuration
+              for automated testing and deployment.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Key Relationships</h2>
+
+      <p>
+        The monorepo structure facilitates several important relationships
+        between components:
+      </p>
+      <ul>
+        <li>
+          The frontend's API client in the <code>lib/</code> directory
+          communicates with the backend API endpoints.
+        </li>
+        <li>
+          Documentation in <code>docs/</code> describes the implementation in
+          both frontend and backend.
+        </li>
+        <li>
+          Infrastructure components containerize and deploy both frontend and
+          backend services.
+        </li>
+        <li>
+          CI/CD workflows in <code>.github/workflows/</code> test and deploy all
+          components together.
+        </li>
+        <li>
+          Shared types and interfaces can be maintained consistently across
+          frontend and backend.
+        </li>
+      </ul>
+
+      <p>
+        This monorepo structure offers the advantages of unified versioning,
+        simplified dependency management, and coordinated deployments while
+        maintaining clear separation of concerns between frontend and backend
+        components.
+      </p>
+    </div>
+
+    <!-- Simplified Structure tab content -->
+    <div id="simplified" class="tab-content">
+      <div class="diagram-container">
+        <iframe
+          src="simplified_structure.svg"
+          width="1000"
+          height="1200"
+          style="border: none"
+        ></iframe>
+      </div>
+
+      <h2>Simplified Directory Structure</h2>
+
+      <p>
+        This simplified view shows the actual directory structure of the CPF
+        Board TextUs project without connections or relationships, focusing on
+        the key folders and files.
+      </p>
+
+      <div class="layer-description">
+        <h3>Root Directory</h3>
+        <div class="component-description">
+          <p>The project root contains:</p>
+          <ul>
+            <li>
+              <strong>README.md:</strong> Project overview and documentation
+            </li>
+            <li>
+              <strong>docker-compose.yml:</strong> Container orchestration for
+              local development
+            </li>
+            <li><strong>.gitignore:</strong> Git ignore patterns</li>
+            <li>
+              <strong>diagrams/:</strong> Architecture and structure diagrams
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Documentation</h3>
+        <div class="component-description">
+          <p>The docs directory contains key project documentation:</p>
+          <ul>
+            <li><strong>prd.md:</strong> Product Requirements Document</li>
+            <li>
+              <strong>changelog.md:</strong> Record of changes made to the
+              project
+            </li>
+            <li>
+              <strong>feature_customer_scenarios.md:</strong> Documentation for
+              customer scenario features
+            </li>
+            <li>
+              <strong>README.md:</strong> Documentation directory overview
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Frontend</h3>
+        <div class="component-description">
+          <p>The Next.js frontend application structure:</p>
+          <ul>
+            <li>
+              <strong>Configuration Files:</strong> Various configuration files
+              for Next.js, TypeScript, etc.
+            </li>
+            <li>
+              <strong>app/:</strong> Main application pages and routes:
+              <ul>
+                <li><strong>dashboard/:</strong> Dashboard views</li>
+                <li><strong>login/:</strong> Authentication pages</li>
+                <li><strong>trainer/:</strong> Trainer functionality</li>
+                <li><strong>admin/:</strong> Admin interfaces</li>
+                <li><strong>practice/:</strong> Practice session interfaces</li>
+              </ul>
+            </li>
+            <li><strong>components/:</strong> Reusable UI components</li>
+            <li><strong>hooks/:</strong> Custom React hooks</li>
+            <li><strong>lib/:</strong> Utilities and API client</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="layer-description">
+        <h3>Backend</h3>
+        <div class="component-description">
+          <p>The FastAPI backend structure:</p>
+          <ul>
+            <li>
+              <strong>Configuration Files:</strong> Python project configuration
+              and environment settings
+            </li>
+            <li>
+              <strong>app/:</strong> Main application package:
+              <ul>
+                <li><strong>main.py:</strong> Application entry point</li>
+                <li><strong>routers/:</strong> API route definitions</li>
+                <li>
+                  <strong>models/:</strong> Data models and schema definitions
+                </li>
+                <li><strong>services/:</strong> Business logic services</li>
+                <li>
+                  <strong>chatter/:</strong> Chat functionality implementation
+                </li>
+                <li><strong>evaluator/:</strong> Response evaluation logic</li>
+                <li><strong>core/:</strong> Core application functionality</li>
+              </ul>
+            </li>
+            <li><strong>tests/:</strong> Unit and integration tests</li>
+            <li><strong>alembic/:</strong> Database migration scripts</li>
+            <li><strong>data/:</strong> Data files and resources</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(tabId) {
+        // Hide all tab contents
+        const tabContents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabContents.length; i++) {
+          tabContents[i].classList.remove("active");
+        }
+
+        // Deactivate all tabs
+        const tabs = document.getElementsByClassName("tab");
+        for (let i = 0; i < tabs.length; i++) {
+          tabs[i].classList.remove("active");
+        }
+
+        // Activate the selected tab and its content
+        document.getElementById(tabId).classList.add("active");
+        const activeTab = document.querySelector(
+          `.tab[onclick="switchTab('${tabId}')"]`
+        );
+        activeTab.classList.add("active");
+      }
+    </script>
+  </body>
+</html>
