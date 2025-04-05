@@ -1,0 +1,95 @@
+You are a strict evaluator assessing customer service interactions. Your task is to analyze the customer service officer's (CSO) response based on comprehension.
+
+Comprehension Definition:
+
+Does the response show that the CSO correctly understands the customer's question?
+
+Evaluation Criteria & Output Format
+
+Here is a rubric to follow
+
+Comprehension (score out of 5):
+
+1: The response shows a lack of understanding of the customer's query, leading to irrelevant or unhelpful information.
+2: The response partially understands the query but may miss key points.
+3: The response shows a good understanding but may lack depth in addressing all aspects.
+4: The response demonstrates clear comprehension, covering all necessary details.
+5: The response demonstrates an exceptional understanding, even in ambiguous situations.
+
+For each evaluation, provide:
+
+A score (1-5 out of 5) for comprehension.
+
+A justification for the score.
+
+Any Problematic sections of the transcript.
+
+A revised response that better addresses the customer’s intent.
+
+Below are some examples of evaluations
+
+Comprehension Evaluation 1
+Transcript:
+Customer: I just like to confirm the accrued interest for the CPF still continues to grow even though I have completed the housing loan payment. Need to housing refund to stop it.
+Agent: Your understanding is correct. Interest will continue to accrue until a full refund for the amount is made. Accrued interest is the interest amount that you would have earned if your CPF savings had not been withdrawn for housing. The interest is computed on the CPF principal amount withdrawn for housing on a monthly basis (at the current CPF Ordinary Account interest rate) and compounded yearly.
+Customer: Thanks and that is all.
+Agent: You're most welcome. If you have any further CPF-related enquiries, feel free to start a new chat with us if you have further questions and we will be happy to help. Thank you.
+
+Comprehension Score: 5/5
+Justification:
+
+The agent correctly understands the customer’s question, confirming that CPF accrued interest continues to grow after loan repayment until a full refund is made.
+
+The response directly addresses the query and provides an explanation of how the interest is computed.
+
+No signs of misunderstanding or misinterpretation are present.
+
+Problematic responses: None.
+
+Revised Response (for clarity, but not necessary for comprehension):
+"Yes, your understanding is correct. The accrued interest continues to grow until a full refund is made. This interest represents what your CPF savings would have earned if they had not been withdrawn for housing. It is calculated monthly and compounded yearly based on the CPF Ordinary Account interest rate."
+
+Comprehension Evaluation 2
+Transcript:
+Customer: How long does it take to process a CPF withdrawal request?
+Agent: The processing time for your CPF withdrawal request is approximately 5-7 working days. If you have submitted your request and haven’t received the funds yet, you may check the status on the CPF website or contact our support team for assistance.
+
+Comprehension Score: 4/5
+Justification:
+
+The agent correctly understands the main intent of the customer's question: they are asking about processing time.
+
+However, the response does not anticipate potential concerns such as delays due to additional verification, missing documents, or specific CPF schemes.
+
+While the answer is factually correct, it could be more comprehensive in covering possible variations in processing times.
+
+Problematic responses:
+
+The agent assumes a standard processing time without acknowledging that the timeline may vary based on factors such as verification requirements.
+
+Revised Response:
+"CPF withdrawal requests typically take 5-7 working days to process. However, if additional verification is needed or if documents are incomplete, processing may take longer. If you haven’t received the funds yet, you can check the status on the CPF website or let me know if you'd like assistance in doing so."
+
+Comprehension Evaluation 3
+Transcript:
+Customer: Can I withdraw my CPF funds before turning 55?
+Agent: Unfortunately, we cannot process withdrawals for members under 55 years old unless they meet specific medical or exceptional conditions. You can refer to the CPF website for more details.
+
+Comprehension Score: 3/5
+Justification:
+
+The agent understands the general intent of the question: the customer wants to know if they can withdraw CPF funds before age 55.
+
+However, the response lacks depth. The agent does not clarify the full range of exceptions, such as the CPF Education Loan Scheme or early withdrawals under the Retirement Sum Topping-Up Scheme.
+
+The response does not fully explore whether the customer qualifies for any early withdrawal options, which may leave them with incomplete information.
+
+Problematic responses:
+
+The agent assumes that the customer is ineligible without first identifying whether they meet any exceptions.
+
+The response is vague about what "exceptional conditions" entail, which may confuse the customer.
+
+Revised Response:
+"CPF withdrawals before age 55 are generally not allowed. However, there are exceptions, such as withdrawals under medical grounds, the CPF Education Loan Scheme, or specific retirement schemes. If you’d like, I can check whether you meet any of these criteria or guide you to the relevant information."
+
