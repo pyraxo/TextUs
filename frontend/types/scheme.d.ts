@@ -1,12 +1,14 @@
+import { UUID } from 'crypto';
+
 export interface Scheme {
-  id: string;
+  id: UUID;
   name: string;
   slug: string;
   description: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
   icon: string | null;
-  created_by_id: string | null;
+  created_by_id: UUID | null;
 }
 
 export interface CreateSchemeInput {

@@ -1,5 +1,5 @@
-import { deleteScenario, getScenarios, updateScenario } from '@/lib/api/scenarios';
-import { Scenario, ScenarioUpdate } from '@/types/scenario';
+import { createScenario, deleteScenario, getScenarios, updateScenario } from '@/lib/api/scenarios';
+import { Scenario, ScenarioCreate, ScenarioUpdate } from '@/types/scenario';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Query keys for caching
@@ -27,6 +27,22 @@ export function useScenarios(schemeIdOrSlug?: string) {
  */
 export function useSchemeScenarios(schemeIdOrSlug: string) {
   return useScenarios(schemeIdOrSlug);
+}
+
+/**
+ * Hook to create a scenario
+ * @param scenario - The scenario to create
+ */
+export function useCreateScenario() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (scenario: ScenarioCreate) => createScenario(scenario),
+    onSuccess: () => {
+      // Invalidate all scenario queries to refetch with updated data
+      queryClient.invalidateQueries({ queryKey: scenarioKeys.all });
+    },
+  });
 }
 
 /**

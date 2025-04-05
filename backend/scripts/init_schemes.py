@@ -28,30 +28,37 @@ async def init_schemes() -> None:
         {
             "name": "Housing Schemes",
             "description": "CPF schemes related to housing and property.",
+            "icon": "home",
         },
         {
             "name": "Healthcare",
             "description": "Healthcare-related CPF schemes including MediSave and MediShield Life.",
+            "icon": "heart-pulse",
         },
         {
             "name": "Retirement Planning",
             "description": "Retirement schemes including CPF LIFE.",
+            "icon": "umbrella",
         },
         {
             "name": "Education Financing",
             "description": "Education financing through CPF.",
+            "icon": "graduation-cap",
         },
         {
             "name": "Investment Schemes",
             "description": "CPF investment schemes and options.",
+            "icon": "chart-line",
         },
         {
             "name": "Self-Employed Matters",
             "description": "CPF matters specific to self-employed persons.",
+            "icon": "briefcase",
         },
         {
             "name": "CPF Contributions",
             "description": "General CPF contribution matters.",
+            "icon": "coins",
         },
     ]
 

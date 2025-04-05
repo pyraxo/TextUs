@@ -1,11 +1,16 @@
+import logging
+import sys
+import traceback
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.chatter.scheduler import get_scheduler
 from app.core.config import get_settings
 from app.core.db import close_db, get_session
 from app.core.middleware import AuthCookieMiddleware
@@ -16,12 +21,25 @@ from app.routers import (
     auth_router,
     conversations_router,
     customers_router,
-    rag_router,
     scenarios_router,
     schemes_router,
+    trainees_router,
     users_router,
     ws_router,
 )
+
+# Configure logging to reduce verbosity
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+
+# Reduce logger levels for noisy libraries
+logging.getLogger("uvicorn").setLevel(logging.WARNING)
+logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.pool").setLevel(logging.WARNING)
 
 settings = get_settings()
 
@@ -29,21 +47,54 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Lifespan for the FastAPI app."""
-
-    # Start the conversation scheduler
-    scheduler = get_scheduler(session_factory=get_session)
-    await scheduler.start()
-
     yield
-
-    # Stop the scheduler before closing database
-    await scheduler.stop()
-
-    # Close database connections
     await close_db()
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+# Exception handlers for cleaner error output
+@app.exception_handler(SQLAlchemyError)
+async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    """Handle SQLAlchemy errors with a cleaner, more concise output."""
+    error_type = exc.__class__.__name__
+
+    # Get only the most relevant part of the traceback (last few frames)
+    tb_lines = traceback.format_exception(type(exc), exc, exc.__traceback__)
+    # Get only the direct cause and main error message
+    if len(tb_lines) > 5:
+        tb_lines = tb_lines[-5:]
+
+    error_detail = str(exc)
+    # Extract important info from SQLAlchemy error
+    if hasattr(exc, "orig") and exc.orig:
+        error_detail = f"{error_detail} - Original error: {str(exc.orig)}"
+
+    error_message = f"Database error: {error_type}: {error_detail}"
+    logging.error(error_message)
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": error_type,
+            "detail": error_detail,
+            "traceback": "".join(tb_lines).strip(),
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle validation errors with cleaner output."""
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "ValidationError",
+            "detail": exc.errors(),
+        },
+    )
+
 
 # Add CORS middleware
 app.add_middleware(
@@ -66,10 +117,10 @@ app.include_router(admin_router)
 app.include_router(users_router)
 app.include_router(scenarios_router)
 app.include_router(schemes_router)
-app.include_router(rag_router)
 app.include_router(conversations_router)
 app.include_router(ws_router)
 app.include_router(customers_router)
+app.include_router(trainees_router)
 
 
 @app.get("/")

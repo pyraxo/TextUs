@@ -5,8 +5,8 @@ export interface CustomerBase {
   name: string;
   description?: string | null;
   profile_prompt?: string | null;
-  created_at?: string;
-  updated_at?: string;
+  created_at?: Date;
+  updated_at?: Date;
   personality_traits?: string[];
 }
 

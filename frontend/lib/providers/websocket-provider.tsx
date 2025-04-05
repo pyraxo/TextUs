@@ -5,10 +5,10 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 // Define WebSocket message types
 export type WebSocketMessage = {
-  type: "MESSAGE" | "TYPING" | "STATUS_CHANGE";
+  type: "MESSAGE" | "TYPING" | "STATUS_CHANGE" | "END_CHAT";
   conversationId: string;
   payload: any;
-  timestamp: string;
+  timestamp?: string;
 };
 
 // Define WebSocket connection states
@@ -18,6 +18,8 @@ type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
 interface ConversationState {
   isActive: boolean;
   lastSeenMessageId: string | null;
+  ended: boolean;
+  endedAt: Date;
 }
 
 // Define WebSocket context type
@@ -48,11 +50,16 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("disconnected");
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+  const [conversationStates, setConversationStates] = useState<
+    Map<string, ConversationState>
+  >(new Map());
   const webSocketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const { user } = useAuth();
   const activeConversations = useRef<Set<string>>(new Set());
-  const conversationStates = useRef<Map<string, ConversationState>>(new Map());
+
+  // Track processed END_CHAT messages to prevent loops
+  const processedEndChatMessages = useRef<Set<string>>(new Set());
 
   // Initialize WebSocket connection
   const connectWebSocket = () => {
@@ -99,7 +106,80 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
       ws.onmessage = (event) => {
         try {
+          console.log("Raw WebSocket message:", event.data);
           const message = JSON.parse(event.data) as WebSocketMessage;
+
+          console.log("Received packet:", message);
+          console.log("Message type:", message.type);
+          console.log("Message format check:", {
+            hasType: !!message.type,
+            hasConversationId: !!message.conversationId,
+            hasPayload: !!message.payload,
+            hasTimestamp: !!message.timestamp,
+            payloadProps: message.payload ? Object.keys(message.payload) : [],
+          });
+
+          if (message.type === "END_CHAT") {
+            console.log("Processing END_CHAT in WebSocket provider", {
+              conversationId: message.conversationId,
+              payload: message.payload,
+            });
+
+            // Create a unique ID for this END_CHAT message
+            const messageId = `end_chat_${message.conversationId}_${
+              message.payload?.timestamp || Date.now()
+            }`;
+
+            // Skip if we've already processed this exact END_CHAT message
+            if (processedEndChatMessages.current.has(messageId)) {
+              console.log("Skipping duplicate END_CHAT message", messageId);
+              return;
+            }
+
+            // Mark this message as processed
+            processedEndChatMessages.current.add(messageId);
+
+            // Limit the size of our tracking set to prevent memory leaks
+            if (processedEndChatMessages.current.size > 100) {
+              const oldestEntries = Array.from(
+                processedEndChatMessages.current
+              ).slice(0, 50);
+              oldestEntries.forEach((id) =>
+                processedEndChatMessages.current.delete(id)
+              );
+            }
+
+            setConversationStates((prev) => {
+              const newStates = new Map(prev);
+              const state = newStates.get(message.conversationId);
+              console.log("Current conversation state:", state);
+
+              if (state) {
+                const updatedState = {
+                  ...state,
+                  ended: true,
+                  endedAt: new Date(),
+                };
+                console.log("Updated conversation state:", updatedState);
+                newStates.set(message.conversationId, updatedState);
+              } else {
+                console.log("Creating new ended conversation state");
+                // If we don't have a state yet, create one
+                newStates.set(message.conversationId, {
+                  isActive: false,
+                  lastSeenMessageId: null,
+                  ended: true,
+                  endedAt: new Date(),
+                });
+              }
+
+              return newStates;
+            });
+
+            // Set lastMessage after updating the state to prevent loops
+            setLastMessage(message);
+            return;
+          }
 
           // Update conversation state if it's a message
           if (
@@ -107,12 +187,17 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
             message.payload &&
             !message.payload.action
           ) {
-            const state = conversationStates.current.get(
-              message.conversationId
-            );
-            if (state) {
-              state.lastSeenMessageId = message.payload.id;
-            }
+            setConversationStates((prev) => {
+              const newStates = new Map(prev);
+              const state = newStates.get(message.conversationId);
+              if (state) {
+                newStates.set(message.conversationId, {
+                  ...state,
+                  lastSeenMessageId: message.payload.id,
+                });
+              }
+              return newStates;
+            });
           }
 
           setLastMessage(message);
@@ -219,10 +304,28 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   // Subscribe to a conversation
   const subscribeToConversation = (conversationId: string) => {
     activeConversations.current.add(conversationId);
-    // Initialize or update conversation state
-    conversationStates.current.set(conversationId, {
-      isActive: true,
-      lastSeenMessageId: null,
+
+    setConversationStates((prev) => {
+      const newStates = new Map(prev);
+      const existingState = newStates.get(conversationId);
+
+      // If the conversation exists and is already marked as ended,
+      // don't change its ended state
+      if (existingState) {
+        newStates.set(conversationId, {
+          ...existingState,
+          isActive: true,
+        });
+      } else {
+        // New conversation state
+        newStates.set(conversationId, {
+          isActive: true,
+          lastSeenMessageId: null,
+          ended: false,
+          endedAt: new Date(0),
+        });
+      }
+      return newStates;
     });
 
     if (connectionState === "connected") {
@@ -238,11 +341,18 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   // Unsubscribe from a conversation
   const unsubscribeFromConversation = (conversationId: string) => {
     activeConversations.current.delete(conversationId);
-    // Update conversation state
-    const state = conversationStates.current.get(conversationId);
-    if (state) {
-      state.isActive = false;
-    }
+
+    setConversationStates((prev) => {
+      const newStates = new Map(prev);
+      const state = newStates.get(conversationId);
+      if (state) {
+        newStates.set(conversationId, {
+          ...state,
+          isActive: false,
+        });
+      }
+      return newStates;
+    });
 
     if (connectionState === "connected") {
       sendMessage({
@@ -256,7 +366,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
   // Get conversation state
   const getConversationState = (conversationId: string) => {
-    return conversationStates.current.get(conversationId);
+    return conversationStates.get(conversationId);
   };
 
   // Mark conversation as read
@@ -264,10 +374,17 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     conversationId: string,
     messageId: string
   ) => {
-    const state = conversationStates.current.get(conversationId);
-    if (state) {
-      state.lastSeenMessageId = messageId;
-    }
+    setConversationStates((prev) => {
+      const newStates = new Map(prev);
+      const state = newStates.get(conversationId);
+      if (state) {
+        newStates.set(conversationId, {
+          ...state,
+          lastSeenMessageId: messageId,
+        });
+      }
+      return newStates;
+    });
   };
 
   return (

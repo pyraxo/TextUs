@@ -10,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCreateScenario } from "@/hooks/use-scenarios";
+import { ScenarioCreate } from "@/types/scenario";
 import {
   ColumnDef,
   flexRender,
@@ -24,6 +26,8 @@ interface DataTableProps<TData, TValue> {
   title?: string;
   emptyMessage?: string;
   showNewScenarioDialog?: boolean;
+  schemeId?: string;
+  schemeName?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -32,11 +36,22 @@ export function DataTable<TData, TValue>({
   title,
   emptyMessage = "No results.",
   showNewScenarioDialog = true,
+  schemeId,
+  schemeName,
 }: DataTableProps<TData, TValue>) {
-  const handleScenarioCreate = (scenario: any) => {
-    console.log("New scenario created:", scenario);
-    toast.success(`"${scenario.title}" has been successfully created.`);
+  const createScenario = useCreateScenario();
+
+  const handleScenarioCreate = (scenario: ScenarioCreate) => {
+    createScenario.mutate(scenario, {
+      onSuccess: () => {
+        toast.success(`"${scenario.name}" has been successfully created.`);
+      },
+      onError: () => {
+        toast.error("Failed to create scenario");
+      },
+    });
   };
+
   const table = useReactTable({
     data,
     columns,
@@ -48,7 +63,11 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {title && <h2 className="text-2xl font-semibold">{title}</h2>}
       {showNewScenarioDialog && (
-        <NewScenarioDialog onScenarioCreate={handleScenarioCreate} />
+        <NewScenarioDialog
+          onScenarioCreate={handleScenarioCreate}
+          schemeId={schemeId}
+          schemeName={schemeName}
+        />
       )}
       <div className="rounded-md shadow-md dark:border-0 bg-card">
         <Table>

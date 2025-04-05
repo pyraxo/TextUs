@@ -4,11 +4,11 @@ export interface Scenario {
   description: string | null;
   is_pausable: boolean;
   system_prompt: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
   temperature: number | null;
-  created_by_id: string | null;
-  scheme_id: string | null;
+  created_by_id: UUID | null;
+  scheme_id: UUID | null;
 }
 
 export interface ScenarioCreate {
@@ -17,7 +17,7 @@ export interface ScenarioCreate {
   is_pausable?: boolean;
   system_prompt?: string;
   temperature?: number;
-  scheme_id?: string;
+  scheme_id?: UUID;
 }
 
 export interface ScenarioUpdate {

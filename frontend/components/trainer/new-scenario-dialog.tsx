@@ -1,6 +1,4 @@
-import { Plus } from "lucide-react";
-import { FC, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,51 +7,40 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Textarea } from "../ui/textarea";
-
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ScenarioCreate } from "@/types/scenario";
+import { Plus } from "lucide-react";
+import { FC, useState } from "react";
 interface NewScenarioDialogProps {
-  onScenarioCreate?: (scenario: {
-    title: string;
-    description: string;
-    scheme: string;
-    difficulty: string;
-  }) => void;
+  onScenarioCreate?: (scenario: ScenarioCreate) => void;
+  schemeId?: string;
+  schemeName?: string;
 }
 
 export const NewScenarioDialog: FC<NewScenarioDialogProps> = ({
   onScenarioCreate,
+  schemeId,
+  schemeName,
 }) => {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [scheme, setScheme] = useState("");
-  const [difficulty, setDifficulty] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (title && description && scheme && difficulty) {
+    if (name && description && schemeId) {
       onScenarioCreate?.({
-        title,
+        name,
         description,
-        scheme,
-        difficulty,
+        scheme_id: schemeId,
       });
 
       // Reset form
-      setTitle("");
+      setName("");
       setDescription("");
-      setScheme("");
-      setDifficulty("");
 
       // Close dialog
       setOpen(false);
@@ -74,7 +61,7 @@ export const NewScenarioDialog: FC<NewScenarioDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Create New Scenario
+            Create New Scenario for {schemeName}
           </DialogTitle>
           <DialogDescription>
             Fill in the details to create a new training scenario.
@@ -83,12 +70,12 @@ export const NewScenarioDialog: FC<NewScenarioDialogProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Scenario Title</Label>
+            <Label htmlFor="name">Scenario Name</Label>
             <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter scenario title"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter scenario name"
               required
             />
           </div>
@@ -105,39 +92,6 @@ export const NewScenarioDialog: FC<NewScenarioDialogProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="scheme">Scheme</Label>
-              <Select value={scheme} onValueChange={setScheme} required>
-                <SelectTrigger id="scheme">
-                  <SelectValue placeholder="Select scheme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="housing">Housing</SelectItem>
-                  <SelectItem value="nomination">Nomination</SelectItem>
-                  <SelectItem value="investments">Investments</SelectItem>
-                  <SelectItem value="retirement">Retirement</SelectItem>
-                  <SelectItem value="eldershield">Eldershield</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="difficulty">Difficulty</Label>
-              <Select value={difficulty} onValueChange={setDifficulty} required>
-                <SelectTrigger id="difficulty">
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
           <DialogFooter className="pt-4">
             <Button
               type="button"
@@ -148,6 +102,8 @@ export const NewScenarioDialog: FC<NewScenarioDialogProps> = ({
             </Button>
             <Button
               type="submit"
+              disabled={!name || !schemeId}
+              onClick={handleSubmit}
               className="bg-[#0B6160] hover:bg-[#094a49] text-white"
             >
               Create Scenario
