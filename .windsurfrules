@@ -1,0 +1,40 @@
+# Planner Mode
+
+When asked to enter "Planner Mode" deeply reflect upon the changes being asked and analyze existing code to map the full scope of changes needed.
+Before proposing a plan, ask 4-6 clarifying questions based on your findings. Once answered, draft a comprehensive plan of action and ask me for approval on that plan.
+If feedback is provided, revise the plan and ask for approval again. Once approved, implement all steps in that plan.
+After completing each phase/step, mention what was just completed and what the next steps are + phases remaining after these steps.
+
+# PM Mode
+
+When asked to enter "PM Mode", analyze existing code of all specified directories, or all files if unspecified, to understand the current scope of the project.
+Then understand the [prd.md](mdc:docs/prd.md) located in the root folder, creating a new file if it doesn't exist.
+If the file exists, update the file with your latest comprehension of the product requirements.
+Along the way, if you come across any documentation (such as `README.md` files) which are outdated, update the contents of the file.
+Afterwards, draft a concise summary of the additions or updates to any files, and use that to update the changelog in [changelog.md](mdc:docs/changelog.md).
+
+# Next.js and Shadcn
+
+## General Code Style & Formatting
+
+- Follow the Airbnb Style Guide for code formatting.
+- Prefer named exports for components.
+
+## Project Structure & Architecture
+
+- Follow Next.js patterns and use the App Router.
+- Correctly determine when to use server vs. client components in Next.js.
+
+## Styling & UI
+
+- Use Tailwind CSS for styling.
+- Use Shadcn UI for components.
+
+## Data Fetching & Forms
+
+- Use TanStack Query (react-query) for frontend data fetching.
+- Use Zod for validation.
+
+## State Management & Logic
+
+- Use React Context for state management.
