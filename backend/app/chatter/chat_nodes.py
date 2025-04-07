@@ -12,7 +12,7 @@ from app.chatter.chat_types import State
 from app.core.config import get_settings
 from app.models.chat import MessageType
 
-from .chat_prompts import nudge_prompt, question_prompt, response_prompt
+from .chat_prompts import nudge_prompt, question_prompt, response_prompt, termination_prompt
 
 settings = get_settings()
 
@@ -24,6 +24,7 @@ openai_llm = ChatOpenAI(
 question_chain = question_prompt | openai_llm
 nudge_chain = nudge_prompt | openai_llm
 response_chain = response_prompt | openai_llm
+termination_chain = termination_prompt | openai_llm
 
 
 async def generate_nudge(state: State) -> BaseMessage:
@@ -215,11 +216,15 @@ async def generate_customer_response(state: State, config: RunnableConfig) -> St
 async def check_termination(state: State) -> State:
     """Check if the conversation should be terminated"""
     print("CHECK_TERMINATION")
-    state["should_end_chat"] = random() < (1 - state["patience_level"])
-    if state["should_end_chat"]:
-        print("Customer has ended the chat.")
-    else:
-        print("Customer has not ended the chat.")
+
+    # TODO: Integrate patience level into this node
+
+    # state["should_end_chat"] = random() < (1 - state["patience_level"])
+    state["should_end_chat"] = (await termination_chain.ainvoke({
+        "personality": state.get("scenario_prompt"),
+        "original_question": state.get("original_question"),
+        "conversation_history": "\n".join(state["conversation_history"]),
+    })).content.strip().lower() in ["resolved", "forget it"]
     return state
 
 

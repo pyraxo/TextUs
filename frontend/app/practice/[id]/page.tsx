@@ -155,8 +155,8 @@ export default function SchemeDetailPage({
       // Update the active session in the query cache
       queryClient.setQueryData(["active-session", user.id], response);
 
-      // Redirect to the scenario page
-      router.push(`/conversations/${scenarioId}`);
+      // Redirect to the session page
+      router.push(`/conversations/${response.id}`);
     } catch (error) {
       console.error("Failed to start scenario:", error);
 

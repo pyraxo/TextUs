@@ -71,3 +71,19 @@ nudge_prompt = PromptTemplate(
 Agent hasn't replied yet. Nudge them impatiently in 1 sentence (max 10 words).
 """,
 )
+
+termination_prompt = PromptTemplate(
+    input_variables=["personality", "original_question", "conversation_history"],
+    template="""
+    You're a CPF customer with personality: {personality}.
+    Your original question was: "{original_question}".
+    Here's the full conversation so far:
+    {conversation_history}
+
+    Based on this, decide if your query has been appropriately resolved.
+    - If resolved (agent gave a clear, relevant answer), say "resolved".
+    - If unresolved (agent's replies are vague, off-topic, or missing), say "unresolved".
+    - If frustrated and giving up (due to delays, rudeness, or nonsense), say "forget it".
+    Respond with just one of these: "resolved", "unresolved", "forget it".
+    """
+)

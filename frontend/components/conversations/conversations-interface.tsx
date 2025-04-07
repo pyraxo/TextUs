@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { useConversations } from "@/hooks/use-conversations";
+import { useActiveSessionConversations } from "@/hooks/use-session-conversations";
 import { getConversation } from "@/lib/api/conversations";
 import { useWebSocket } from "@/lib/providers/websocket-provider";
 import { cn } from "@/lib/utils";
@@ -21,9 +21,20 @@ import { Filter, Paperclip, SendHorizontal, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-export function ConversationsInterface() {
+export function ConversationsInterface({
+  activeSessionId,
+}: {
+  activeSessionId: string;
+}) {
   // Conversation list state
-  const { data: conversations, isLoading, error, mutate } = useConversations();
+  const {
+    data: conversations,
+    isLoading,
+    error,
+    mutate,
+    activeSession,
+    isSessionLoading,
+  } = useActiveSessionConversations(activeSessionId);
   const refreshTimeoutRef = useRef<NodeJS.Timeout>();
   const lastRefreshTimeRef = useRef<number>(0);
 
@@ -229,6 +240,13 @@ export function ConversationsInterface() {
             markConversationAsRead(conversationId, newMessage.id);
           }
 
+          // Update the conversation's latest_message_timestamp
+          if (conv.conversation) {
+            conv.conversation.latest_message_timestamp = new Date(
+              newMessage.timestamp
+            ).toISOString();
+          }
+
           // Schedule a refresh of the conversation list
           setTimeout(debouncedRefresh, 0);
         } else {
@@ -258,6 +276,7 @@ export function ConversationsInterface() {
 
       // Schedule a new refresh
       refreshTimeoutRef.current = setTimeout(() => {
+        // Just trigger a refresh - the sorting will be handled in the component render
         mutate();
         lastRefreshTimeRef.current = Date.now();
       }, 2000 - timeSinceLastRefresh);
@@ -355,7 +374,16 @@ export function ConversationsInterface() {
     return <ConversationsError error={error} />;
   }
 
-  const displayConversations = conversations || [];
+  // Sort conversations by latest message timestamp (newest first)
+  const displayConversations = [...(conversations || [])].sort((a, b) => {
+    const aTimestamp = a.latest_message_timestamp
+      ? new Date(a.latest_message_timestamp).getTime()
+      : 0;
+    const bTimestamp = b.latest_message_timestamp
+      ? new Date(b.latest_message_timestamp).getTime()
+      : 0;
+    return bTimestamp - aTimestamp; // Descending order (newest first)
+  });
   const activeConversation = activeConversationId
     ? activeConversations.get(activeConversationId)
     : null;
@@ -369,7 +397,11 @@ export function ConversationsInterface() {
             <div>
               <h2 className="text-xl font-semibold">All conversations</h2>
               <p className="text-sm text-muted-foreground">
-                You have {displayConversations.length} conversations
+                {isLoading || isSessionLoading
+                  ? "Loading conversations..."
+                  : displayConversations.length > 0
+                  ? `${displayConversations.length} conversations in this session`
+                  : "No conversations found"}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -420,6 +452,21 @@ export function ConversationsInterface() {
                         conversation.latest_message_timestamp as string
                       )}
                     </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {/* Show ended indicator if conversation has ended */}
+                      {conversation.ended_at ||
+                      activeConversations.get(conversation.id)?.conversation
+                        ?.ended_at ? (
+                        <Badge
+                          variant="outline"
+                          className="text-xs text-muted-foreground"
+                        >
+                          Ended
+                        </Badge>
+                      ) : null}
+                    </div>
                   </div>
                 </button>
               ))
@@ -648,6 +695,9 @@ function ConversationsError({ error }: { error: Error }) {
     error.message.includes("network") ||
     error.message.includes("failed");
 
+  const isSessionError =
+    error.message.includes("session") || error.message.includes("not found");
+
   return (
     <div className="flex h-full">
       <div className="w-80 border-r">
@@ -665,7 +715,14 @@ function ConversationsError({ error }: { error: Error }) {
           </div>
           <Separator className="bg-muted" />
           <div className="p-4 text-left">
-            {isConnectionError ? (
+            {isSessionError ? (
+              <>
+                <p>Session not found or expired.</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Please start a new scenario session.
+                </p>
+              </>
+            ) : isConnectionError ? (
               <>
                 <p>Unable to connect to the conversation service.</p>
                 <p className="text-sm text-muted-foreground mt-1">

@@ -2,7 +2,6 @@ import os
 import re
 
 import pandas as pd
-from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.messages import SystemMessage
@@ -12,13 +11,16 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import NLTKTextSplitter
 
-load_dotenv()
+from app.core.config import get_settings
+
+settings = get_settings()
+
 BASE_DIR = "backend/data"
 CSV_FILE_PATH = os.path.join(BASE_DIR, "faq_cat_for_embed.csv")
 DB_PATH = os.path.join(BASE_DIR, "chroma_db")
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+GEMINI_API_KEY = settings.gemini_api_key
+
 chat_model = ChatGoogleGenerativeAI(model="models/gemini-1.5-pro-latest")
 embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 

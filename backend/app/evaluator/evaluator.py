@@ -2,18 +2,19 @@ import logging
 import os
 
 import instructor
-from dotenv import load_dotenv
 from openai import OpenAI
 
+from app.core.config import get_settings
 from app.evaluator.eval_types import ChatTranscript, EvaluationResult
-from app.services.chroma_db import answer_query
+# from app.services.chroma_db import answer_query
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+settings = get_settings()
+
+client = OpenAI(api_key=settings.openai_api_key)
 structured_client = instructor.from_openai(client)
 
 # Define evaluation metrics
@@ -71,12 +72,12 @@ def evaluate_chat_transcript(chat_transcript: ChatTranscript) -> dict:
             system_message = prompt  # Default system message
 
             # RAG retrieval only for accuracy
-            if metric == "accuracy":
-                retrieved_docs = answer_query(customer_queries)
-                logging.info(f"Retrieved Knowledge from RAG:\n{retrieved_docs}")
-                system_message = (
-                    f"{prompt}\n\n---\nRelevant Knowledge:\n{retrieved_docs}"
-                )
+            # if metric == "accuracy":
+            #     retrieved_docs = answer_query(customer_queries)
+            #     logging.info(f"Retrieved Knowledge from RAG:\n{retrieved_docs}")
+            #     system_message = (
+            #         f"{prompt}\n\n---\nRelevant Knowledge:\n{retrieved_docs}"
+            #     )
 
             # Structured response using Instructor
             evaluation_results[metric] = structured_client.chat.completions.create(

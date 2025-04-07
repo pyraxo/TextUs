@@ -112,6 +112,12 @@ async def end_chat(
         conversation_id,
     )
 
+    # chat_transcript = await session.exec(
+    #     select(ChatMessage).where(ChatMessage.conversation_id == conversation_id)
+    # )
+
+    # await evaluate_chat_transcript("\n".join([msg.content for msg in chat_transcript]))
+
     return conversation
 
 
