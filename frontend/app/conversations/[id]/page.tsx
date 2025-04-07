@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useState } from "react";
 
-export default function ConversationsPage() {
+export default function ConversationsPage({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -16,7 +22,7 @@ export default function ConversationsPage() {
           isSidebarOpen ? "pr-[380px]" : ""
         }`}
       >
-        <ConversationsInterface />
+        <ConversationsInterface activeSessionId={params.id} />
       </div>
       <Button
         variant="ghost"

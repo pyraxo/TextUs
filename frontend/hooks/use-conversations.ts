@@ -4,7 +4,8 @@ import {
   type Message,
   createMessage,
   getConversation,
-  getConversations
+  getConversations,
+  getSessionConversations
 } from '@/lib/api/conversations';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -15,6 +16,7 @@ export const conversationKeys = {
   list: (filters: string) => [...conversationKeys.lists(), { filters }] as const,
   details: () => [...conversationKeys.all, 'detail'] as const,
   detail: (id: string) => [...conversationKeys.details(), id] as const,
+  session: (sessionId: string) => [...conversationKeys.lists(), 'session', sessionId] as const,
 };
 
 /**
@@ -32,6 +34,25 @@ export function useConversations() {
   return {
     ...query,
     mutate: () => queryClient.invalidateQueries({ queryKey: conversationKeys.lists() }),
+  };
+}
+
+/**
+ * Hook to fetch conversations for a specific session
+ */
+export function useSessionConversations(traineeId: string, sessionId: string) {
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: conversationKeys.session(sessionId),
+    queryFn: () => getSessionConversations(traineeId, sessionId),
+    retry: 1,
+    retryDelay: 1000,
+    enabled: !!traineeId && !!sessionId,
+  });
+
+  return {
+    ...query,
+    mutate: () => queryClient.invalidateQueries({ queryKey: conversationKeys.session(sessionId) }),
   };
 }
 

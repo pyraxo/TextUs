@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 from functools import partial
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from uuid import UUID
 
 from fastapi import Depends, HTTPException
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from sqlalchemy.orm import selectinload
 from sqlmodel import delete, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -15,6 +16,7 @@ from app.core.common import parse_uuid
 from app.core.config import get_settings
 from app.core.db import get_session
 from app.models.chat import ChatConversation, ChatMessage, MessageType
+from app.models.response import ConversationListResponse
 from app.models.scenario import Scenario
 from app.models.scenario_session import ScenarioSession, SessionMetrics, SessionStatus
 from app.models.user import User
@@ -325,6 +327,68 @@ class TraineeService:
             delete(ScenarioSession).where(ScenarioSession.user_id == trainee_id)
         )
         await self.session.commit()
+
+    async def get_session_conversations(
+        self, trainee_id: str, session_id: str
+    ) -> List[ConversationListResponse]:
+        """Get all conversations for a specific session.
+
+        Args:
+            trainee_id: UUID of the trainee
+            session_id: UUID of the session
+
+        Returns:
+            List of conversations for the session
+
+        Raises:
+            HTTPException: If user is not authorized to access this session
+                          or if session doesn't exist
+        """
+        # Validate UUIDs
+        trainee_uuid = parse_uuid(trainee_id)
+        session_uuid = parse_uuid(session_id)
+
+        # Get the session and validate trainee access
+        scenario_session = await self.session.get(ScenarioSession, session_uuid)
+
+        if not scenario_session:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        if scenario_session.user_id != trainee_uuid:
+            # User doesn't own this session
+            raise HTTPException(
+                status_code=403, detail="Not authorized to access this session"
+            )
+
+        # Fetch chat conversations directly with a separate query instead of using relationships
+        statement = (
+            select(ChatConversation)
+            .where(ChatConversation.scenario_session_id == session_uuid)
+            .options(
+                selectinload(ChatConversation.scenario_customer),
+                selectinload(ChatConversation.messages),
+            )
+        )
+
+        result = await self.session.exec(statement)
+        conversations = result.all()
+
+        # Format conversations to match the API response format
+        return [
+            {
+                "id": conv.id,
+                "scenario_id": conv.scenario_customer.scenario_id,
+                "customer_id": conv.scenario_customer.customer_id,
+                "started_at": conv.started_at.isoformat(),
+                "ended_at": conv.ended_at.isoformat() if conv.ended_at else None,
+                "scenario_name": conv.scenario_customer.name,
+                "latest_message_timestamp": max(
+                    (msg.timestamp.isoformat() for msg in conv.messages),
+                    default=conv.started_at.isoformat(),
+                ),
+            }
+            for conv in conversations
+        ]
 
     async def start_trainee_conversation(
         self, trainee_id: UUID, scenario_id: UUID, customer_id: UUID

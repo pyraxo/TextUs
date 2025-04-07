@@ -39,6 +39,10 @@ export async function getConversations(): Promise<Conversation[]> {
   return fetchApi<Conversation[]>('/conversations');
 }
 
+export async function getSessionConversations(traineeId: string, sessionId: string): Promise<Conversation[]> {
+  return fetchApi<Conversation[]>(`/trainees/${traineeId}/sessions/${sessionId}/conversations`);
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
