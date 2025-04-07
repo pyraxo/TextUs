@@ -1,0 +1,66 @@
+---
+description: 
+globs: frontend/*
+alwaysApply: false
+---
+# Data Management Patterns
+- We use @tanstack/react-query for data fetching and state management
+- Query keys follow the pattern: [entity, action, ...params]
+- Mutations are typically placed in separate hooks under hooks/mutations/
+- We use react-query's suspense mode for loading states
+- Data fetching hooks are placed in hooks/queries/
+
+# Component Organization
+- UI components are organized by feature/domain in components/
+- Reusable UI components are placed in components/ui/
+- We use shadcn/ui components as base building blocks
+- Components follow atomic design principles
+- Each feature has its own directory with index.tsx as entry point
+
+# State Management
+- Local state uses React.useState or usehooks-ts utilities
+- Global state is managed through React Query
+- Form state uses react-hook-form with zod validation
+- Context is used sparingly, mainly for theme and auth
+
+# Table Patterns
+- Tables use @tanstack/react-table
+- Table configurations are in separate config files
+- Column definitions follow a consistent pattern with accessorKey
+- Tables support sorting, filtering, and pagination
+- Virtual scrolling is used for large datasets
+
+# Styling Conventions
+- We use Tailwind CSS for styling
+- class-variance-authority for component variants
+- tailwind-merge for class name conflicts
+- Consistent color scheme from tailwind.config.ts
+- Dark mode support via next-themes
+
+# Type Safety
+- Strict TypeScript configuration
+- Zod for runtime type validation
+- Type definitions in types/ directory
+- Prefer interface over type for object definitions
+- Use generics for reusable components
+
+# Error Handling
+- Error boundaries at feature level
+- toast notifications via sonner
+- Consistent error messages format
+- Error states in UI components
+- Loading states with suspense boundaries
+
+# Performance
+- Use React.memo for expensive renders
+- Implement proper dependency arrays in hooks
+- Code-split at route level
+- Optimize images with next/image
+- Use dynamic imports for heavy components
+
+# Testing
+- Components should be testable in isolation
+- Props should have proper TypeScript interfaces
+- Avoid direct DOM manipulation
+- Keep components pure when possible
+- Use data-testid for test selectors 
