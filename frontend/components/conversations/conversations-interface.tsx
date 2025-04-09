@@ -191,7 +191,13 @@ export function ConversationsInterface({
   useEffect(() => {
     if (!lastMessage) return;
 
-    console.log("Received WebSocket message:", lastMessage);
+    console.log("ConversationsInterface received WebSocket message:", {
+      type: lastMessage.type,
+      conversationId: lastMessage.conversationId,
+      payload: lastMessage.payload,
+      activeConversationId,
+      hasConversation: activeConversations.has(lastMessage.conversationId),
+    });
 
     const { conversationId } = lastMessage;
 
@@ -240,13 +246,17 @@ export function ConversationsInterface({
       lastMessage.payload &&
       !lastMessage.payload.action
     ) {
-      console.log("Processing new message for conversation:", conversationId);
+      console.log("Processing new message:", {
+        messageId: lastMessage.payload.id,
+        content: lastMessage.payload.content,
+        type: lastMessage.payload.message_type,
+      });
 
       const newMessage: Message = {
         id: lastMessage.payload.id,
         content: lastMessage.payload.content,
         message_type: lastMessage.payload.message_type as MessageType,
-        timestamp: lastMessage.payload.timestamp,
+        timestamp: new Date(lastMessage.payload.timestamp),
       };
 
       // If we don't have the conversation loaded yet, load it first
@@ -260,10 +270,14 @@ export function ConversationsInterface({
       }
 
       setActiveConversations((prev) => {
+        console.log("Updating active conversations with new message");
         const newMap = new Map(prev);
         const conv = newMap.get(conversationId);
 
-        if (!conv) return prev; // Safety check
+        if (!conv) {
+          console.log("No conversation found for:", conversationId);
+          return prev;
+        }
 
         // Check if message with this ID already exists
         const messageExists = conv.messages.some(
@@ -272,8 +286,10 @@ export function ConversationsInterface({
 
         if (!messageExists) {
           console.log("Adding new message to conversation:", newMessage);
+          const updatedMessages = [...conv.messages, newMessage];
           const updatedConv = {
-            messages: [...conv.messages, newMessage],
+            ...conv,
+            messages: updatedMessages,
             unreadCount:
               conversationId !== activeConversationId
                 ? (conv.unreadCount || 0) + 1
@@ -289,6 +305,7 @@ export function ConversationsInterface({
           };
 
           newMap.set(conversationId, updatedConv);
+          console.log("Updated conversation state:", updatedConv);
 
           // Mark as read if it's the active conversation
           if (conversationId === activeConversationId) {
@@ -406,6 +423,8 @@ export function ConversationsInterface({
       },
       timestamp: new Date().toISOString(),
     };
+
+    console.log("Sending WebSocket message:", wsMessage);
 
     sendWebSocketMessage(wsMessage);
     setMessageInput("");

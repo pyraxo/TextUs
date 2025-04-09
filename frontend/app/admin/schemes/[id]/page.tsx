@@ -29,7 +29,7 @@ export default function SchemeDetailPage({
       <div className="bg-cpf-light-teal pt-8 pb-10">
         <div className="container mx-auto">
           <Link
-            href="/trainer/schemes"
+            href="/admin/schemes"
             className="inline-flex items-center text-muted-background hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

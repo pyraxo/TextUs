@@ -1,12 +1,12 @@
 "use client";
 
+import { Welcome } from "@/components/dashboard/welcome";
+import { RecentActivity } from "@/components/trainer/recent-activity";
+import { TrainerLeaderboard } from "@/components/trainer/trainer-leaderboard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Welcome } from "../../components/dashboard/welcome";
-import { RecentActivity } from "../../components/trainer/recent-activity";
-import { TrainerLeaderboard } from "../../components/trainer/trainer-leaderboard";
 
 // Mock data for demonstration
 const traineesData = [

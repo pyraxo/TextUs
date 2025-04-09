@@ -88,11 +88,8 @@ export function NavMain({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isActive = (url: string) => {
     // Special case for /trainer/schemes to not match sub-routes
-    if (
-      pathname?.includes("/trainer/schemes") &&
-      pathname !== "/trainer/schemes"
-    ) {
-      return url === "/trainer/schemes";
+    if (pathname?.includes("/admin/schemes") && pathname !== "/admin/schemes") {
+      return url === "/admin/schemes";
     }
 
     if (pathname?.includes("/practice") && pathname !== "/practice") {
