@@ -119,6 +119,16 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
             payloadProps: message.payload ? Object.keys(message.payload) : [],
           });
 
+          // Don't process subscription messages
+          if (message.type === "MESSAGE" && message.payload?.action) {
+            console.log("Skipping subscription message");
+            return;
+          }
+
+          // Set last message immediately for non-subscription messages
+          setLastMessage(message);
+          console.log("Set lastMessage:", message);
+
           if (message.type === "END_CHAT") {
             console.log("Processing END_CHAT in WebSocket provider", {
               conversationId: message.conversationId,
@@ -175,10 +185,6 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
               return newStates;
             });
-
-            // Set lastMessage to ensure consumers are notified
-            setLastMessage(message);
-            return;
           }
 
           // Update conversation state if it's a message
@@ -187,6 +193,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
             message.payload &&
             !message.payload.action
           ) {
+            console.log("Updating conversation state for message:", message);
             setConversationStates((prev) => {
               const newStates = new Map(prev);
               const state = newStates.get(message.conversationId);
@@ -199,9 +206,6 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
               return newStates;
             });
           }
-
-          setLastMessage(message);
-          console.log("Received message:", message);
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
         }

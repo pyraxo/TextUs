@@ -55,7 +55,7 @@ async def on_session_completed(data):
                     "metrics": data["metrics"],
                 },
             },
-            UUID(conv),
+            parse_uuid(conv),
         )
 
 
@@ -142,7 +142,7 @@ async def end_chat(
                 "timestamp": str(conversation.ended_at),
             },
         },
-        str(conversation_uuid),
+        conversation_uuid,
     )
 
     # Get chat transcript for evaluation
@@ -240,6 +240,7 @@ async def create_message(
 
 async def broadcast_message(message: ChatMessage, user: User = None):
     """Broadcast a message to all clients in the conversation."""
+    print("BROADCASTING MESSAGE")
     message_data = {
         "type": "MESSAGE",
         "conversationId": str(message.conversation_id),
@@ -259,7 +260,9 @@ async def broadcast_message(message: ChatMessage, user: User = None):
             "name": user.name,
         }
 
-    await manager.broadcast_to_conversation(message_data, str(message.conversation_id))
+    await manager.broadcast_to_conversation(
+        message_data, parse_uuid(message.conversation_id)
+    )
 
 
 @router.websocket("/ws/conversations")
@@ -351,7 +354,9 @@ async def websocket_endpoint(
 
             elif data["type"] in ["TYPING", "STATUS_CHANGE"]:
                 # Broadcast these messages to everyone including the sender
-                await manager.broadcast_to_conversation(data, str(conversation_id))
+                await manager.broadcast_to_conversation(
+                    data, parse_uuid(conversation_id)
+                )
 
     except WebSocketDisconnect:
         ws_logger.info(

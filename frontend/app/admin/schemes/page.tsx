@@ -117,7 +117,7 @@ export default function SchemesPage() {
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-                <Link href={`/trainer/schemes/${scheme.slug}`}>
+                <Link href={`/admin/schemes/${scheme.slug}`}>
                   <CardContent className="p-0 h-full">
                     <div className="px-6 py-6 h-full flex flex-col">
                       <div className="flex items-center gap-4 mb-3">

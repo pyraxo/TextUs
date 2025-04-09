@@ -27,6 +27,7 @@ class ConnectionManager:
 
     async def broadcast_to_conversation(self, message: dict, conversation_id: UUID):
         """Broadcast message to connection"""
+        print(f"Broadcasting message to conversation: {conversation_id}")
         if conversation_id in self.active_connections:
             disconnected = set()
             logging.info(
