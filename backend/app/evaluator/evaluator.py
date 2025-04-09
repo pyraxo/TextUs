@@ -2,11 +2,11 @@ import logging
 import os
 
 import instructor
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from app.core.config import get_settings
-from app.evaluator.eval_types import ChatTranscript, EvaluationResult
-# from app.services.chroma_db import answer_query
+from app.evaluator.eval_types import ChatTranscript, EvaluationMetric, EvaluationResult
+from app.services.chroma_db import answer_query
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -14,11 +14,16 @@ logging.basicConfig(
 
 settings = get_settings()
 
-client = OpenAI(api_key=settings.openai_api_key)
-structured_client = instructor.from_openai(client)
+client = AsyncOpenAI(api_key=settings.openai_api_key)
+structured_client = instructor.from_openai(AsyncOpenAI(api_key=settings.openai_api_key))
 
 # Define evaluation metrics
-EVALUATION_METRICS = ["accuracy", "comprehension", "tone", "chat_handling"]
+EVALUATION_METRICS: list[EvaluationMetric] = [
+    "accuracy",
+    "comprehension",
+    "tone",
+    "chat_handling",
+]
 
 
 def load_prompt(metric: str) -> str:
@@ -30,7 +35,9 @@ def load_prompt(metric: str) -> str:
         return file.read()
 
 
-def evaluate_chat_transcript(chat_transcript: ChatTranscript) -> dict:
+async def evaluate_chat_transcript(
+    chat_transcript: ChatTranscript,
+) -> dict:
     """
     Evaluates the chat transcript across multiple metrics and returns structured results.
     """
@@ -43,7 +50,7 @@ def evaluate_chat_transcript(chat_transcript: ChatTranscript) -> dict:
             f"Chat Transcript:\n{chat_transcript.text}"
         )
 
-        response = client.chat.completions.create(  # Using standard OpenAI client
+        response = await client.chat.completions.create(  # Using standard OpenAI client
             model="gpt-4o-mini",
             messages=[
                 {
@@ -72,15 +79,15 @@ def evaluate_chat_transcript(chat_transcript: ChatTranscript) -> dict:
             system_message = prompt  # Default system message
 
             # RAG retrieval only for accuracy
-            # if metric == "accuracy":
-            #     retrieved_docs = answer_query(customer_queries)
-            #     logging.info(f"Retrieved Knowledge from RAG:\n{retrieved_docs}")
-            #     system_message = (
-            #         f"{prompt}\n\n---\nRelevant Knowledge:\n{retrieved_docs}"
-            #     )
+            if metric == "accuracy":
+                retrieved_docs = answer_query(customer_queries)
+                logging.info(f"Retrieved Knowledge from RAG:\n{retrieved_docs}")
+                system_message = (
+                    f"{prompt}\n\n---\nRelevant Knowledge:\n{retrieved_docs}"
+                )
 
             # Structured response using Instructor
-            evaluation_results[metric] = structured_client.chat.completions.create(
+            result = await structured_client.chat.completions.create(
                 model="gpt-4o-mini",
                 response_model=EvaluationResult,
                 messages=[
@@ -93,33 +100,36 @@ def evaluate_chat_transcript(chat_transcript: ChatTranscript) -> dict:
                 max_tokens=2000,
             )
 
-            result_instance = evaluation_results[metric]
-            print(result_instance.metric)
-            print(result_instance.score)
-            print(result_instance.justification)
-            print(result_instance.problematic_responses)
-            print(result_instance.revised_response)
-        return evaluation_results[metric]
+            # Convert EvaluationResult to dictionary for serialization
+            evaluation_results[metric] = result.model_dump()
+
+            print(f"Metric: {result.metric}")
+            print(f"Score: {result.score}")
+            print(f"Justification: {result.justification}")
+            print(f"Problematic responses: {result.problematic_responses}")
+            print(f"Revised response: {result.revised_response}")
+
+        return evaluation_results
 
     except Exception as e:
         logging.error(f"Error evaluating chat transcript: {e}")
-        return {"error": "Error occurred during evaluation."}
+        return {"error": str(e)}
 
 
 # Example
-chat_transcript = ChatTranscript(
-    text=(
-        "Agent: If you are on CPF LIFE and have started your monthly payouts, the refunds to your RA will be used to increase your CPF LIFE premium. "
-        "Customer: Premium? So, smaller payouts *now* for more later? "
-        "Agent: Changes to your Retirement Account (RA) can affect your monthly payouts. This is because your RA savings is one of the factors in determining your CPF LIFE payouts. "
-        "Outflow from your RA, such as lump sum withdrawals will reduce your CPF LIFE monthly payouts. On the other hand, inflows to your RA, such as top-ups, or refunds from selling your property or investments will be automatically used to increase your CPF LIFE premium, and allow you to receive higher monthly payouts. "
-        "If you have started receiving your CPF LIFE monthly payouts, we will inform you of any revision in your monthly payouts in the following month after the outflow/inflow of funds. "
-        "Customer: Okay, but are you even answering my actual question? Property, cash... hello? "
-        "Agent: Customer: Seriously? Still waiting. This shouldn't be this hard. "
-        "Agent: Customer: So, using property *will* lower my payouts if I take the money out? What about just topping up with cash? "
-        "Agent: Customer: Hello? Still waiting on the cash top-up part of that question."
-    )
-)
+# sample_transcript = ChatTranscript(
+#     text=(
+#         "Agent: If you are on CPF LIFE and have started your monthly payouts, the refunds to your RA will be used to increase your CPF LIFE premium. "
+#         "Customer: Premium? So, smaller payouts *now* for more later? "
+#         "Agent: Changes to your Retirement Account (RA) can affect your monthly payouts. This is because your RA savings is one of the factors in determining your CPF LIFE payouts. "
+#         "Outflow from your RA, such as lump sum withdrawals will reduce your CPF LIFE monthly payouts. On the other hand, inflows to your RA, such as top-ups, or refunds from selling your property or investments will be automatically used to increase your CPF LIFE premium, and allow you to receive higher monthly payouts. "
+#         "If you have started receiving your CPF LIFE monthly payouts, we will inform you of any revision in your monthly payouts in the following month after the outflow/inflow of funds. "
+#         "Customer: Okay, but are you even answering my actual question? Property, cash... hello? "
+#         "Agent: Customer: Seriously? Still waiting. This shouldn't be this hard. "
+#         "Agent: Customer: So, using property *will* lower my payouts if I take the money out? What about just topping up with cash? "
+#         "Agent: Customer: Hello? Still waiting on the cash top-up part of that question."
+#     )
+# )
 
 # Test in terminal
-evaluation_output = evaluate_chat_transcript(chat_transcript)
+# evaluation_output = evaluate_chat_transcript(chat_transcript)

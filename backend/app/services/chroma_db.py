@@ -15,11 +15,11 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-BASE_DIR = "backend/data"
+BASE_DIR = "./data"
 CSV_FILE_PATH = os.path.join(BASE_DIR, "faq_cat_for_embed.csv")
 DB_PATH = os.path.join(BASE_DIR, "chroma_db")
 
-GEMINI_API_KEY = settings.gemini_api_key
+os.environ["GOOGLE_API_KEY"] = settings.google_api_key
 
 chat_model = ChatGoogleGenerativeAI(model="models/gemini-1.5-pro-latest")
 embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
@@ -54,9 +54,6 @@ def load_fixed_csv_to_chroma():
     )
 
 
-if not os.path.exists(DB_PATH):
-    load_fixed_csv_to_chroma()
-
 chat_template = ChatPromptTemplate.from_messages(
     [
         SystemMessage(content="You are an FAQ assistant..."),
@@ -90,7 +87,6 @@ rag_chain = (
 
 
 def answer_query(query: str) -> str:
+    if not os.path.exists(DB_PATH):
+        load_fixed_csv_to_chroma()
     return rag_chain.invoke(query)
-
-
-print(answer_query("Premium? So, smaller payouts *now* for more later? "))

@@ -4,7 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.scenario_customer import ScenarioCustomer
@@ -82,6 +82,10 @@ class ChatConversation(ChatConversationBase, table=True):
     )
     trainee: Optional["User"] = Relationship(back_populates="chat_conversations")
 
+    evaluations: Optional["ChatEvaluation"] = Relationship(
+        back_populates="conversation"
+    )
+
     # Store chat history as JSON string
     messages_json: Optional[str] = Field(
         default=None, sa_column_kwargs={"name": "messages"}
@@ -98,3 +102,32 @@ class ChatConversation(ChatConversationBase, table=True):
     def chat_history(self, value: List[str]):
         """Set the chat history from a list."""
         self.messages_json = json.dumps(value)
+
+
+class ChatEvaluation(SQLModel, table=True):
+    """Chat evaluation model for database storage."""
+
+    __tablename__ = "chat_evaluations"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    evaluation_results: str = Field(sa_column=Column(JSON))
+
+    @property
+    def evaluation_results_dict(self) -> dict:
+        """Get the evaluation results as a dictionary."""
+        return json.loads(self.evaluation_results)
+
+    @evaluation_results_dict.setter
+    def evaluation_results_dict(self, value: dict):
+        """Set the evaluation results from a dictionary."""
+        self.evaluation_results = json.dumps(value)
+
+    conversation_id: UUID = Field(foreign_key="chat_conversations.id")
+    session_id: UUID = Field(foreign_key="scenario_sessions.id")
+    trainee_id: UUID = Field(foreign_key="users.id")
+
+    conversation: Optional["ChatConversation"] = Relationship(
+        back_populates="evaluations"
+    )
+    session: Optional["ScenarioSession"] = Relationship(back_populates="evaluations")
+    trainee: Optional["User"] = Relationship(back_populates="evaluations")

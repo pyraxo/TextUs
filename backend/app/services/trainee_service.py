@@ -15,6 +15,7 @@ from app.chatter.workflow import CHECKPOINT_DB_URL, workflow
 from app.core.common import parse_uuid
 from app.core.config import get_settings
 from app.core.db import get_session
+from app.core.events import EventType, event_bus
 from app.models.chat import ChatConversation, ChatMessage, MessageType
 from app.models.response import ConversationListResponse
 from app.models.scenario import Scenario
@@ -66,15 +67,19 @@ class TraineeService:
     ) -> ScenarioSession:
         """Create or get an existing scenario session for a trainee.
 
-        If a session already exists, it will be returned.
-        If no session exists, a new one will be created.
+        If an active session already exists, it will be returned.
+        If no active session exists, a new one will be created.
 
         Args:
             trainee_id: UUID of the trainee
             scenario_id: UUID of the scenario
         """
+        # Only get active (non-completed) sessions
         scenario_session = await self.get_active_session(trainee_id)
-        if not scenario_session:
+
+        # If there's an active session for a different scenario, that's handled elsewhere
+        # If no active session or the active session is for a different scenario, create a new one
+        if not scenario_session or scenario_session.scenario_id != scenario_id:
             scenario_session = ScenarioSession(
                 user_id=trainee_id,
                 scenario_id=scenario_id,
@@ -82,6 +87,7 @@ class TraineeService:
             self.session.add(scenario_session)
             await self.session.commit()
             await self.session.refresh(scenario_session)
+
         return scenario_session
 
     async def start_scenario(
@@ -109,6 +115,8 @@ class TraineeService:
         """
         # Check for active session first
         active_session = await self.get_active_session(trainee_id)
+
+        # If active session exists but is for a different scenario, prevent starting a new one
         if active_session and active_session.scenario_id != scenario_id:
             raise HTTPException(
                 status_code=400,
@@ -120,12 +128,18 @@ class TraineeService:
             trainee_id, scenario_id
         )
 
-        # If we have an active session for this scenario, return it
+        # If we have an active session for this exact scenario, return it
         if active_session and active_session.scenario_id == scenario_id:
             await self.session.refresh(active_session, ["chat_conversations"])
+            print(
+                f"Resuming existing active session {active_session.id} for scenario {scenario_id}"
+            )
             return active_session
 
-        # Create new session if no active session exists
+        # Create a new session - either there's no active session or it's for a different scenario
+        print(
+            f"Creating new session for trainee {trainee_id} and scenario {scenario_id}"
+        )
         scenario_session = ScenarioSession(
             user_id=trainee.id,
             scenario_id=scenario.id,
@@ -151,27 +165,24 @@ class TraineeService:
             print(
                 f"Checking if {scenario_customer.id} has a conversation in {scenario_session.id}"
             )
-            if not any(
-                conv
-                for conv in scenario_session.chat_conversations
-                if conv.scenario_customer_id == scenario_customer.id
-            ):
-                await self.start_trainee_conversation(
-                    trainee_id=trainee.id,
-                    scenario_id=scenario.id,
-                    customer_id=scenario_customer.customer_id,
-                )
+            # Always create new conversations for the new session
+            await self.start_trainee_conversation(
+                trainee_id=trainee.id,
+                scenario_id=scenario.id,
+                customer_id=scenario_customer.customer_id,
+            )
 
         # Refresh session to get all relationships
         await self.session.refresh(scenario_session)
         return scenario_session
 
     async def complete_scenario(
-        self, session_id: str, status: SessionStatus
+        self, trainee_id: str, session_id: str, status: SessionStatus
     ) -> ScenarioSession:
         """Complete a scenario session with a specific status.
 
         Args:
+            trainee_id: ID of the trainee
             session_id: ID of the session to complete
             status: Final status of the session (COMPLETED, FAILED, etc.)
 
@@ -182,7 +193,14 @@ class TraineeService:
             HTTPException: If session not found or already completed
         """
         # Get and validate session
-        scenario_session = await self.get_active_session(session_id)
+        trainee_uuid = parse_uuid(trainee_id)
+        session_uuid = parse_uuid(session_id)
+        scenario_session = await self.session.get(
+            ScenarioSession, session_uuid, ScenarioSession.user_id == trainee_uuid
+        )
+
+        if not scenario_session:
+            raise HTTPException(status_code=404, detail="Session not found")
 
         # Validate all conversations are in a valid state
         active_conversations = [
@@ -215,6 +233,30 @@ class TraineeService:
         await self.session.refresh(scenario_session)
         return scenario_session
 
+    async def end_all_conversations(self, session_id: str) -> None:
+        """End all active conversations for a scenario session.
+
+        Args:
+            session_id: ID of the session
+
+        Returns:
+            None
+        """
+        session_uuid = parse_uuid(session_id)
+        scenario_session = await self.session.get(ScenarioSession, session_uuid)
+
+        if not scenario_session:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        # End all active conversations
+        now = datetime.now()
+        for conversation in scenario_session.chat_conversations:
+            if not conversation.ended_at:
+                conversation.ended_at = now
+                self.session.add(conversation)
+
+        await self.session.commit()
+
     async def get_active_session(self, trainee_id: str) -> Optional[ScenarioSession]:
         """Get trainee's active scenario session if any exists."""
         trainee_uuid = parse_uuid(trainee_id)
@@ -234,7 +276,9 @@ class TraineeService:
 
         if results and results.start_timestamp <= timeout_threshold:
             # Auto-complete timed out session
-            await self.complete_scenario(results.id, SessionStatus.TIMED_OUT)
+            await self.complete_scenario(
+                results.user_id, results.id, status=SessionStatus.TIMED_OUT
+            )
             return None
 
         return results
@@ -328,6 +372,71 @@ class TraineeService:
         )
         await self.session.commit()
 
+    async def check_session_completion(self, session_id: UUID) -> bool:
+        """Check if all conversations in a session have ended and complete session if needed.
+
+        Args:
+            session_id: UUID of the session to check
+
+        Returns:
+            bool: True if session was completed, False otherwise
+        """
+        # Get the session with all conversations loaded
+        scenario_session = await self.session.get(ScenarioSession, session_id)
+        if not scenario_session:
+            return False
+
+        # Refresh to get updated conversation data
+        await self.session.refresh(scenario_session, ["chat_conversations"])
+
+        # Check if all conversations have ended
+        active_conversations = [
+            conv
+            for conv in scenario_session.chat_conversations
+            if not conv.ended_at and conv.messages  # Has messages but not ended
+        ]
+
+        # If there are no active conversations, complete the session
+        if (
+            not active_conversations
+            and scenario_session.status != SessionStatus.COMPLETED
+        ):
+            # Mark session as completed
+            scenario_session.status = SessionStatus.COMPLETED
+            scenario_session.end_timestamp = datetime.now()
+            self.session.add(scenario_session)
+            await self.session.commit()
+
+            # Calculate final session metrics
+            try:
+                metrics = await self.get_session_metrics(str(session_id))
+
+                # Get conversation IDs for broadcasting
+                conversation_ids = [
+                    str(conv.id) for conv in scenario_session.chat_conversations
+                ]
+
+                # Publish session completion event
+                await event_bus.publish(
+                    EventType.SESSION_COMPLETED,
+                    {
+                        "session_id": str(session_id),
+                        "user_id": str(scenario_session.user_id),
+                        "scenario_id": str(scenario_session.scenario_id),
+                        "status": scenario_session.status,
+                        "metrics": metrics.dict(),
+                        "conversation_ids": conversation_ids,
+                    },
+                )
+
+                print(f"Session {session_id} completed with metrics: {metrics}")
+            except Exception as e:
+                print(f"Error calculating session metrics: {e}")
+
+            return True
+
+        return False
+
     async def get_session_conversations(
         self, trainee_id: str, session_id: str
     ) -> List[ConversationListResponse]:
@@ -419,9 +528,12 @@ class TraineeService:
         conv = None
 
         # First await the exec() call to get the result
+        # Only look for non-ended conversations for this scenario customer
         result = await self.session.exec(
             select(ChatConversation).where(
                 ChatConversation.scenario_customer_id == scenario_customer.id,
+                ChatConversation.ended_at == None,  # noqa: E711
+                ChatConversation.scenario_session_id == active_session.id,
             )
         )
         # Then call first() on the result
@@ -429,18 +541,22 @@ class TraineeService:
 
         if existing_conversation:
             conv = existing_conversation
-            print(f"Conversation found: {conv.id}")
+            print(f"Active conversation found: {conv.id}")
         else:
             # Create a new conversation
             conv = ChatConversation(
                 scenario_customer_id=scenario_customer.id,
                 trainee_id=trainee_id,
                 customer_id=customer_id,
+                scenario_session_id=active_session.id,
                 started_at=datetime.now(),
             )
-            print(f"Conversation created: {conv.id}")
+            print(f"New conversation created: {conv.id}")
+            self.session.add(conv)
+            await self.session.commit()
+            await self.session.refresh(conv)
 
-        # Add conversation to session
+        # Add conversation to session if not already added
         if conv not in active_session.chat_conversations:
             active_session.chat_conversations.append(conv)
             self.session.add(active_session)

@@ -29,7 +29,7 @@ export default function ConversationsPage({
         size="icon"
         className={`fixed z-50 transition-all duration-300 ${
           isSidebarOpen ? "right-[400px]" : "right-6"
-        } top-[88px]`}
+        } top-[94px]`}
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
         {isSidebarOpen ? (

@@ -158,7 +158,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
                 const updatedState = {
                   ...state,
                   ended: true,
-                  endedAt: new Date(),
+                  endedAt: new Date(message.payload.timestamp),
                 };
                 console.log("Updated conversation state:", updatedState);
                 newStates.set(message.conversationId, updatedState);
@@ -169,14 +169,14 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
                   isActive: false,
                   lastSeenMessageId: null,
                   ended: true,
-                  endedAt: new Date(),
+                  endedAt: new Date(message.payload.timestamp),
                 });
               }
 
               return newStates;
             });
 
-            // Set lastMessage after updating the state to prevent loops
+            // Set lastMessage to ensure consumers are notified
             setLastMessage(message);
             return;
           }
