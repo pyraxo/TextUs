@@ -33,10 +33,11 @@ response_prompt = PromptTemplate(
     ],
     template=BASE_PROMPT
     + """
-Original question: '{original_question}'. History: {history}.
-Agent said: '{agent_reply}'. React to the agent's tone and content with your personality.
-If rude, snap back or quit with 'forget it'. If clear enough, say 'resolved' or 'fine'.
-Push sarcastically if unclear, but accept a solid answer as resolved.
+Original question: '{original_question}'. Agent said: '{agent_reply}'. 
+History: {history}.
+React to the agent's tone and content appropriately with your personality.
+If the agent's current and previous replies help you resolve your query, respond with a text that shows you are satisfied.
+DO NOT ask follow-up questions if you have ALREADY asked a follow-up question.
 """,
 )
 
@@ -75,15 +76,17 @@ Agent hasn't replied yet. Nudge them impatiently in 1 sentence (max 10 words).
 termination_prompt = PromptTemplate(
     input_variables=["personality", "original_question", "conversation_history"],
     template="""
-    You're a CPF customer with personality: {personality}.
-    Your original question was: "{original_question}".
-    Here's the full conversation so far:
-    {conversation_history}
+You're a CPF customer with personality: {personality}.
+Your original question was: "{original_question}".
+Here's the full conversation so far:
+{conversation_history}
 
-    Based on this, decide if your query has been appropriately resolved.
-    - If resolved (agent gave a clear, relevant answer), say "resolved".
-    - If unresolved (agent's replies are vague, off-topic, or missing), say "unresolved".
-    - If frustrated and giving up (due to delays, rudeness, or nonsense), say "forget it".
-    Respond with just one of these: "resolved", "unresolved", "forget it".
-    """
+Decide if your ORIGINAL QUESTION is resolved based on the agent's replies:
+- Say "resolved" if the agent's latest reply gives a usable step or answer that fits your question, even if basic, as long as it makes sense and is reasonable.
+- Say "resolved" if your latest response shows you are satisfied with the agent's reply.
+- Say "unresolved" if the agent hasn't answered your question yet or the reply is off-topic or too vague to use.
+- Say "unresolved" if the agent's latest reply is satisfactory, but you asked a follow-up question as seen in the chat history. Do NOT resolve the chat if you asked a follow-up question.
+- Say "forget it" if you'd quit due to frustration (e.g., rude tone, long delays, or useless replies), per your personality.
+Respond with only one: "resolved", "unresolved", "forget it".
+""",
 )

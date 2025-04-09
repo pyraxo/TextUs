@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,7 +27,15 @@ import {
   MessageType,
   type ConversationResponse,
 } from "@/types/conversations.d";
-import { Filter, Paperclip, SendHorizontal, Wifi, WifiOff } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  Filter,
+  Paperclip,
+  SendHorizontal,
+  Wifi,
+  WifiOff,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -73,6 +91,11 @@ export function ConversationsInterface({
   const activeConversationState = activeConversationId
     ? getConversationState(activeConversationId)
     : null;
+
+  // Loading state
+  const [isEndChatDialogOpen, setIsEndChatDialogOpen] = useState(false);
+
+  const queryClient = useQueryClient();
 
   // Load conversation data when selected
   const loadConversation = useCallback(
@@ -174,7 +197,41 @@ export function ConversationsInterface({
 
     if (lastMessage.type === "END_CHAT") {
       console.log("END_CHAT received for conversation:", conversationId);
-      // Skip processing - WebSocket provider already handles this
+      const timestamp = new Date(lastMessage.payload.timestamp);
+
+      // Update active conversations map with ended state
+      setActiveConversations((prev) => {
+        const newMap = new Map(prev);
+        const conv = newMap.get(conversationId);
+        if (conv && conv.conversation) {
+          console.log("Updating conversation ended state:", {
+            conversationId,
+            timestamp: timestamp.toISOString(),
+            previousState: conv.conversation.ended_at?.toISOString() || null,
+          });
+
+          newMap.set(conversationId, {
+            ...conv,
+            conversation: {
+              ...conv.conversation,
+              ended_at: timestamp,
+              latest_message_timestamp: timestamp.toISOString(),
+            },
+          });
+        }
+        return newMap;
+      });
+
+      // Clear the active session in the query cache when receiving END_CHAT
+      if (user?.id) {
+        console.log(
+          "Clearing active session in query cache from WebSocket message"
+        );
+        queryClient.setQueryData(["active-session", user.id], null);
+      }
+
+      // Trigger a refresh of the conversations list to sync with server
+      debouncedRefresh();
       return;
     }
 
@@ -215,8 +272,6 @@ export function ConversationsInterface({
 
         if (!messageExists) {
           console.log("Adding new message to conversation:", newMessage);
-
-          // Create a new conversation object to ensure state update
           const updatedConv = {
             messages: [...conv.messages, newMessage],
             unreadCount:
@@ -239,16 +294,6 @@ export function ConversationsInterface({
           if (conversationId === activeConversationId) {
             markConversationAsRead(conversationId, newMessage.id);
           }
-
-          // Update the conversation's latest_message_timestamp
-          if (conv.conversation) {
-            conv.conversation.latest_message_timestamp = new Date(
-              newMessage.timestamp
-            ).toISOString();
-          }
-
-          // Schedule a refresh of the conversation list
-          setTimeout(debouncedRefresh, 0);
         } else {
           console.log("Message already exists, skipping:", newMessage.id);
         }
@@ -261,6 +306,8 @@ export function ConversationsInterface({
     activeConversationId,
     markConversationAsRead,
     loadConversation,
+    queryClient,
+    user?.id,
   ]);
 
   // Debounced refresh function
@@ -364,6 +411,60 @@ export function ConversationsInterface({
     setMessageInput("");
   };
 
+  // Handle ending a chat
+  const handleEndChat = () => {
+    if (!activeConversationId) return;
+
+    console.log("Ending chat for conversation:", activeConversationId);
+    const timestamp = new Date();
+
+    // Send end chat message via WebSocket
+    const endChatMessage = {
+      type: "END_CHAT" as const,
+      conversationId: activeConversationId,
+      payload: {
+        timestamp: timestamp.toISOString(),
+      },
+    };
+
+    // Update local state immediately to reflect ended status
+    setActiveConversations((prev) => {
+      const newMap = new Map(prev);
+      const conv = newMap.get(activeConversationId);
+      if (conv && conv.conversation) {
+        console.log("Updating local state for ended chat:", {
+          conversationId: activeConversationId,
+          timestamp: timestamp.toISOString(),
+        });
+
+        newMap.set(activeConversationId, {
+          ...conv,
+          conversation: {
+            ...conv.conversation,
+            ended_at: timestamp,
+            latest_message_timestamp: timestamp.toISOString(),
+          },
+        });
+      }
+      return newMap;
+    });
+
+    // Clear the active session in the query cache
+    if (user?.id) {
+      console.log("Clearing active session in query cache");
+      queryClient.setQueryData(["active-session", user.id], null);
+    }
+
+    // Send the WebSocket message after updating local state
+    sendWebSocketMessage(endChatMessage);
+
+    // Trigger a refresh of the conversations list to sync with server
+    debouncedRefresh();
+
+    setIsEndChatDialogOpen(false);
+    toast.success("Chat ended successfully");
+  };
+
   // Loading state
   if (isLoading) {
     return <ConversationsLoading />;
@@ -429,33 +530,27 @@ export function ConversationsInterface({
                   key={conversation.id}
                   onClick={() => handleConversationSelect(conversation.id)}
                   className={cn(
-                    "w-full flex flex-col gap-1 py-3 px-4 hover:bg-muted/20 text-left",
+                    "w-full flex flex-col gap-2 py-3 px-4 hover:bg-muted/20 text-left border-b border-border/50",
                     activeConversationId === conversation.id && "bg-muted/20"
                   )}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">
-                        {conversation.scenario_name || "Unnamed Scenario"}
+                  <div className="flex flex-col min-w-0 w-full">
+                    {/* Top row: Name and time */}
+                    <div className="flex items-center justify-between w-full gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-medium text-sm line-clamp-1">
+                          {conversation.scenario_name || "Unnamed Scenario"}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground shrink-0 w-[4rem] text-right">
+                        {formatListTime(
+                          conversation.latest_message_timestamp as string
+                        )}
                       </span>
-                      {activeConversations.get(conversation.id)?.unreadCount ? (
-                        <Badge variant="default">
-                          {
-                            activeConversations.get(conversation.id)
-                              ?.unreadCount
-                          }
-                        </Badge>
-                      ) : null}
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formatListTime(
-                        conversation.latest_message_timestamp as string
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {/* Show ended indicator if conversation has ended */}
+
+                    {/* Bottom row: Badges */}
+                    <div className="flex items-center gap-2 mt-1">
                       {conversation.ended_at ||
                       activeConversations.get(conversation.id)?.conversation
                         ?.ended_at ? (
@@ -464,6 +559,21 @@ export function ConversationsInterface({
                           className="text-xs text-muted-foreground"
                         >
                           Ended
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-xs text-green-600 border-green-200"
+                        >
+                          Active
+                        </Badge>
+                      )}
+                      {activeConversations.get(conversation.id)?.unreadCount ? (
+                        <Badge variant="default" className="text-xs">
+                          {
+                            activeConversations.get(conversation.id)
+                              ?.unreadCount
+                          }
                         </Badge>
                       ) : null}
                     </div>
@@ -489,9 +599,50 @@ export function ConversationsInterface({
         {activeConversation ? (
           <div className="flex h-full flex-col">
             <div className="p-4">
-              <h2 className="font-semibold">
-                {activeConversation.conversation?.scenario_name || "Customer"}
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">
+                  {activeConversation.conversation?.scenario_name || "Customer"}
+                </h2>
+                {!(
+                  activeConversationState?.ended ||
+                  activeConversation.conversation?.ended_at
+                ) && (
+                  <>
+                    <AlertDialog
+                      open={isEndChatDialogOpen}
+                      onOpenChange={setIsEndChatDialogOpen}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEndChatDialogOpen(true)}
+                        className="gap-1 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 mr-10"
+                      >
+                        <X className="h-4 w-4" />
+                        End Chat
+                      </Button>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>End Chat</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to end this chat? This action
+                            cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleEndChat}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            End Chat
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
+              </div>
               {(activeConversationState?.ended ||
                 activeConversation.conversation?.ended_at) && (
                 <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
@@ -590,27 +741,33 @@ export function ConversationsInterface({
 
             <div className="border-t p-4">
               <div className="flex gap-2">
-                <Textarea
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder={
-                    activeConversationState?.ended ||
-                    activeConversation.conversation?.ended_at
-                      ? "This conversation has ended"
-                      : "Type your message..."
-                  }
-                  className="min-h-[80px]"
-                  disabled={
-                    !!activeConversationState?.ended ||
-                    !!activeConversation.conversation?.ended_at
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                />
+                {activeConversationState?.ended ||
+                activeConversation.conversation?.ended_at ? (
+                  <div className="flex flex-col w-full gap-2">
+                    <p className="text-sm text-muted-foreground">
+                      This conversation has ended
+                    </p>
+                    <Button
+                      onClick={() => (window.location.href = "/practice")}
+                      className="w-full"
+                    >
+                      Restart with New Scenario
+                    </Button>
+                  </div>
+                ) : (
+                  <Textarea
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    placeholder="Type your message..."
+                    className="min-h-[80px]"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                )}
                 <div className="flex flex-col gap-2">
                   <Button
                     size="icon"

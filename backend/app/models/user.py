@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .chat import ChatConversation, ChatMessage
+    from .chat import ChatConversation, ChatEvaluation, ChatMessage
     from .scenario_session import ScenarioSession
 
 
@@ -43,6 +43,7 @@ class User(UserBase, table=True):
     chat_conversations: List["ChatConversation"] = Relationship(
         back_populates="trainee"
     )
+    evaluations: List["ChatEvaluation"] = Relationship(back_populates="trainee")
 
 
 class UserRead(UserBase):

@@ -73,7 +73,7 @@ export default function CustomersPage() {
         <div className="bg-cpf-light-teal pt-8 pb-8">
           <div className="container mx-auto">
             {/* Main heading */}
-            <h1 className="text-3xl font-bold mb-2">Manage Agents</h1>
+            <h1 className="text-3xl font-bold mb-2">Manage Archetypes</h1>
 
             {/* Subheading */}
             <h2 className="text-sm">

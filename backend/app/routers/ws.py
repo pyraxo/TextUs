@@ -13,15 +13,18 @@ from fastapi import (
     status,
 )
 from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.chatter.workflow import resume_chatbot
 from app.core.common import parse_uuid
 from app.core.db import get_session
+from app.core.events import EventType, event_bus
 from app.core.security import get_settings, jwt
 from app.core.ws_manager import manager
-from app.models.chat import ChatConversation, ChatMessage, MessageType
-from app.models.scenario_session import ScenarioSession, SessionStatus
+from app.evaluator.eval_types import ChatTranscript
+from app.evaluator.evaluator import evaluate_chat_transcript
+from app.models.chat import ChatConversation, ChatEvaluation, ChatMessage, MessageType
 from app.models.user import User
 
 # Set up logger for websockets with concise formatting
@@ -31,6 +34,33 @@ ws_logger.setLevel(logging.INFO)
 router = APIRouter()
 
 # TODO: UPDATE THIS FILE! IT'S REPEATED CODE!
+
+
+# Register event handlers
+async def on_session_completed(data):
+    """Handle session completion event"""
+    ws_logger.info(f"Session completed: {data['session_id']}")
+
+    # Broadcast to anyone connected to conversations in this session
+    for conv in data.get("conversation_ids", []):
+        await manager.broadcast_to_conversation(
+            {
+                "type": "SESSION_COMPLETED",
+                "sessionId": data["session_id"],
+                "payload": {
+                    "id": data["session_id"],
+                    "user_id": data["user_id"],
+                    "scenario_id": data["scenario_id"],
+                    "status": data["status"],
+                    "metrics": data["metrics"],
+                },
+            },
+            UUID(conv),
+        )
+
+
+# Subscribe to events
+event_bus.subscribe(EventType.SESSION_COMPLETED, on_session_completed)
 
 
 async def get_current_user_ws(
@@ -80,24 +110,27 @@ async def end_chat(
     trainee_id: UUID,
 ):
     """End the chat"""
-    conversation_id = parse_uuid(conversation_id)
-    conversation = await session.get(ChatConversation, conversation_id)
+    conversation_uuid = parse_uuid(conversation_id)
+    conversation = await session.get(ChatConversation, conversation_uuid)
     print(f"ENDING CHAT: {conversation_id}")
     if not conversation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation not found",
         )
+
+    # Mark conversation as ended
     conversation.ended_at = datetime.now()
-    scenario_session = await session.get(
-        ScenarioSession, conversation.scenario_session_id
-    )
-    scenario_session.status = SessionStatus.COMPLETED
     session.add(conversation)
-    session.add(scenario_session)
+
+    # Save session_id before committing
+    scenario_session_id = conversation.scenario_session_id
+
+    # Commit changes to conversation
     await session.commit()
     await session.refresh(conversation)
 
+    # Broadcast chat end event
     await manager.broadcast_to_conversation(
         {
             "type": "END_CHAT",
@@ -109,14 +142,49 @@ async def end_chat(
                 "timestamp": str(conversation.ended_at),
             },
         },
-        conversation_id,
+        str(conversation_uuid),
     )
 
-    # chat_transcript = await session.exec(
-    #     select(ChatMessage).where(ChatMessage.conversation_id == conversation_id)
-    # )
+    # Get chat transcript for evaluation
+    chat_transcript = await session.exec(
+        select(ChatMessage).where(ChatMessage.conversation_id == conversation_uuid)
+    )
 
-    # await evaluate_chat_transcript("\n".join([msg.content for msg in chat_transcript]))
+    # Check if evaluation already exists for this conversation
+    existing_evaluation = await session.exec(
+        select(ChatEvaluation).where(
+            ChatEvaluation.conversation_id == conversation_uuid
+        )
+    )
+    existing_evaluation = existing_evaluation.first()
+
+    # Only evaluate if no evaluation exists
+    if not existing_evaluation:
+        # Evaluate the chat
+        evaluation_results = await evaluate_chat_transcript(
+            ChatTranscript(text="\n".join([msg.content for msg in chat_transcript]))
+        )
+
+        # Save evaluation results
+        session.add(
+            ChatEvaluation(
+                conversation_id=conversation_uuid,
+                trainee_id=conversation.trainee_id,
+                session_id=conversation.scenario_session_id,
+                evaluation_results=evaluation_results,
+            )
+        )
+        await session.commit()
+    else:
+        ws_logger.info(
+            f"Skipping evaluation for conversation {conversation_id}: evaluation already exists"
+        )
+
+    from app.services.trainee_service import TraineeService
+
+    # Check if all conversations in this session have ended
+    trainee_service = TraineeService(session=session)
+    await trainee_service.check_session_completion(scenario_session_id)
 
     return conversation
 
@@ -191,7 +259,7 @@ async def broadcast_message(message: ChatMessage, user: User = None):
             "name": user.name,
         }
 
-    await manager.broadcast_to_conversation(message_data, message.conversation_id)
+    await manager.broadcast_to_conversation(message_data, str(message.conversation_id))
 
 
 @router.websocket("/ws/conversations")
@@ -228,7 +296,17 @@ async def websocket_endpoint(
             }
 
             # Handle different message types
-            if data["type"] == "MESSAGE":
+            if data["type"] == "END_CHAT":
+                # Handle end chat message
+                ws_logger.info(f"Received END_CHAT for conversation {conversation_id}")
+                await end_chat(
+                    session=session,
+                    conversation_id=conversation_id,
+                    trainee_id=user.id,
+                )
+                continue
+
+            elif data["type"] == "MESSAGE":
                 if data.get("payload", {}).get("action") in [
                     "subscribe",
                     "unsubscribe",
@@ -273,7 +351,7 @@ async def websocket_endpoint(
 
             elif data["type"] in ["TYPING", "STATUS_CHANGE"]:
                 # Broadcast these messages to everyone including the sender
-                await manager.broadcast_to_conversation(data, conversation_id)
+                await manager.broadcast_to_conversation(data, str(conversation_id))
 
     except WebSocketDisconnect:
         ws_logger.info(

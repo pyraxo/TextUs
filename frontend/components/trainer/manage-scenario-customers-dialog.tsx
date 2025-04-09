@@ -192,16 +192,18 @@ export const ManageScenarioCustomersDialog: FC<
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] border-0 h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Manage Agents</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Manage Archetypes
+          </DialogTitle>
           <DialogDescription>
-            Add, remove, and configure agents for this scenario.
+            Add, remove, and configure customer archetypes for this scenario.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 flex overflow-hidden">
           {/* Left side - List of scenario customers */}
           <div className="w-1/2 border-r pr-4 overflow-hidden flex flex-col">
-            <div className="font-semibold mb-2">Current Agents</div>
+            <div className="font-semibold mb-2">Current Archetypes</div>
             <ScrollArea className="flex-1 pr-4">
               {isLoadingScenarioCustomers ? (
                 <div className="flex items-center justify-center py-4">
@@ -239,14 +241,14 @@ export const ManageScenarioCustomersDialog: FC<
                 </div>
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
-                  No agents added to this scenario yet
+                  No customers added to this scenario yet
                 </div>
               )}
             </ScrollArea>
 
             <Separator className="my-4" />
 
-            <div className="font-semibold mb-2">Add Agents</div>
+            <div className="font-semibold mb-2">Add Archetypes</div>
             <ScrollArea className="h-40 pr-4">
               <div className="space-y-3">
                 {allCustomers?.map((customer) => (

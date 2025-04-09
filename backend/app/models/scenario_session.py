@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .chat import ChatConversation
+    from .chat import ChatConversation, ChatEvaluation
     from .scenario import Scenario
     from .user import User
 
@@ -72,6 +72,8 @@ class ScenarioSession(ScenarioSessionBase, table=True):
     chat_conversations: List["ChatConversation"] = Relationship(
         back_populates="scenario_session"
     )
+
+    evaluations: List["ChatEvaluation"] = Relationship(back_populates="session")
 
     def add_chat_conversation(self, chat_conversation: "ChatConversation"):
         """Add a chat conversation to the session."""

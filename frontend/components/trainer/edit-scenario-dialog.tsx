@@ -191,7 +191,7 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
             onClick={() => {}}
           >
             <Bot size={20} />
-            Manage Agents
+            Manage Archetypes
           </Button>
 
           <DialogFooter className="pt-4">

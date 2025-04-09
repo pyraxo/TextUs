@@ -48,16 +48,6 @@ const navTrainer = [
     icon: LayoutDashboard,
   },
   {
-    title: "Manage Scenarios",
-    url: "/trainer/schemes",
-    icon: BotMessageSquare,
-  },
-  {
-    title: "Manage Agents",
-    url: "/trainer/agents",
-    icon: Contact,
-  },
-  {
     title: "Manage Trainees",
     url: "/trainer/trainees",
     icon: Users,
@@ -69,6 +59,16 @@ const navAdmin = [
     title: "Admin Dashboard",
     url: "/admin",
     icon: ShieldCheck,
+  },
+  {
+    title: "Manage Scenarios",
+    url: "/admin/schemes",
+    icon: BotMessageSquare,
+  },
+  {
+    title: "Manage Archetypes",
+    url: "/admin/agents",
+    icon: Contact,
   },
   {
     title: "Manage Users",
