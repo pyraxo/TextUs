@@ -70,3 +70,13 @@ async def get_conversation(
     ]
 
     return {"conversation": conversation, "messages": messages}
+
+
+@router.get("/{conversation_id}/evaluation", response_model=dict)
+async def get_conversation_evaluation(
+    conversation_id: UUID,
+    conversation_service: Annotated[ConversationService, Depends()],
+):
+    """Get evaluation results for a conversation."""
+    evaluation = await conversation_service.get_conversation_evaluation(conversation_id)
+    return evaluation

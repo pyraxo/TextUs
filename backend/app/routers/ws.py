@@ -175,10 +175,52 @@ async def end_chat(
             )
         )
         await session.commit()
+
+        # Get the created evaluation to broadcast
+        evaluation = await session.exec(
+            select(ChatEvaluation).where(
+                ChatEvaluation.conversation_id == conversation_uuid
+            )
+        )
+        evaluation = evaluation.first()
+
+        # Broadcast evaluation completed event
+        if evaluation:
+            try:
+                # Make sure all values are properly serializable
+                await manager.broadcast_to_conversation(
+                    {
+                        "type": "EVALUATION_COMPLETED",
+                        "conversationId": str(conversation_id),
+                        "payload": {
+                            "evaluation_status": "completed",
+                            "conversation_id": str(conversation_id),
+                        },
+                    },
+                    conversation_uuid,
+                )
+            except Exception as e:
+                ws_logger.error(f"Error broadcasting evaluation completion: {e}")
     else:
         ws_logger.info(
             f"Skipping evaluation for conversation {conversation_id}: evaluation already exists"
         )
+
+        # Broadcast that evaluation already exists
+        try:
+            await manager.broadcast_to_conversation(
+                {
+                    "type": "EVALUATION_COMPLETED",
+                    "conversationId": str(conversation_id),
+                    "payload": {
+                        "evaluation_status": "completed",
+                        "conversation_id": str(conversation_id),
+                    },
+                },
+                conversation_uuid,
+            )
+        except Exception as e:
+            ws_logger.error(f"Error broadcasting evaluation existence: {e}")
 
     from app.services.trainee_service import TraineeService
 

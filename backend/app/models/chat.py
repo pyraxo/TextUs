@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
@@ -110,17 +110,23 @@ class ChatEvaluation(SQLModel, table=True):
     __tablename__ = "chat_evaluations"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    evaluation_results: str = Field(sa_column=Column(JSON))
+    evaluation_results: Any = Field(sa_column=Column(JSON))
 
     @property
     def evaluation_results_dict(self) -> dict:
         """Get the evaluation results as a dictionary."""
-        return json.loads(self.evaluation_results)
+        if isinstance(self.evaluation_results, dict):
+            return self.evaluation_results
+        return (
+            json.loads(self.evaluation_results)
+            if isinstance(self.evaluation_results, str)
+            else {}
+        )
 
     @evaluation_results_dict.setter
     def evaluation_results_dict(self, value: dict):
         """Set the evaluation results from a dictionary."""
-        self.evaluation_results = json.dumps(value)
+        self.evaluation_results = json.dumps(value) if value else None
 
     conversation_id: UUID = Field(foreign_key="chat_conversations.id")
     session_id: UUID = Field(foreign_key="scenario_sessions.id")

@@ -41,8 +41,10 @@ import { toast } from "sonner";
 
 export function ConversationsInterface({
   activeSessionId,
+  onConversationSelect,
 }: {
   activeSessionId: string;
+  onConversationSelect?: (conversationId: string) => void;
 }) {
   // Conversation list state
   const {
@@ -158,6 +160,11 @@ export function ConversationsInterface({
       );
 
       setActiveConversationId(conversationId);
+      // Call the onConversationSelect callback if provided
+      if (onConversationSelect) {
+        onConversationSelect(conversationId);
+      }
+
       if (!activeConversations.has(conversationId)) {
         console.log("Loading conversation for the first time");
         loadConversation(conversationId);
@@ -184,7 +191,12 @@ export function ConversationsInterface({
         });
       }
     },
-    [activeConversations, loadConversation, markConversationAsRead]
+    [
+      activeConversations,
+      loadConversation,
+      markConversationAsRead,
+      onConversationSelect,
+    ]
   );
 
   // Handle incoming WebSocket messages
