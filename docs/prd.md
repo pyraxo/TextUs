@@ -128,9 +128,16 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - Configurable temperature (0 to 1) for response variability
 - **ChatConversation**: Represents a practice session conversation
   - Includes complete chat history
-  - Managed by conversation scheduler
+  - Managed by LangGraph workflow
+  - Supports state-based transitions
+  - Checkpoint-based resumption
 - **ChatMessage**: Represents individual messages in a conversation
-- **Agent**: Represents system agents for specialized handling of conversations
+  - Linked to conversation state
+  - Supports interrupt-based handling
+- **WorkflowState**: Represents the current state of a conversation workflow
+  - Tracks conversation progress
+  - Manages transition conditions
+  - Stores checkpoint data
 
 ### 4.2 Entity Relationships
 
@@ -173,9 +180,13 @@ The CPF Board TextUs application is a standalone training system that simulates 
 
 2. **Training Flow**:
    - Trainee selects a Scenario
-   - System loads the associated ScenarioCustomer(s)
-   - System uses both base Customer traits and scenario-specific adaptations
-   - Conversation is tracked through ChatConversation and ChatMessages
+   - System initializes LangGraph workflow with scenario state
+   - Workflow manages conversation through state transitions:
+     - Message generation and sending
+     - User input handling via interrupts
+     - Termination condition checking
+     - Conversation state persistence
+   - All interactions are tracked through ChatConversation and ChatMessages
 
 ## 5. User Interface
 
@@ -235,11 +246,12 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - JWT-based authentication with password hashing
 - OpenAI integration for AI chat simulation
 - RAG system for improved response accuracy
-- Enhanced conversation management:
-  - Dedicated conversation scheduler
-  - WebSocket connection management
-  - Chat history tracking
-  - Agent-based conversation handling
+- LangGraph-based conversation management:
+  - State-driven workflow engine
+  - Checkpoint-based conversation resumption
+  - Interrupt-based message handling
+  - Directed graph for conversation flow control
+  - Conditional transitions based on conversation state
 
 ### 6.3 Database
 
