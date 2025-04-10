@@ -43,6 +43,16 @@ export async function getSessionConversations(traineeId: string, sessionId: stri
   return fetchApi<Conversation[]>(`/trainees/${traineeId}/sessions/${sessionId}/conversations`);
 }
 
+export interface EvaluationResponse {
+  evaluation_status: 'pending' | 'completed' | 'error';
+  evaluation_results: any;
+  error?: string;
+}
+
+export async function getConversationEvaluation(conversationId: string): Promise<EvaluationResponse> {
+  return fetchApi<EvaluationResponse>(`/conversations/${conversationId}/evaluation`);
+}
+
 export interface Message {
   id: string;
   conversation_id: string;

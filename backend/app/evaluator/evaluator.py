@@ -39,10 +39,13 @@ async def evaluate_chat_transcript(
     chat_transcript: ChatTranscript,
 ) -> dict:
     """
-    Evaluates the chat transcript across multiple metrics and returns structured results.
+    Extracts customer queries, retrieves relevant knowledge, and evaluates agent responses.
+    Returns a dictionary with evaluation metrics and results.
     """
     try:
-        # Step 1: Extract customer queries (NO STRUCTURED RESPONSE NEEDED)
+        evaluation_results = {}
+
+        # Step 1: Extract customer queries from the chat transcript (for RAG)
         extraction_prompt = (
             "Extract only the customer's questions or queries from the following chat transcript. "
             "Ignore agent responses and any other irrelevant details. "
@@ -50,7 +53,7 @@ async def evaluate_chat_transcript(
             f"Chat Transcript:\n{chat_transcript.text}"
         )
 
-        response = await client.chat.completions.create(  # Using standard OpenAI client
+        response = await client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
@@ -59,17 +62,11 @@ async def evaluate_chat_transcript(
                 },
                 {"role": "user", "content": extraction_prompt},
             ],
-            max_tokens=2000,
+            max_tokens=500,
         )
 
         customer_queries = response.choices[0].message.content.strip()
         logging.info("Extracted Customer Queries:\n" + customer_queries)
-
-        if not customer_queries:
-            logging.warning("No customer queries extracted. Skipping RAG retrieval.")
-            return {"error": "No customer queries found in the chat transcript."}
-
-        evaluation_results = {}
 
         # Step 2: Evaluate each metric (ENSURE STRUCTURED RESPONSE)
         for metric in EVALUATION_METRICS:
@@ -87,27 +84,37 @@ async def evaluate_chat_transcript(
                 )
 
             # Structured response using Instructor
-            result = await structured_client.chat.completions.create(
-                model="gpt-4o-mini",
-                response_model=EvaluationResult,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {
-                        "role": "user",
-                        "content": f"Chat Transcript: {chat_transcript.text}",
-                    },
-                ],
-                max_tokens=2000,
-            )
+            try:
+                result = await structured_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    response_model=EvaluationResult,
+                    messages=[
+                        {"role": "system", "content": system_message},
+                        {
+                            "role": "user",
+                            "content": f"Chat Transcript: {chat_transcript.text}",
+                        },
+                    ],
+                    max_tokens=2000,
+                )
 
-            # Convert EvaluationResult to dictionary for serialization
-            evaluation_results[metric] = result.model_dump()
+                # Convert EvaluationResult to dictionary for serialization
+                evaluation_results[metric] = result.model_dump()
 
-            print(f"Metric: {result.metric}")
-            print(f"Score: {result.score}")
-            print(f"Justification: {result.justification}")
-            print(f"Problematic responses: {result.problematic_responses}")
-            print(f"Revised response: {result.revised_response}")
+                print(f"Metric: {result.metric}")
+                print(f"Score: {result.score}")
+                print(f"Justification: {result.justification}")
+                print(f"Problematic responses: {result.problematic_responses}")
+                print(f"Revised response: {result.revised_response}")
+            except Exception as e:
+                logging.error(f"Error evaluating {metric}: {e}")
+                evaluation_results[metric] = {
+                    "metric": metric,
+                    "score": 0,
+                    "justification": f"Error evaluating: {str(e)}",
+                    "problematic_responses": "",
+                    "revised_response": "",
+                }
 
         return evaluation_results
 

@@ -5,7 +5,12 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 // Define WebSocket message types
 export type WebSocketMessage = {
-  type: "MESSAGE" | "TYPING" | "STATUS_CHANGE" | "END_CHAT";
+  type:
+    | "MESSAGE"
+    | "TYPING"
+    | "STATUS_CHANGE"
+    | "END_CHAT"
+    | "EVALUATION_COMPLETED";
   conversationId: string;
   payload: any;
   timestamp?: string;

@@ -14,6 +14,9 @@ export default function ConversationsPage({
   };
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
 
   return (
     <div className="h-full flex overflow-hidden relative">
@@ -22,7 +25,12 @@ export default function ConversationsPage({
           isSidebarOpen ? "pr-[380px]" : ""
         }`}
       >
-        <ConversationsInterface activeSessionId={params.id} />
+        <ConversationsInterface
+          activeSessionId={params.id}
+          onConversationSelect={(conversationId) =>
+            setActiveConversationId(conversationId)
+          }
+        />
       </div>
       <Button
         variant="ghost"
@@ -43,7 +51,7 @@ export default function ConversationsPage({
           isSidebarOpen ? "translate-x-[-400px]" : "translate-x-0"
         }`}
       >
-        <CustomerInfo />
+        <CustomerInfo conversationId={activeConversationId} />
       </div>
     </div>
   );
