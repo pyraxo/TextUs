@@ -50,7 +50,6 @@ export default function UserManagementPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState<UserCreate>({
     name: "",
-    username: "",
     email: "",
     password: "",
     user_type: UserType.TRAINEE,
@@ -76,12 +75,7 @@ export default function UserManagementPage() {
 
   const handleCreateUser = async () => {
     // Validate required fields
-    if (
-      !newUser.name ||
-      !newUser.username ||
-      !newUser.email ||
-      !newUser.password
-    ) {
+    if (!newUser.name || !newUser.email || !newUser.password) {
       toast.error("All fields are required");
       return;
     }
@@ -90,7 +84,6 @@ export default function UserManagementPage() {
       await createUserMutation.mutateAsync(newUser);
       setNewUser({
         name: "",
-        username: "",
         email: "",
         password: "",
         user_type: UserType.TRAINEE,
@@ -107,8 +100,8 @@ export default function UserManagementPage() {
     if (!editingUser) return;
 
     // Validate required fields
-    if (!editingUser.name || !editingUser.username || !editingUser.email) {
-      toast.error("Name, username and email are required");
+    if (!editingUser.name || !editingUser.email) {
+      toast.error("Name and email are required");
       return;
     }
 
@@ -251,21 +244,6 @@ export default function UserManagementPage() {
                 </div>
 
                 <div className="grid grid-cols-4 items-center gap-2">
-                  <Label htmlFor="username" className="text-right">
-                    Username
-                  </Label>
-                  <Input
-                    id="username"
-                    value={newUser.username}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, username: e.target.value })
-                    }
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-4 items-center gap-2">
                   <Label htmlFor="email" className="text-right">
                     Email
                   </Label>
@@ -346,7 +324,6 @@ export default function UserManagementPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>User Type</TableHead>
                   <TableHead>Joined</TableHead>
@@ -365,13 +342,16 @@ export default function UserManagementPage() {
                   users.map((user: User) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.username}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell className="capitalize">
                         {getUserTypeDisplay(user.user_type as UserType)}
                       </TableCell>
-                      <TableCell>{formatDate(user.joined_at)}</TableCell>
-                      <TableCell>{formatDate(user.last_login)}</TableCell>
+                      <TableCell>
+                        {formatDate(user.joined_at.toISOString())}
+                      </TableCell>
+                      <TableCell>
+                        {formatDate(user.last_login.toISOString())}
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
@@ -417,19 +397,6 @@ export default function UserManagementPage() {
                   id="edit-name"
                   value={editingUser.name}
                   onChange={(e) => handleEditInputChange(e, "name")}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-4 items-center gap-2">
-                <Label htmlFor="edit-username" className="text-right">
-                  Username
-                </Label>
-                <Input
-                  id="edit-username"
-                  value={editingUser.username}
-                  onChange={(e) => handleEditInputChange(e, "username")}
                   className="col-span-3"
                   required
                 />

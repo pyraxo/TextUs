@@ -9,8 +9,8 @@ interface WelcomeProps {
 
 export const Welcome: FC<WelcomeProps> = ({
   userName,
-  lastLoginDate,
-  lastLoginTime,
+  // lastLoginDate,
+  // lastLoginTime,
   isLoading = false,
 }) => {
   return (

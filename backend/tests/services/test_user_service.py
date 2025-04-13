@@ -12,7 +12,6 @@ def create_test_user_data(identifier: str = "") -> UserCreate:
     timestamp = datetime.now(UTC).isoformat()
     return UserCreate(
         name=f"Test User {identifier}",
-        username=f"testuser_{identifier}_{timestamp}",
         email=f"test_{identifier}_{timestamp}@example.com",
         password="testpassword123",
         user_type=UserType.TRAINEE,
@@ -28,7 +27,6 @@ async def test_create_user(user_service: UserService):
     user = await user_service.create_user(user_data)
 
     assert user.name == user_data.name
-    assert user.username == user_data.username
     assert user.email == user_data.email
     assert user.user_type == user_data.user_type
     assert user.password != user_data.password  # Password should be hashed
@@ -42,7 +40,6 @@ async def test_get_user(user_service: UserService):
 
     retrieved_user = await user_service.get_user(created_user.id)
     assert retrieved_user.id == created_user.id
-    assert retrieved_user.username == created_user.username
 
 
 @pytest.mark.asyncio
@@ -51,17 +48,6 @@ async def test_get_user_not_found(user_service: UserService):
     with pytest.raises(HTTPException) as exc_info:
         await user_service.get_user(uuid.uuid4())
     assert exc_info.value.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_get_user_by_username(user_service: UserService):
-    """Test getting a user by username."""
-    user_data = create_test_user_data("username")
-    created_user = await user_service.create_user(user_data)
-
-    retrieved_user = await user_service.get_user_by_username(created_user.username)
-    assert retrieved_user is not None
-    assert retrieved_user.id == created_user.id
 
 
 @pytest.mark.asyncio
@@ -116,12 +102,11 @@ async def test_update_user(user_service: UserService):
     updated_user = await user_service.update_user(created_user.id, update_data)
     assert updated_user.name == update_data["name"]
     assert updated_user.email == update_data["email"]
-    assert updated_user.username == created_user.username  # Unchanged field
 
 
 @pytest.mark.asyncio
-async def test_update_user_duplicate_username(user_service: UserService):
-    """Test updating a user with a duplicate username."""
+async def test_update_user_duplicate_email(user_service: UserService):
+    """Test updating a user with a duplicate email."""
     # Create first user
     first_user_data = create_test_user_data("first")
     await user_service.create_user(first_user_data)
@@ -130,12 +115,11 @@ async def test_update_user_duplicate_username(user_service: UserService):
     second_user_data = create_test_user_data("second")
     second_user = await user_service.create_user(second_user_data)
 
-    # Try to update second user with first user's username
+    # Try to update second user with first user's email
     with pytest.raises(HTTPException) as exc_info:
-        await user_service.update_user(
-            second_user.id, {"username": first_user_data.username}
-        )
+        await user_service.update_user(second_user.id, {"email": first_user_data.email})
     assert exc_info.value.status_code == 400
+    assert "Email already registered" in exc_info.value.detail
 
 
 @pytest.mark.asyncio

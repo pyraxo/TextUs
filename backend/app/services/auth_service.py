@@ -26,9 +26,9 @@ class AuthService:
     def __init__(self, session: AsyncSession = Depends(get_session)):
         self.session = session
 
-    async def authenticate_user(self, username: str, password: str) -> Optional[User]:
-        """Authenticate a user by username and password."""
-        query = select(User).where(User.username == username)
+    async def authenticate_user(self, email: str, password: str) -> Optional[User]:
+        """Authenticate a user by email and password."""
+        query = select(User).where(User.email == email)
         user = (await self.session.exec(query)).first()
 
         if not user:
@@ -44,7 +44,6 @@ class AuthService:
     async def create_user(
         self,
         name: str,
-        username: str,
         email: str,
         password: str,
         user_type: UserType = UserType.TRAINEE,
@@ -52,18 +51,11 @@ class AuthService:
         """Create a new user."""
         # Check if user already exists
         existing_user = (
-            await self.session.exec(
-                select(User).where((User.username == username) | (User.email == email))
-            )
+            await self.session.exec(select(User).where((User.email == email)))
         ).first()
 
         if existing_user:
-            if existing_user.username == username:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Username already registered",
-                )
-            else:
+            if existing_user.email == email:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Email already registered",
@@ -73,7 +65,6 @@ class AuthService:
         hashed_password = get_password_hash(password)
         new_user = User(
             name=name,
-            username=username,
             email=email,
             password=hashed_password,
             user_type=user_type,

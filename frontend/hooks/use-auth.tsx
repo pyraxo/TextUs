@@ -7,7 +7,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 export interface User {
   id: string;
   name: string;
-  username: string;
   email: string;
   user_type: "admin" | "trainer" | "trainee";
   joined_at: string;
@@ -24,7 +23,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isTrainer: boolean;
   login: (
-    username: string,
+    email: string,
     password: string
   ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -81,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Login function
   const login = async (
-    username: string,
+    email: string,
     password: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -92,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           "Content-Type": "application/json",
         },
         credentials: "include", // Include cookies in the response
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
@@ -110,7 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         return {
           success: false,
-          error: error.detail || "Invalid username or password",
+          error: error.detail || "Invalid email or password",
         };
       }
     } catch (error) {

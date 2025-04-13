@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,8 +27,8 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!username || !password) {
-      setError("Username and password are required");
+    if (!email || !password) {
+      setError("Email and password are required");
       return;
     }
 
@@ -36,12 +36,12 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { success, error: loginError } = await login(username, password);
+      const { success, error: loginError } = await login(email, password);
 
       if (success) {
         router.push("/dashboard");
       } else {
-        setError(loginError || "Invalid username or password");
+        setError(loginError || "Invalid email or password");
       }
     } catch (err) {
       setError("An error occurred during login. Please try again.");
@@ -70,12 +70,12 @@ export default function LoginPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="username"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email"
                 type="text"
               />
             </div>
