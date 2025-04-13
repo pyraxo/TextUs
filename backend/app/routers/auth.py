@@ -19,7 +19,7 @@ settings = get_settings()
 
 
 class LoginRequest(BaseModel):
-    username: str
+    email: str
     password: str
 
 
@@ -29,11 +29,11 @@ async def login_for_access_token(
     auth_service: Annotated[AuthService, Depends()],
 ):
     """Get access token for authenticated user."""
-    user = await auth_service.authenticate_user(form_data.username, form_data.password)
+    user = await auth_service.authenticate_user(form_data.email, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -51,12 +51,12 @@ async def login(
 ):
     """Login user and set JWT cookie."""
     user = await auth_service.authenticate_user(
-        login_request.username, login_request.password
+        login_request.email, login_request.password
     )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
         )
 
     token = await auth_service.create_access_token_for_user(user)
@@ -75,7 +75,6 @@ async def login(
     return UserRead(
         id=user.id,
         name=user.name,
-        username=user.username,
         email=user.email,
         user_type=user.user_type,
         joined_at=user.joined_at,
@@ -103,7 +102,6 @@ async def read_users_me(
     return UserRead(
         id=current_user.id,
         name=current_user.name,
-        username=current_user.username,
         email=current_user.email,
         user_type=current_user.user_type,
         joined_at=current_user.joined_at,

@@ -9,7 +9,6 @@ export enum UserType {
 export interface User {
   id: UUID;
   name: string;
-  username: string;
   email: string;
   user_type: UserType;
   joined_at: Date;
@@ -18,7 +17,6 @@ export interface User {
 
 export interface UserCreate {
   name: string;
-  username: string;
   email: string;
   password: string;
   user_type: UserType;
@@ -26,7 +24,6 @@ export interface UserCreate {
 
 export interface UserUpdate {
   name?: string;
-  username?: string;
   email?: string;
   user_type?: UserType;
 }

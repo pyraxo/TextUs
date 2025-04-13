@@ -22,7 +22,6 @@ class UserBase(SQLModel):
     """Base User model with common fields."""
 
     name: str
-    username: str = Field(index=True, unique=True)
     email: str = Field(index=True, unique=True)
     user_type: UserType = Field(index=True)
     joined_at: datetime = Field(default_factory=datetime.now)

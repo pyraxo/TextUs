@@ -39,7 +39,6 @@ async def init_users() -> None:
                 joined_at=datetime.now(),
                 last_login=datetime.now(),
                 password=get_password_hash("admin"),
-                username="admin",
             )
             session.add(admin)
 
@@ -56,7 +55,6 @@ async def init_users() -> None:
                 joined_at=datetime.now(),
                 last_login=datetime.now(),
                 password=get_password_hash("123"),
-                username="trainer",
             )
             session.add(trainer)
 
@@ -74,7 +72,6 @@ async def init_users() -> None:
                 user_type=UserType.TRAINEE,
                 joined_at=datetime.now(),
                 last_login=datetime.now(),
-                username="test",
                 password=get_password_hash("test"),
             )
             session.add(test_user)
