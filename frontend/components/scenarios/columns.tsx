@@ -108,9 +108,19 @@ export const getPendingColumns = ({
   },
 ];
 
+type CompletedColumnProps = {
+  onRetry?: (id: string) => void;
+  isStarting?: string | null;
+  activeSession?: { scenario_id: string; id: string } | null;
+  onResume?: (sessionId: string) => void;
+};
+
 export const getCompletedColumns = ({
   onRetry,
-}: ColumnProps): ColumnDef<ScenarioTableItem>[] => [
+  isStarting,
+  activeSession,
+  onResume,
+}: CompletedColumnProps): ColumnDef<ScenarioTableItem>[] => [
   {
     accessorKey: "name",
     header: "Scenario",
@@ -153,7 +163,24 @@ export const getCompletedColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const scenario = row.original;
-      const isDisabled = scenario.activeScenarioExists;
+      const isResume =
+        activeSession && activeSession.scenario_id === scenario.id;
+      const isDisabled =
+        isStarting === scenario.id ||
+        (!isResume && scenario.activeScenarioExists);
+
+      if (isResume) {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isStarting === scenario.id}
+            onClick={() => onResume?.(activeSession.id)}
+          >
+            {isStarting === scenario.id ? "Starting..." : "Resume"}
+          </Button>
+        );
+      }
 
       const button = (
         <Button
@@ -162,11 +189,11 @@ export const getCompletedColumns = ({
           disabled={isDisabled}
           onClick={() => onRetry?.(scenario.id)}
         >
-          Retry
+          {isStarting === scenario.id ? "Starting..." : "Retry"}
         </Button>
       );
 
-      if (isDisabled) {
+      if (!isResume && scenario.activeScenarioExists) {
         return (
           <TooltipProvider>
             <Tooltip>
