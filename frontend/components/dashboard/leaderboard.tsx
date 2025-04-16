@@ -15,9 +15,14 @@ interface LeaderboardEntry {
   score: number;
 }
 
-export const Leaderboard: FC<{ entries: LeaderboardEntry[] }> = ({
-  entries,
-}) => {
+const leaderboardEntries = [
+  { name: "John Smith", schemes: 12, score: 95 },
+  { name: "Sarah Johnson", schemes: 10, score: 92 },
+  { name: "Michael Brown", schemes: 8, score: 88 },
+  { name: "Emily Davis", schemes: 7, score: 85 },
+];
+
+export const Leaderboard: FC = () => {
   return (
     <div className="bg-card text-card-foreground p-6 rounded">
       <h3 className="text-[20px] font-semibold mb-4">Leaderboard</h3>
@@ -46,7 +51,7 @@ export const Leaderboard: FC<{ entries: LeaderboardEntry[] }> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {entries.map((entry, index) => (
+          {leaderboardEntries.map((entry, index) => (
             <TableRow key={index}>
               <TableCell>{entry.name}</TableCell>
               <TableCell>{entry.schemes}</TableCell>

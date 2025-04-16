@@ -28,13 +28,6 @@ const lastAttemptData = {
   completion: 90,
 };
 
-const leaderboardEntries = [
-  { name: "John Smith", schemes: 12, score: 95 },
-  { name: "Sarah Johnson", schemes: 10, score: 92 },
-  { name: "Michael Brown", schemes: 8, score: 88 },
-  { name: "Emily Davis", schemes: 7, score: 85 },
-];
-
 export default function DashboardPage() {
   const { user } = useAuth();
   return (
@@ -55,7 +48,7 @@ export default function DashboardPage() {
             {/* <Assignments newAssignments={2} /> */}
             <LastAttempt {...lastAttemptData} />
           </div>
-          <Leaderboard entries={leaderboardEntries} />
+          <Leaderboard />
         </div>
 
         <div className="grid grid-cols-2 gap-6 mt-6">

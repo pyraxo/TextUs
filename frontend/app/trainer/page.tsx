@@ -1,13 +1,12 @@
 "use client";
 
+import Leaderboard from "@/components/dashboard/leaderboard";
 import { Welcome } from "@/components/dashboard/welcome";
 import { RecentActivity } from "@/components/trainer/recent-activity";
-import { TrainerLeaderboard } from "@/components/trainer/trainer-leaderboard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 // Mock data for demonstration
 const traineesData = [
   {
@@ -97,19 +96,6 @@ const activityData = [
   },
 ];
 
-const leaderboardData = [
-  { name: "Aaron", schemes: "321/600", score: "92%" },
-  { name: "Jahnvi", schemes: "465/600", score: "85%" },
-  { name: "Wanwei", schemes: "205/600", score: "83%" },
-  { name: "Yihe", schemes: "466/600", score: "79%" },
-  { name: "Sun ZY", schemes: "512/600", score: "75%" },
-  { name: "Nora", schemes: "165/600", score: "72%" },
-  { name: "Brighton", schemes: "171/600", score: "72%" },
-  { name: "Agatha", schemes: "303/600", score: "68%" },
-  { name: "Lance", schemes: "255/600", score: "65%" },
-  { name: "Lorelei", schemes: "56/600", score: "61%" },
-];
-
 export default function TrainerDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -155,7 +141,7 @@ export default function TrainerDashboardPage() {
 
           <div className="flex flex-col gap-6">
             {/* <GraphAnalysis data={graphData} /> */}
-            <TrainerLeaderboard entries={leaderboardData} />
+            <Leaderboard />
           </div>
         </div>
       </main>
