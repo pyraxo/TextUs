@@ -1,6 +1,23 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useState } from "react";
 
 // Mock data
 const traineeData = {
@@ -67,6 +84,27 @@ const traineeData = {
       action: "Retry",
     },
   ],
+};
+
+// Mock list of trainees
+const trainees = [
+  { id: "bton", name: "Bton" },
+  { id: "alice", name: "Alice" },
+  { id: "john", name: "John" },
+  { id: "sara", name: "Sara" },
+];
+
+// Mock data per trainee (in real app, fetch by id)
+const traineeDataMap: Record<string, typeof traineeData> = {
+  bton: traineeData,
+  alice: {
+    ...traineeData,
+    name: "Alice",
+    averageScore: 82,
+    chartsCompleted: 70,
+  },
+  john: { ...traineeData, name: "John", averageScore: 75, chartsCompleted: 60 },
+  sara: { ...traineeData, name: "Sara", averageScore: 90, chartsCompleted: 80 },
 };
 
 const SemiCircleGauge = ({
@@ -136,6 +174,16 @@ const SemiCircleGauge = ({
 };
 
 export default function ManageTrainees() {
+  // Default to first trainee
+  const [selectedTrainee, setSelectedTrainee] = useState(trainees[0].id);
+  const trainee =
+    traineeDataMap[selectedTrainee] || traineeDataMap[trainees[0].id];
+
+  const handleTraineeChange = (value: string) => {
+    setSelectedTrainee(value);
+    // In the future, fetch trainee data here if needed
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header content area */}
@@ -155,136 +203,155 @@ export default function ManageTrainees() {
       <main className="container mx-auto p-6">
         <Card className="p-6 rounded-xl shadow-md border-0">
           <div className="grid grid-cols-[300px,1fr] gap-8">
-            <div className="border-r pr-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-teal-700">Bton</h2>
-                <p className="text-sm text-muted-foreground">
-                  Last Active: {traineeData.lastActive}
-                </p>
+            <div
+              className="border-r pr-8 flex flex-col h-full"
+              style={{ minHeight: "500px" }}
+            >
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-teal-700">
+                    {trainee.name}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Last Active: {trainee.lastActive}
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-4xl font-bold">
+                      {trainee.chartsCompleted}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Chats Completed
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-4xl font-bold text-teal-700">
+                      {trainee.averageScore}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Average Score
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-4xl font-bold">
+                      {trainee.schemasCompleted}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Schemes Completed
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <div className="space-y-6">
-                <div>
-                  <div className="text-4xl font-bold">
-                    {traineeData.chartsCompleted}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Chats Completed
-                  </div>
+              <div className="mt-auto pt-8">
+                <div className="mb-2 text-sm font-semibold text-muted-foreground">
+                  Select Trainee
                 </div>
-
-                <div>
-                  <div className="text-4xl font-bold text-teal-700">
-                    {traineeData.averageScore}%
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Average Score
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-4xl font-bold">
-                    {traineeData.schemasCompleted}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Schemes Completed
-                  </div>
-                </div>
+                <Select
+                  value={selectedTrainee}
+                  onValueChange={handleTraineeChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60 overflow-y-auto">
+                    {trainees.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-start mb-2">
-                <div className="text-xl font-semibold">Performance Metrics</div>
-                <div className="text-3xl font-bold text-teal-700">
-                  {traineeData.averageScore}%
+                <div className="text-xl font-semibold mb-2">
+                  Performance Metrics
                 </div>
+                {/* <div className="text-3xl font-bold text-teal-700">
+                  {trainee.averageScore}%
+                </div> */}
               </div>
 
               <div className="flex justify-between mb-8 px-8">
                 <SemiCircleGauge
-                  value={traineeData.metrics.comprehension}
+                  value={trainee.metrics.comprehension}
                   label="Comprehension"
                   color="#4F46E5"
                 />
                 <SemiCircleGauge
-                  value={traineeData.metrics.tone}
+                  value={trainee.metrics.tone}
                   label="Tone"
                   color="#0D9488"
                 />
                 <SemiCircleGauge
-                  value={traineeData.metrics.accuracy}
+                  value={trainee.metrics.accuracy}
                   label="Accuracy"
                   color="#0D9488"
                 />
                 <SemiCircleGauge
-                  value={traineeData.metrics.chatHandling}
+                  value={trainee.metrics.chatHandling}
                   label="Chat Handling"
                   color="#0D9488"
                 />
+
+                {/* Divider and Average Score */}
+                <div className="flex items-center">
+                  {/* Vertical Divider with Avatar */}
+                  <div className="relative flex flex-col items-center">
+                    <div className="w-1 h-16 bg-cpf-teal rounded-full" />
+                  </div>
+                  {/* Average Score */}
+                  <div className="ml-8 flex flex-col items-start">
+                    <span className="text-4xl font-extrabold text-cpf-teal leading-none">
+                      {trainee.averageScore}%
+                    </span>
+                    <span className="text-md font-medium text-foreground">
+                      Average Score
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-8">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    General Feedback
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {traineeData.generalFeedback}
-                  </p>
-                </div>
-
                 <div className="bg-card rounded-lg">
                   <h3 className="text-lg font-semibold mb-4">
                     Completed Scenarios
                   </h3>
                   <div className="overflow-hidden">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="text-left text-sm text-muted-foreground">
-                          <th className="pb-3 font-medium">Scenario</th>
-                          <th className="pb-3 font-medium">Date Completed</th>
-                          <th className="pb-3 font-medium text-center">
-                            Score
-                          </th>
-                          <th className="pb-3 font-medium">Feedback</th>
-                          <th className="pb-3 font-medium">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-sm">
-                        {traineeData.completedScenarios.map(
-                          (scenario, index) => (
-                            <tr
-                              key={index}
-                              className="border-t border-gray-100"
-                            >
-                              <td className="py-3 pr-4">{scenario.scenario}</td>
-                              <td className="py-3">{scenario.dateCompleted}</td>
-                              <td className="py-3 text-center">
-                                {scenario.score}%
-                              </td>
-                              <td className="py-3">
-                                <span
-                                  className={
-                                    scenario.feedback ===
-                                    "View Trainer Feedback"
-                                      ? "text-teal-600"
-                                      : "text-muted-foreground"
-                                  }
-                                >
-                                  {scenario.feedback}
-                                </span>
-                              </td>
-                              <td className="py-3">
-                                <button className="text-teal-600 hover:text-teal-800">
-                                  {scenario.action}
-                                </button>
-                              </td>
-                            </tr>
-                          )
-                        )}
-                      </tbody>
-                    </table>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Scenario</TableHead>
+                          <TableHead>Date Completed</TableHead>
+                          <TableHead className="text-center">Score</TableHead>
+                          <TableHead>Feedback</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {trainee.completedScenarios.map((scenario, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="pr-4">
+                              {scenario.scenario}
+                            </TableCell>
+                            <TableCell>{scenario.dateCompleted}</TableCell>
+                            <TableCell className="text-center">
+                              {scenario.score}%
+                            </TableCell>
+                            <TableCell>
+                              <Button variant="link" className="p-0">
+                                Create/Edit
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               </div>
