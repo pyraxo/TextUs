@@ -7,10 +7,11 @@ import {
 } from "@/components/scenarios/columns";
 import { DataTable } from "@/components/scenarios/data-table";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useActiveSession } from "@/hooks/use-active-session";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
-import { useSchemeScenarios } from "@/hooks/use-scenarios";
+import { useScenarios, useSchemeScenarios } from "@/hooks/use-scenarios";
 import { useSchemes } from "@/hooks/use-schemes";
 import { startScenario } from "@/lib/api/scenarios";
 import { Scenario } from "@/types/scenario";
@@ -43,6 +44,8 @@ export default function SchemeDetailPage({
 
   // Get scenarios data
   const { data: scenarios, isLoading, error } = useSchemeScenarios(params.id);
+  // Fetch all scenarios for active session lookup
+  const { data: allScenarios } = useScenarios();
 
   // Get user scenario sessions data
   const { data: sessions } = useUserScenarioSessions(user?.id);
@@ -51,6 +54,22 @@ export default function SchemeDetailPage({
   const schemeName = scheme?.name || "Unknown Scheme";
 
   const schemeDescription = scheme?.description || "";
+
+  // Find the scheme name for the ongoing session (activeSession)
+  let ongoingSchemeName = "Unknown Scheme";
+  if (activeSession && allScenarios && schemes) {
+    const ongoingScenario = allScenarios.find(
+      (s) => s.id === activeSession.scenario_id
+    );
+    if (ongoingScenario) {
+      const ongoingScheme = schemes.find(
+        (sch) => sch.id === ongoingScenario.scheme_id
+      );
+      if (ongoingScheme) {
+        ongoingSchemeName = ongoingScheme.name;
+      }
+    }
+  }
 
   // Transform scenarios into table items
   const tableItems: ScenarioTableItem[] =
@@ -201,6 +220,31 @@ export default function SchemeDetailPage({
       </div>
 
       <div className="container mx-auto px-4 md:px-8 py-12 space-y-8">
+        {/* Ongoing Scenario Card */}
+        {activeSession && (
+          <div className="mb-8">
+            <Card className="w-full flex flex-col md:flex-row items-center justify-between bg-cpf-light-teal/60 border-0 shadow-none">
+              <div className="p-6 text-lg text-foreground">
+                You have an ongoing scenario under the{" "}
+                <span className="font-semibold">{ongoingSchemeName}</span>{" "}
+                scheme.
+              </div>
+              <div className="p-6 pt-0 md:pt-6 md:pl-0">
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={() =>
+                    router.push(`/conversations/${activeSession.id}`)
+                  }
+                  className="w-full md:w-auto"
+                >
+                  Resume
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
         {/* Pending Scenarios Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Pending Scenarios</h2>
