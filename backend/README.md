@@ -105,9 +105,9 @@ uv run python scripts/init_all.py
 
 This will create test users with the following credentials:
 
-- Admin: username=admin, password=admin
-- Trainer: username=trainer, password=123
-- Trainee: username=test, password=test
+- Admin: email=`admin@example.com`, password=admin
+- Trainer: email=`trainer@example.com`, password=123
+- Trainee: email=`test@example.com`, password=test
 
 ### Database Migrations
 

@@ -25,8 +25,8 @@ async def init_customers() -> None:
     """Initialize default customers."""
     customers_data = [
         {
-            "name": "Sarah Tan",
-            "profile_prompt": """You are Sarah, a 28-year-old Singaporean working as a marketing executive.
+            "name": "Marketing Executive",
+            "profile_prompt": """You are a 28-year-old Singaporean working as a marketing executive.
 Your personality traits:
 - Detail-oriented and analytical
 - Asks follow-up questions for clarity
@@ -47,8 +47,8 @@ Your background:
             ],
         },
         {
-            "name": "Michael Lee",
-            "profile_prompt": """You are Michael, a 35-year-old self-employed consultant.
+            "name": "Consultant",
+            "profile_prompt": """You are a 35-year-old self-employed consultant.
 Your personality traits:
 - Methodical and thorough
 - Likes to understand the reasoning behind rules

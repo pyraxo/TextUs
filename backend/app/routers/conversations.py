@@ -1,8 +1,8 @@
 from typing import Annotated, List
-from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from app.core.common import parse_uuid
 from app.models.response import (
     ConversationDetailResponse,
     ConversationListResponse,
@@ -40,11 +40,11 @@ async def get_conversations(
 
 @router.get("/{conversation_id}", response_model=ConversationDetailResponse)
 async def get_conversation(
-    conversation_id: UUID,
+    conversation_id: str,
     conversation_service: Annotated[ConversationService, Depends()],
 ):
     """Get a conversation by ID."""
-    conv = await conversation_service.get_conversation(conversation_id)
+    conv = await conversation_service.get_conversation(parse_uuid(conversation_id))
 
     # Format conversation
     conversation: ConversationResponse = {
@@ -74,9 +74,11 @@ async def get_conversation(
 
 @router.get("/{conversation_id}/evaluation", response_model=dict)
 async def get_conversation_evaluation(
-    conversation_id: UUID,
+    conversation_id: str,
     conversation_service: Annotated[ConversationService, Depends()],
 ):
     """Get evaluation results for a conversation."""
-    evaluation = await conversation_service.get_conversation_evaluation(conversation_id)
+    evaluation = await conversation_service.get_conversation_evaluation(
+        parse_uuid(conversation_id)
+    )
     return evaluation

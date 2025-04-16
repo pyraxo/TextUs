@@ -42,7 +42,7 @@ async def get_scenario(
     scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Get a scenario by ID."""
-    return await scenario_service.get_scenario(scenario_id)
+    return await scenario_service.get_scenario(parse_uuid(scenario_id))
 
 
 @router.get("/{scenario_id}/customers")
@@ -51,7 +51,9 @@ async def get_scenario_customers(
     scenario_service: Annotated[ScenarioService, Depends()],
 ) -> List[ScenarioCustomer]:
     """Get all customers for a scenario."""
-    return await scenario_service.get_scenario_customers(scenario_id)
+    return await scenario_service.get_scenario_customers_by_scenario_id(
+        parse_uuid(scenario_id)
+    )
 
 
 @router.put("/{scenario_id}")
@@ -61,7 +63,9 @@ async def update_scenario(
     scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Update a scenario."""
-    return await scenario_service.update_scenario(scenario_id, scenario_data)
+    return await scenario_service.update_scenario(
+        parse_uuid(scenario_id), scenario_data
+    )
 
 
 @router.post("/{scenario_id}/customers")
@@ -71,7 +75,9 @@ async def add_customer_to_scenario(
     scenario_service: Annotated[ScenarioService, Depends()],
 ) -> Scenario:
     """Add a customer to a scenario."""
-    return await scenario_service.add_customer_to_scenario(scenario_id, customer_data)
+    return await scenario_service.add_customer_to_scenario(
+        parse_uuid(scenario_id), customer_data
+    )
 
 
 @router.delete("/{scenario_id}/customers")
@@ -82,7 +88,7 @@ async def remove_customer_from_scenario(
 ) -> Scenario:
     """Remove a customer from a scenario."""
     return await scenario_service.remove_customer_from_scenario(
-        scenario_id, customer_data
+        parse_uuid(scenario_id), customer_data
     )
 
 
@@ -93,10 +99,12 @@ async def start_scenario(
     trainee_service: Annotated[TraineeService, Depends()],
 ) -> ScenarioSession:
     """Start a scenario."""
-    return await trainee_service.start_scenario(
+    scenario_session = await trainee_service.start_scenario(
         trainee_id=parse_uuid(scenario_data.trainee_id),
         scenario_id=parse_uuid(scenario_id),
     )
+    print(f"Returning scenario session: {scenario_session}")
+    return scenario_session
 
 
 @router.put("/{scenario_id}/customers/{customer_id}")
@@ -108,7 +116,7 @@ async def update_scenario_customer(
 ) -> ScenarioCustomer:
     """Update a customer in a scenario."""
     return await scenario_service.update_scenario_customer(
-        scenario_id, customer_id, customer_data
+        parse_uuid(scenario_id), parse_uuid(customer_id), customer_data
     )
 
 
@@ -118,4 +126,4 @@ async def delete_scenario(
     scenario_service: Annotated[ScenarioService, Depends()],
 ) -> None:
     """Delete a scenario."""
-    return await scenario_service.delete_scenario(scenario_id)
+    return await scenario_service.delete_scenario(parse_uuid(scenario_id))

@@ -49,7 +49,9 @@ class ScenarioService:
             raise HTTPException(status_code=404, detail="Scenario not found")
         return scenario
 
-    async def get_scenario_customers(self, scenario_id: str) -> List[ScenarioCustomer]:
+    async def get_scenario_customers_by_scenario_id(
+        self, scenario_id: str
+    ) -> List[ScenarioCustomer]:
         """Get all customers for a scenario."""
         scenario = await self.get_scenario(scenario_id)
         scenario_customers = select(ScenarioCustomer).where(
@@ -57,9 +59,19 @@ class ScenarioService:
         )
         return (await self.session.exec(scenario_customers)).all()
 
-    async def get_scenario_customer(
-        self, scenario_id: str, customer_id: str
+    async def get_scenario_customer_by_id(
+        self, scenario_customer_id: str
     ) -> ScenarioCustomer:
+        """Get a scenario customer by ID."""
+        scenario_customer_uuid = parse_uuid(scenario_customer_id)
+        scenario_customer = await self.session.get(
+            ScenarioCustomer, scenario_customer_uuid
+        )
+        return scenario_customer
+
+    async def get_scenario_customers_by_scenario_and_customer(
+        self, scenario_id: str, customer_id: str
+    ) -> List[ScenarioCustomer]:
         """Get a scenario-specific customer."""
         scenario_uuid = parse_uuid(scenario_id)
         customer_uuid = parse_uuid(customer_id)
@@ -67,7 +79,7 @@ class ScenarioService:
             ScenarioCustomer.scenario_id == scenario_uuid,
             ScenarioCustomer.customer_id == customer_uuid,
         )
-        return (await self.session.exec(scenario_customer)).first()
+        return (await self.session.exec(scenario_customer)).all()
 
     async def update_scenario(
         self,

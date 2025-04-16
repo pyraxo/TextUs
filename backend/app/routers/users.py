@@ -1,9 +1,9 @@
 from typing import Annotated, List, Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from app.core.common import parse_uuid
 from app.core.security import get_current_user
 from app.models.user import User, UserRead, UserType
 from app.services.user_service import UserService
@@ -46,7 +46,7 @@ async def get_users_route(
 
 @router.get("/{user_id}", response_model=UserRead)
 async def get_user_route(
-    user_id: UUID,
+    user_id: str,
     current_user: Annotated[User, Depends(get_current_user)],
     user_service: Annotated[UserService, Depends()],
 ):
@@ -55,18 +55,20 @@ async def get_user_route(
     Users can only see their own profile unless they are admins.
     """
     # Check if user is admin or trying to access their own profile
-    if current_user.user_type != UserType.ADMIN and current_user.id != user_id:
+    if current_user.user_type != UserType.ADMIN and current_user.id != parse_uuid(
+        user_id
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",
         )
 
-    return await user_service.get_user(user_id)
+    return await user_service.get_user(parse_uuid(user_id))
 
 
 @router.put("/{user_id}", response_model=UserRead)
 async def update_user_route(
-    user_id: UUID,
+    user_id: str,
     user_update: UserUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
     user_service: Annotated[UserService, Depends()],
@@ -77,7 +79,9 @@ async def update_user_route(
     Only admins can change user types.
     """
     # Check if user is admin or trying to update their own profile
-    if current_user.user_type != UserType.ADMIN and current_user.id != user_id:
+    if current_user.user_type != UserType.ADMIN and current_user.id != parse_uuid(
+        user_id
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",
@@ -93,12 +97,12 @@ async def update_user_route(
     # Filter out None values from user_update
     update_data = {k: v for k, v in user_update.dict().items() if v is not None}
 
-    return await user_service.update_user(user_id, update_data)
+    return await user_service.update_user(parse_uuid(user_id), update_data)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_route(
-    user_id: UUID,
+    user_id: str,
     current_user: Annotated[User, Depends(get_current_user)],
     user_service: Annotated[UserService, Depends()],
 ):
@@ -113,5 +117,5 @@ async def delete_user_route(
             detail="Not enough permissions",
         )
 
-    await user_service.delete_user(user_id)
+    await user_service.delete_user(parse_uuid(user_id))
     return None

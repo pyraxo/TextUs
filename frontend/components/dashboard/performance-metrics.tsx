@@ -6,6 +6,7 @@ interface PerformanceMetricsProps {
     tone: number;
     accuracy: number;
     averageScore: number;
+    chatHandling: number;
   };
 }
 
@@ -65,6 +66,7 @@ export const PerformanceMetrics: FC<PerformanceMetricsProps> = ({
           <CircleProgress value={metrics.comprehension} label="Comprehension" />
           <CircleProgress value={metrics.tone} label="Tone" />
           <CircleProgress value={metrics.accuracy} label="Accuracy" />
+          <CircleProgress value={metrics.chatHandling} label="Chat Handling" />
         </div>
         <div className="border-l pl-12">
           <div className="text-cpf-teal text-[56px] font-bold leading-tight">
