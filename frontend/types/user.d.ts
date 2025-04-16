@@ -11,8 +11,8 @@ export interface User {
   name: string;
   email: string;
   user_type: UserType;
-  joined_at: Date;
-  last_login: Date;
+  joined_at: string;
+  last_login: string;
 }
 
 export interface UserCreate {
