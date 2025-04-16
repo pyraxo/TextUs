@@ -13,6 +13,7 @@ const traineeData = {
     comprehension: 55,
     tone: 25,
     accuracy: 95,
+    chatHandling: 85,
   },
   generalFeedback: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eget ultrices magna, vel semper nunc. Morbi eu lorem eu tortor tempor facilisis. Curabitur luctus nisi, porttitor et finibus sit amet, ullamcorper et mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eget ultrices magna, vel semper nunc. Morbi eu lorem eu tortor tempor facilisis. Curabitur luctus nisi, porttitor et finibus sit amet, ullamcorper et mauris.`,
   completedScenarios: [
@@ -190,18 +191,6 @@ export default function ManageTrainees() {
                   </div>
                 </div>
               </div>
-
-              <div className="mt-8 space-y-3">
-                <button className="w-full py-3 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition-colors">
-                  Assign Scenarios
-                </button>
-                <button className="w-full py-3 bg-teal-50 text-teal-700 rounded-md hover:bg-teal-100 transition-colors">
-                  Send Reminder
-                </button>
-                <button className="w-full py-3 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors">
-                  Flag for Attention
-                </button>
-              </div>
             </div>
 
             <div>
@@ -226,6 +215,11 @@ export default function ManageTrainees() {
                 <SemiCircleGauge
                   value={traineeData.metrics.accuracy}
                   label="Accuracy"
+                  color="#0D9488"
+                />
+                <SemiCircleGauge
+                  value={traineeData.metrics.chatHandling}
+                  label="Chat Handling"
                   color="#0D9488"
                 />
               </div>
