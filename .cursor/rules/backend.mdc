@@ -1,0 +1,100 @@
+---
+description: 
+globs: backend/*
+alwaysApply: false
+---
+# CPF Board TextUs - Backend Structure
+
+## Overview
+The backend is built with FastAPI and follows a modern Python application structure with clear separation of concerns. It implements the technical requirements outlined in the PRD for handling training simulations, user management, and AI-powered conversations.
+
+## Directory Structure
+
+### Core Application
+```
+backend/
+├── app/                    # Main application code
+├── alembic/                # Database migration files
+├── data/                   # Data storage and resources
+├── scripts/                # Utility and maintenance scripts
+├── tests/                  # Test suite
+└── .venv/                  # Python virtual environment
+```
+
+### Configuration Files
+```
+backend/
+├── pyproject.toml         # Project metadata and dependencies (modern Python packaging)
+├── requirements.txt       # Python package dependencies
+├── uvicorn_config.py     # ASGI server configuration
+├── alembic.ini           # Alembic migration configuration
+├── .env                  # Environment variables (active)
+├── .env.example          # Environment variables template
+└── .python-version       # Python version specification
+```
+
+### Development and Deployment
+```
+backend/
+├── Dockerfile            # Container definition
+├── .gitignore           # Git ignore rules
+└── README.md            # Project documentation
+```
+
+## Key Components
+
+### Application (`app/`)
+- FastAPI application core
+- API routes and WebSocket handlers
+- Database models using SQLModel
+- Authentication and authorization
+- RAG system integration
+- LangGraph conversation workflows
+
+### Database Management
+- **Alembic**: Handles database migrations and schema versioning
+- **Models**: SQLModel-based data models for:
+  - Users and authentication
+  - Schemes and scenarios
+  - Customer profiles
+  - Chat conversations
+  - Workflow states
+
+### Configuration
+- **Environment Variables**: Managed through `.env` files
+- **Uvicorn Config**: Production server settings
+- **Dependencies**: Managed through `requirements.txt` and `pyproject.toml`
+
+### Development Tools
+- **Scripts**: Utility scripts for maintenance and deployment
+- **Tests**: Comprehensive test suite
+- **Docker**: Containerization for consistent deployment
+
+## Technical Features
+
+### API Capabilities
+- Async request handling with AsyncSession
+- WebSocket support for real-time chat
+- Rate limiting middleware
+- JWT-based authentication
+- OpenAPI documentation
+
+### AI Integration
+- OpenAI integration for chat simulation
+- RAG system for accurate responses
+- LangGraph-based conversation management
+- State-driven workflow engine
+- Checkpoint-based conversation resumption
+
+### Database
+- Development: SQLite
+- Production: PostgreSQL
+- Redis for caching and session management
+
+### Security
+- Password hashing
+- Rate limiting
+- Secure session management
+- Environment-based configurations
+
+This structure implements the technical requirements outlined in the PRD while maintaining a clean, modular, and maintainable codebase. The organization allows for easy scaling and future enhancements as described in the PRD's future features section.
