@@ -147,7 +147,7 @@ export default function TrainerDashboardPage() {
                 onClick={() => {}}
               >
                 <User size={18} />
-                Customer Profiles
+                Customer Archetypes
               </Button>
             </div>
             <RecentActivity activities={activityData} />

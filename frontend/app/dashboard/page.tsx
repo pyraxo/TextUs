@@ -13,6 +13,7 @@ const performanceData = {
     tone: 92,
     accuracy: 78,
     averageScore: 85,
+    chatHandling: 90,
   },
   average: 85,
 };
@@ -57,7 +58,7 @@ export default function DashboardPage() {
           <Leaderboard entries={leaderboardEntries} />
         </div>
 
-        <div className="grid grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-2 gap-6 mt-6">
           <div className="bg-card text-card-foreground p-6 rounded">
             <h3 className="text-[20px] font-semibold mb-2">
               Total Practice Sessions
@@ -78,16 +79,6 @@ export default function DashboardPage() {
               <span className="text-3xl font-bold text-primary">8/12</span>
               <span className="text-sm text-muted-foreground ml-2">
                 completed
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-card text-card-foreground p-6 rounded">
-            <h3 className="text-[20px] font-semibold mb-2">Average Score</h3>
-            <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-primary">85%</span>
-              <span className="text-sm text-muted-foreground ml-2">
-                overall
               </span>
             </div>
           </div>

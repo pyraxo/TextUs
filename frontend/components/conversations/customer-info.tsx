@@ -136,9 +136,6 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
             <div>
               <h2 className="text-xl font-semibold">{customerInfo.name}</h2>
               <div className="flex items-center gap-3 mt-1">
-                <div className="bg-[#EA9C9C] text-black px-3 py-1 rounded-full text-sm font-medium">
-                  {customerInfo.category}
-                </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
                   {customerInfo.startTime}

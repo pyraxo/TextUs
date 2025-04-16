@@ -3,6 +3,7 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
+from app.core.common import parse_uuid
 from app.core.db import get_session
 from app.core.security import get_current_admin
 from app.models.user import User, UserCreate, UserRead
@@ -41,7 +42,7 @@ async def get_user(
     session: Annotated[Session, Depends(get_session)],
 ):
     """Get a specific user by ID (admin only)."""
-    user = session.get(User, user_id)
+    user = session.get(User, parse_uuid(user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

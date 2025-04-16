@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
+from app.core.common import parse_uuid
 from app.models.customer import CustomerCreate, CustomerRead, CustomerUpdate
 from app.services.customer_service import CustomersService
 
@@ -24,7 +25,7 @@ async def get_customer_route(
     customer_id: str, customers_service: CustomersService = Depends(CustomersService)
 ) -> CustomerRead:
     """Get a customer by ID."""
-    return await customers_service.get_customer(customer_id)
+    return await customers_service.get_customer(parse_uuid(customer_id))
 
 
 @router.post("/", response_model=CustomerRead)
@@ -43,7 +44,7 @@ async def update_customer_route(
     customers_service: CustomersService = Depends(CustomersService),
 ) -> CustomerRead:
     """Update a customer."""
-    return await customers_service.update_customer(customer_id, customer)
+    return await customers_service.update_customer(parse_uuid(customer_id), customer)
 
 
 @router.delete("/{customer_id}")
@@ -51,4 +52,4 @@ async def delete_customer_route(
     customer_id: str, customers_service: CustomersService = Depends(CustomersService)
 ) -> None:
     """Delete a customer."""
-    return await customers_service.delete_customer(customer_id)
+    return await customers_service.delete_customer(parse_uuid(customer_id))

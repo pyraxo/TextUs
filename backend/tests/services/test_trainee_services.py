@@ -1,15 +1,12 @@
-import pytest
 import uuid
 from datetime import datetime, timedelta
-from fastapi import HTTPException
-from app.services.trainee_service import TraineeService
-from app.models.scenario_session import SessionStatus
+
+import pytest
 from app.models.scenario import Scenario
-from app.models.user import User
-from app.models.scenario_session import ScenarioSession
 from app.models.scenario_customer import ScenarioCustomer
-from app.models.chat import ChatConversation, ChatMessage, MessageType
-from app.models.scenario import ScenarioCreate
+from app.models.scenario_session import ScenarioSession, SessionStatus
+from app.models.user import User
+from app.services.trainee_service import TraineeService
 
 
 @pytest.mark.asyncio
@@ -47,7 +44,9 @@ async def test_complete_scenario(trainee_service: TraineeService):
     trainee_service.session.add(session)
     await trainee_service.session.commit()
 
-    completed = await trainee_service.complete_scenario(session.id, SessionStatus.COMPLETED)
+    completed = await trainee_service.complete_scenario(
+        session.id, SessionStatus.COMPLETED
+    )
     assert completed.end_timestamp is not None
 
 
@@ -65,12 +64,18 @@ async def test_get_active_session_none(trainee_service: TraineeService):
 @pytest.mark.asyncio
 async def test_get_session_metrics(trainee_service: TraineeService):
     # Test session metrics calculation for completed session
-    session = ScenarioSession(start_timestamp=datetime.now() - timedelta(minutes=5), end_timestamp=datetime.now())
+    session = ScenarioSession(
+        start_timestamp=datetime.now() - timedelta(minutes=5),
+        end_timestamp=datetime.now(),
+    )
     trainee_service.session.add(session)
     await trainee_service.session.commit()
 
     metrics = await trainee_service.get_session_metrics(session.id)
     assert metrics.duration_seconds is not None
+
+
+# TODO: Below tests are outdated
 
 
 @pytest.mark.asyncio
@@ -82,7 +87,9 @@ async def test_start_trainee_conversation(trainee_service: TraineeService):
     trainee_service.session.add(customer)
     await trainee_service.session.commit()
 
-    conv = await trainee_service.start_trainee_conversation(scenario.id, customer.id, "Hello")
+    conv = await trainee_service.start_trainee_conversation(
+        scenario.id, customer.id, "Hello"
+    )
     assert conv.customer_id == customer.id
     assert conv.scenario_id == scenario.id
 

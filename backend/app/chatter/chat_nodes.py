@@ -77,11 +77,8 @@ async def generate_nudge(state: State) -> BaseMessage:
 
 async def generate_response(state: State) -> BaseMessage:
     scenario_prompt = state.get("scenario_prompt")
-    history_str = "\n".join(
-        state["conversation_history"][-4:]
-        if len(state["conversation_history"]) > 4
-        else state["conversation_history"]
-    )
+    conversation_history = state.get("conversation_history", [])
+    history_str = "\n".join(conversation_history[-4:])
     response_params = {
         "personality": scenario_prompt,
         "singlish_instruction": "",

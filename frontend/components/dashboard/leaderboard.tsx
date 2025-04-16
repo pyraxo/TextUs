@@ -25,11 +25,11 @@ export const Leaderboard: FC<{ entries: LeaderboardEntry[] }> = ({
       <div className="flex justify-between mb-6">
         <div className="flex items-center gap-2">
           <Medal className="w-6 h-6 text-yellow-500" />
-          <span className="text-sm">Top Performer</span>
+          <span className="text-sm">Most Hardworking</span>
         </div>
         <div className="flex items-center gap-2">
           <Medal className="w-6 h-6 text-blue-500" />
-          <span className="text-sm">Rising Star</span>
+          <span className="text-sm">Most Scenarios</span>
         </div>
         <div className="flex items-center gap-2">
           <Medal className="w-6 h-6 text-green-500" />
