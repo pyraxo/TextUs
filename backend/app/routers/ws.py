@@ -93,7 +93,7 @@ async def get_current_user_ws(
         user_id: str = payload.get("sub")
 
         # Get the user from the database
-        user = await session.get(User, UUID(user_id))
+        user = await session.get(User, parse_uuid(user_id))
         if user is None:
             raise credentials_exception
 
@@ -131,19 +131,19 @@ async def end_chat(
     await session.refresh(conversation)
 
     # Broadcast chat end event
-    await manager.broadcast_to_conversation(
-        {
-            "type": "END_CHAT",
-            "conversationId": str(conversation_id),
-            "payload": {
-                "id": str(conversation.id),
-                "scenario_session_id": str(conversation.scenario_session_id),
-                "trainee_id": str(conversation.trainee_id),
-                "timestamp": str(conversation.ended_at),
-            },
-        },
-        conversation_uuid,
-    )
+    # await manager.broadcast_to_conversation(
+    #     {
+    #         "type": "END_CHAT",
+    #         "conversationId": str(conversation_id),
+    #         "payload": {
+    #             "id": str(conversation.id),
+    #             "scenario_session_id": str(conversation.scenario_session_id),
+    #             "trainee_id": str(conversation.trainee_id),
+    #             "timestamp": str(conversation.ended_at),
+    #         },
+    #     },
+    #     conversation_uuid,
+    # )
 
     # Get chat transcript for evaluation
     chat_transcript = await session.exec(
@@ -166,48 +166,37 @@ async def end_chat(
         )
 
         # Save evaluation results
-        session.add(
-            ChatEvaluation(
-                conversation_id=conversation_uuid,
-                trainee_id=conversation.trainee_id,
-                session_id=conversation.scenario_session_id,
-                evaluation_results=evaluation_results,
-            )
+        new_evaluation = ChatEvaluation(
+            conversation_id=conversation_uuid,
+            trainee_id=conversation.trainee_id,
+            session_id=conversation.scenario_session_id,
+            evaluation_results=evaluation_results,
         )
+        session.add(new_evaluation)
         await session.commit()
 
-        # Get the created evaluation to broadcast
-        evaluation = await session.exec(
-            select(ChatEvaluation).where(
-                ChatEvaluation.conversation_id == conversation_uuid
-            )
-        )
-        evaluation = evaluation.first()
+        # Ensure all database operations are complete before broadcasting
+        await session.refresh(new_evaluation)
 
-        # Broadcast evaluation completed event
-        if evaluation:
-            try:
-                # Make sure all values are properly serializable
-                await manager.broadcast_to_conversation(
-                    {
-                        "type": "EVALUATION_COMPLETED",
-                        "conversationId": str(conversation_id),
-                        "payload": {
-                            "evaluation_status": "completed",
-                            "conversation_id": str(conversation_id),
-                        },
-                    },
-                    conversation_uuid,
-                )
-            except Exception as e:
-                ws_logger.error(f"Error broadcasting evaluation completion: {e}")
-    else:
-        ws_logger.info(
-            f"Skipping evaluation for conversation {conversation_id}: evaluation already exists"
-        )
-
-        # Broadcast that evaluation already exists
+    # Create a new session for the broadcast operation
+    async with AsyncSession(session.bind) as broadcast_session:
         try:
+            # Broadcast chat end event first
+            await manager.broadcast_to_conversation(
+                {
+                    "type": "END_CHAT",
+                    "conversationId": str(conversation_id),
+                    "payload": {
+                        "id": str(conversation.id),
+                        "scenario_session_id": str(conversation.scenario_session_id),
+                        "trainee_id": str(conversation.trainee_id),
+                        "timestamp": str(conversation.ended_at),
+                    },
+                },
+                conversation_uuid,
+            )
+
+            # Then broadcast evaluation completed event
             await manager.broadcast_to_conversation(
                 {
                     "type": "EVALUATION_COMPLETED",
@@ -220,7 +209,7 @@ async def end_chat(
                 conversation_uuid,
             )
         except Exception as e:
-            ws_logger.error(f"Error broadcasting evaluation existence: {e}")
+            ws_logger.error(f"Error broadcasting messages: {e}")
 
     from app.services.trainee_service import TraineeService
 
@@ -262,10 +251,8 @@ async def create_message(
         await session.commit()
         await session.refresh(message)
 
-        await broadcast_message(message)
-
-        # Return a formatted response
-        return {
+        # Serialize message to dict immediately
+        message_dict = {
             "id": str(message.id),
             "conversation_id": str(message.conversation_id),
             "trainee_id": str(message.trainee_id),
@@ -273,6 +260,11 @@ async def create_message(
             "timestamp": str(message.timestamp),
             "message_type": message.message_type.value,
         }
+
+        await broadcast_message(message_dict)
+
+        # Return a formatted response
+        return message_dict
     except SQLAlchemyError as e:
         ws_logger.error(
             f"Database error in create_message: {type(e).__name__}: {str(e)}"
@@ -280,30 +272,20 @@ async def create_message(
         raise
 
 
-async def broadcast_message(message: ChatMessage, user: User = None):
+async def broadcast_message(message_dict: dict, user_dict: dict = None):
     """Broadcast a message to all clients in the conversation."""
     print("BROADCASTING MESSAGE")
     message_data = {
         "type": "MESSAGE",
-        "conversationId": str(message.conversation_id),
-        "payload": {
-            "id": str(message.id),
-            "conversation_id": str(message.conversation_id),
-            "trainee_id": str(message.trainee_id),
-            "content": message.content,
-            "timestamp": str(message.timestamp),
-            "message_type": message.message_type.value,
-        },
+        "conversationId": message_dict["conversation_id"],
+        "payload": message_dict,
     }
 
-    if user:
-        message_data["user"] = {
-            "id": str(user.id),
-            "name": user.name,
-        }
+    if user_dict:
+        message_data["user"] = user_dict
 
     await manager.broadcast_to_conversation(
-        message_data, parse_uuid(message.conversation_id)
+        message_data, parse_uuid(message_dict["conversation_id"])
     )
 
 
@@ -323,6 +305,9 @@ async def websocket_endpoint(
         await websocket.accept()
         ws_logger.info(f"WebSocket connection accepted for user {user.name}")
 
+        # Serialize user to dict once
+        user_dict = {"id": str(user.id), "name": user.name}
+
         while True:
             # Wait for messages
             data = await websocket.receive_json()
@@ -335,15 +320,14 @@ async def websocket_endpoint(
             await manager.connect(websocket, conversation_id)
 
             # Add user info to the message
-            data["user"] = {
-                "id": str(user.id),
-                "name": user.name,
-            }
+            data["user"] = user_dict
+
+            print("DATA: ", data)
 
             # Handle different message types
             if data["type"] == "END_CHAT":
                 # Handle end chat message
-                ws_logger.info(f"Received END_CHAT for conversation {conversation_id}")
+                ws_logger.info("Received END_CHAT for conversation %s", conversation_id)
                 await end_chat(
                     session=session,
                     conversation_id=conversation_id,
@@ -352,6 +336,7 @@ async def websocket_endpoint(
                 continue
 
             elif data["type"] == "MESSAGE":
+                ws_logger.info("Received MESSAGE for conversation %s", conversation_id)
                 if data.get("payload", {}).get("action") in [
                     "subscribe",
                     "unsubscribe",
@@ -361,8 +346,9 @@ async def websocket_endpoint(
 
                 # Create the message in the database for regular messages
                 payload = data.get("payload", {})
+                ws_logger.info("Payload: %s", payload)
                 if payload.get("content") and payload.get("message_type"):
-                    message_data = await create_message(
+                    message_dict = await create_message(
                         session=session,
                         conversation_id=conversation_id,
                         trainee_id=user.id,
@@ -370,29 +356,24 @@ async def websocket_endpoint(
                         message_type=payload["message_type"],
                     )
                     # Update the payload with the created message data
-                    data["payload"].update(message_data)
+                    data["payload"].update(message_dict)
 
-                    # Get the created message object for broadcasting
-                    chat_message = await session.get(
-                        ChatMessage, UUID(message_data["id"])
-                    )
-                    if chat_message:
-                        # Broadcast the message to all clients in the conversation
-                        await broadcast_message(chat_message, user)
-                        try:
-                            if chat_message.message_type == MessageType.USER:
-                                print("LET'S RESUME BABY")
-                                await resume_chatbot(
-                                    session=session,
-                                    send_message_func=partial(create_message, session),
-                                    conversation_id=conversation_id,
-                                    user_message=chat_message.content,
-                                    message_id=chat_message.id,
-                                    end_chat_func=partial(end_chat, session),
-                                )
-                        except Exception as e:
-                            ws_logger.error("Error resuming chatbot: %s", e)
-                            continue
+                    # No need to fetch ORM object, just use dict
+                    await broadcast_message(message_dict, user_dict)
+                    try:
+                        if message_dict["message_type"] == MessageType.USER.value:
+                            print("LET'S RESUME BABY")
+                            await resume_chatbot(
+                                session=session,
+                                send_message_func=partial(create_message, session),
+                                conversation_id=conversation_id,
+                                user_message=message_dict["content"],
+                                message_id=parse_uuid(message_dict["id"]),
+                                end_chat_func=partial(end_chat, session),
+                            )
+                    except Exception as e:
+                        ws_logger.error("Error resuming chatbot: %s", e)
+                        continue
 
             elif data["type"] in ["TYPING", "STATUS_CHANGE"]:
                 # Broadcast these messages to everyone including the sender
@@ -410,6 +391,7 @@ async def websocket_endpoint(
         ws_logger.error(f"Authentication error: {e.detail}")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
     except Exception as e:
+        print(e)
         ws_logger.error(f"WebSocket error: {type(e).__name__}: {str(e)}")
         if not websocket.client_state.DISCONNECTED:
             await websocket.close()
