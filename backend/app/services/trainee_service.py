@@ -672,3 +672,12 @@ class TraineeService:
             # NOTE: This outputs the interrupt value
 
             return conv
+
+    async def get_scenario_sessions(self, trainee_id: str) -> list[ScenarioSession]:
+        """Get all scenario sessions (completed and pending) for a trainee."""
+        trainee_uuid = parse_uuid(trainee_id)
+        statement = select(ScenarioSession).where(
+            ScenarioSession.user_id == trainee_uuid
+        )
+        results = (await self.session.exec(statement)).all()
+        return results

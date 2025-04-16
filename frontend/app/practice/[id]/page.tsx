@@ -268,6 +268,10 @@ export default function SchemeDetailPage({
           <DataTable
             columns={getCompletedColumns({
               onRetry: handleStartScenario,
+              isStarting,
+              activeSession,
+              onResume: (sessionId: string) =>
+                router.push(`/conversations/${sessionId}`),
             })}
             data={currentCompletedScenarios}
             showNewScenarioDialog={false}

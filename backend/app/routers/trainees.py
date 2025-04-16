@@ -69,3 +69,12 @@ async def restart_scenario_session(
     await trainee_service.complete_scenario(
         parse_uuid(trainee_id), parse_uuid(session_id), status=SessionStatus.COMPLETED
     )
+
+
+@router.get("/{trainee_id}/sessions")
+async def get_scenario_sessions(
+    trainee_id: str,
+    trainee_service: Annotated[TraineeService, Depends()],
+) -> list[ScenarioSession]:
+    """Get all scenario sessions (completed and pending) for a trainee."""
+    return await trainee_service.get_scenario_sessions(parse_uuid(trainee_id))
