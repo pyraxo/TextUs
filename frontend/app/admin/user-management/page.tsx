@@ -346,12 +346,8 @@ export default function UserManagementPage() {
                       <TableCell className="capitalize">
                         {getUserTypeDisplay(user.user_type as UserType)}
                       </TableCell>
-                      <TableCell>
-                        {formatDate(user.joined_at.toISOString())}
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(user.last_login.toISOString())}
-                      </TableCell>
+                      <TableCell>{formatDate(user.joined_at)}</TableCell>
+                      <TableCell>{formatDate(user.last_login)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
