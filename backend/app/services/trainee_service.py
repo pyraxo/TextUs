@@ -334,7 +334,21 @@ class TraineeService:
     async def get_session_metrics(self, session_id: str) -> SessionMetrics:
         """Get comprehensive metrics for a session."""
         session_uuid = parse_uuid(session_id)
-        user_session = await self.session.get(ScenarioSession, session_uuid)
+        statement = (
+            select(ScenarioSession)
+            .where(ScenarioSession.id == session_uuid)
+            .options(
+                selectinload(ScenarioSession.chat_conversations).selectinload(
+                    ChatConversation.messages
+                ),
+                selectinload(ScenarioSession.scenario).selectinload(
+                    Scenario.scenario_customers
+                ),
+            )
+        )
+        result = await self.session.exec(statement)
+        user_session = result.one_or_none()
+
         if not user_session:
             raise HTTPException(status_code=404, detail="Session not found")
 
@@ -450,39 +464,48 @@ class TraineeService:
             not active_conversations
             and scenario_session.status != SessionStatus.COMPLETED
         ):
-            # Mark session as completed
-            scenario_session.status = SessionStatus.COMPLETED
-            scenario_session.end_timestamp = datetime.now()
-            self.session.add(scenario_session)
-            await self.session.commit()
-
-            # Calculate final session metrics
             try:
-                metrics = await self.get_session_metrics(session_id)
+                # First, complete all database operations within the AsyncSession context
+                scenario_session.status = SessionStatus.COMPLETED
+                scenario_session.end_timestamp = datetime.now()
 
-                # Get conversation IDs for broadcasting
+                # Store metrics in memory while we have database access
+                session_metrics = await self.get_session_metrics(session_id)
                 conversation_ids = [
                     str(conv.id) for conv in scenario_session.chat_conversations
                 ]
 
-                # Publish session completion event
-                await event_bus.publish(
-                    EventType.SESSION_COMPLETED,
-                    {
-                        "session_id": str(session_id),
-                        "user_id": str(scenario_session.user_id),
-                        "scenario_id": str(scenario_session.scenario_id),
-                        "status": scenario_session.status,
-                        "metrics": metrics.dict(),
-                        "conversation_ids": conversation_ids,
-                    },
-                )
+                # Commit the session changes
+                self.session.add(scenario_session)
+                await self.session.commit()
 
-                print(f"Session {session_id} completed with metrics: {metrics}")
+                # After database operations are complete, broadcast the event with our stored metrics
+                event_data = {
+                    "session_id": str(session_id),
+                    "user_id": str(scenario_session.user_id),
+                    "scenario_id": str(scenario_session.scenario_id),
+                    "status": scenario_session.status,
+                    "metrics": session_metrics.dict(),
+                    "conversation_ids": conversation_ids,
+                }
+
+                try:
+                    await event_bus.publish(EventType.SESSION_COMPLETED, event_data)
+                except Exception as e:
+                    # Log event publishing error but don't fail the completion
+                    print(f"Error publishing session completion event: {e}")
+
+                print(f"Session {session_id} completed with metrics: {session_metrics}")
+                return True
+
             except Exception as e:
-                print(f"Error calculating session metrics: {e}")
-
-            return True
+                print(f"Error during session completion: {e}")
+                # Ensure session is still marked as completed even if metrics calculation fails
+                scenario_session.status = SessionStatus.COMPLETED
+                scenario_session.end_timestamp = datetime.now()
+                self.session.add(scenario_session)
+                await self.session.commit()
+                return True
 
         return False
 
