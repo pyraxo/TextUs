@@ -7,10 +7,12 @@ __all__ = [
     "Scheme",
     "User",
     "ScenarioSession",
+    "RubricsSettings",
 ]
 
 from .chat import ChatConversation, ChatMessage
 from .customer import Customer
+from .rubrics import RubricsSettings
 from .scenario import Scenario
 from .scenario_customer import ScenarioCustomer
 from .scenario_session import ScenarioSession

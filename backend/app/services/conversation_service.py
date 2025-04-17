@@ -35,7 +35,7 @@ class ConversationService:
         results = (await self.session.exec(statement)).all()
         return results
 
-    async def get_conversation(self, conversation_id: UUID):
+    async def get_conversation(self, conversation_id: UUID) -> ChatConversation:
         """Get a conversation by ID."""
         conversation_id = parse_uuid(conversation_id)
         statement = (

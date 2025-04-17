@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.common import parse_uuid
 from app.models.response import (
@@ -9,6 +9,7 @@ from app.models.response import (
     ConversationResponse,
     MessageResponse,
 )
+from app.models.scenario_session import FeedbackRequest
 from app.services.conversation_service import ConversationService
 
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
@@ -82,3 +83,61 @@ async def get_conversation_evaluation(
         parse_uuid(conversation_id)
     )
     return evaluation
+
+
+@router.post("/{conversation_id}/feedback", response_model=ConversationListResponse)
+async def get_conversation_trainer_feedback(
+    conversation_id: str,
+    req: FeedbackRequest,
+    conversation_service: Annotated[ConversationService, Depends()],
+) -> ConversationListResponse:
+    """Get trainer feedback for a specific conversation."""
+    conversation = await conversation_service.get_conversation(conversation_id)
+    if not conversation or str(conversation.id) != conversation_id:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return ConversationListResponse(
+        id=conversation.id,
+        scenario_id=conversation.scenario_customer.scenario_id,
+        customer_id=conversation.scenario_customer.customer_id,
+        started_at=conversation.started_at,
+        ended_at=conversation.ended_at,
+        scenario_name=conversation.scenario_customer.name,
+        latest_message_timestamp=max(
+            (msg.timestamp for msg in conversation.messages),
+            default=conversation.started_at,
+        ),
+        trainer_feedback=conversation.trainer_feedback,
+    )
+
+
+@router.patch("/{conversation_id}/feedback", response_model=ConversationListResponse)
+async def update_conversation_trainer_feedback(
+    conversation_id: str,
+    req: FeedbackRequest,
+    conversation_service: Annotated[ConversationService, Depends()],
+) -> ConversationListResponse:
+    """Update trainer feedback for a specific conversation."""
+    conversation = await conversation_service.get_conversation(conversation_id)
+    if not conversation or str(conversation.id) != conversation_id:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conversation.trainer_feedback = req.content
+    conversation_service.session.add(conversation)
+
+    await conversation_service.session.commit()
+    await conversation_service.session.refresh(conversation)
+
+    return ConversationListResponse(
+        id=conversation.id,
+        scenario_id=conversation.scenario_customer.scenario_id,
+        customer_id=conversation.scenario_customer.customer_id,
+        started_at=conversation.started_at,
+        ended_at=conversation.ended_at,
+        scenario_name=conversation.scenario_customer.name,
+        latest_message_timestamp=max(
+            (msg.timestamp for msg in conversation.messages),
+            default=conversation.started_at,
+        ),
+        trainer_feedback=conversation.trainer_feedback,
+    )

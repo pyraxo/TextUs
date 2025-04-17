@@ -288,7 +288,7 @@ export const ManageScenarioCustomersDialog: FC<
                 className="space-y-4 flex-1 overflow-auto"
               >
                 <div className="font-semibold mb-2 flex justify-between items-center">
-                  <span>Configure Agent</span>
+                  <span>Configure Archetype</span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -300,12 +300,12 @@ export const ManageScenarioCustomersDialog: FC<
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="name">Agent Name</Label>
+                  <Label htmlFor="name">Archetype Name</Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter agent name"
+                    placeholder="Enter archetype name"
                     required
                     disabled={isPending}
                   />

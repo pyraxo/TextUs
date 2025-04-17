@@ -1,13 +1,6 @@
-from enum import Enum
-
 from pydantic import BaseModel, Field
 
-
-class EvaluationMetric(str, Enum):
-    ACCURACY = "accuracy"
-    COMPREHENSION = "comprehension"
-    TONE = "tone"
-    CHAT_HANDLING = "chat_handling"
+from app.models.rubrics import EvaluationMetric
 
 
 class ChatTranscript(BaseModel):

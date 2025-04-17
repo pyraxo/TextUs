@@ -170,7 +170,7 @@ class TraineeService:
             )
 
         print(f"Current conversations in session {scenario_session.id}:")
-        for conv in scenario_session.chat_conversations:
+        for conv in scenario_session.get_all_conversations():
             print(
                 f"  - Conv ID: {conv.id}, Customer ID: {conv.scenario_customer_id}, Ended: {conv.ended_at}"
             )
@@ -182,17 +182,10 @@ class TraineeService:
             print(f"  Customer ID: {scenario_customer.customer_id}")
 
             # Check if this customer already has an active conversation in this session
-            existing_conversation = next(
-                (
-                    conv
-                    for conv in scenario_session.chat_conversations
-                    if conv.scenario_customer_id == scenario_customer.id
-                    and not conv.ended_at
-                ),
-                None,
+            existing_conversation = scenario_session.get_customer_scenario_conversation(
+                scenario_customer.id
             )
-
-            if existing_conversation:
+            if existing_conversation and not existing_conversation.ended_at:
                 print(f"  Found existing conversation: {existing_conversation.id}")
             else:
                 print("  No existing conversation found, creating new one")
@@ -202,6 +195,9 @@ class TraineeService:
                     scenario_customer_id=scenario_customer.id,
                 )
                 print(f"  Created new conversation: {new_conv.id}")
+                scenario_session.add_chat_conversation(new_conv)
+                self.session.add(scenario_session)
+                await self.session.commit()
 
         # Refresh session to get all relationships
         await self.session.refresh(scenario_session, ["chat_conversations"])
@@ -213,7 +209,7 @@ class TraineeService:
                 "customer_id": conv.scenario_customer_id,
                 "ended_at": conv.ended_at,
             }
-            for conv in scenario_session.chat_conversations
+            for conv in scenario_session.get_all_conversations()
         ]
 
         print("\nFinal conversations in session:")
@@ -674,10 +670,12 @@ class TraineeService:
             return conv
 
     async def get_scenario_sessions(self, trainee_id: str) -> list[ScenarioSession]:
-        """Get all scenario sessions (completed and pending) for a trainee."""
+        """Get all scenario sessions (completed and pending) for a trainee, including scenario info."""
         trainee_uuid = parse_uuid(trainee_id)
-        statement = select(ScenarioSession).where(
-            ScenarioSession.user_id == trainee_uuid
+        statement = (
+            select(ScenarioSession)
+            .where(ScenarioSession.user_id == trainee_uuid)
+            .options(selectinload(ScenarioSession.scenario))
         )
         results = (await self.session.exec(statement)).all()
         return results

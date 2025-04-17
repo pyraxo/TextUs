@@ -1,5 +1,5 @@
 import { UserScenarioSession } from "@/types/user-scenario-session";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -22,5 +22,28 @@ export function useUserScenarioSessions(userId?: string, schemeId?: string) {
       return data;
     },
     enabled: !!userId,
+  });
+}
+
+/**
+ * Hook to update trainer feedback for a conversation
+ */
+export function useUpdateTrainerFeedback() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ conversationId, content }: { conversationId: string; content: string }) => {
+      const res = await fetch(`${API_URL}/conversations/${conversationId}/feedback`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) throw new Error("Failed to update feedback");
+      return await res.json();
+    },
+    onSuccess: (data, variables) => {
+      // Update the scenario sessions cache for this user
+      queryClient.invalidateQueries({ queryKey: ["scenario-sessions", variables.conversationId] });
+    },
   });
 } 

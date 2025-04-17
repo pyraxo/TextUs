@@ -3,6 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
+from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -18,6 +19,10 @@ class SessionStatus(str, Enum):
     FAILED = "failed"
     ABANDONED = "abandoned"
     TIMED_OUT = "timed_out"
+
+
+class FeedbackRequest(BaseModel):
+    content: str
 
 
 class SessionMetrics(SQLModel):
@@ -76,28 +81,31 @@ class ScenarioSession(ScenarioSessionBase, table=True):
     evaluations: List["ChatEvaluation"] = Relationship(back_populates="session")
 
     def add_chat_conversation(self, chat_conversation: "ChatConversation"):
-        """Add a chat conversation to the session."""
+        """Add a chat conversation to the session, preventing duplicates."""
         if self.chat_conversations is None:
             self.chat_conversations = []
-        self.chat_conversations.append(chat_conversation)
+        if chat_conversation not in self.chat_conversations:
+            self.chat_conversations.append(chat_conversation)
 
     def get_all_conversations(self):
-        """Get all conversations for the session."""
-        return self.chat_conversations
+        """Get all conversations for the session (returns empty list if none)."""
+        return self.chat_conversations or []
 
     def get_scenario_conversations(self, scenario_id: UUID):
-        """Get all conversations for a specific scenario."""
+        """Get all conversations for a specific scenario (returns empty list if none)."""
         return [
             conv
-            for conv in self.chat_conversations
-            if conv.scenario_customer.scenario_id == scenario_id
+            for conv in (self.chat_conversations or [])
+            if hasattr(conv, "scenario_customer")
+            and conv.scenario_customer
+            and conv.scenario_customer.scenario_id == scenario_id
         ]
 
     def get_customer_scenario_conversation(
         self, customer_scenario_id: UUID
     ) -> Optional["ChatConversation"]:
-        """Find the chat conversation associated with a specific customer scenario."""
-        for conv in self.chat_conversations:
-            if conv.customer_scenario_id == customer_scenario_id:
+        """Find the chat conversation associated with a specific customer scenario, or None."""
+        for conv in self.chat_conversations or []:
+            if getattr(conv, "customer_scenario_id", None) == customer_scenario_id:
                 return conv
         return None
