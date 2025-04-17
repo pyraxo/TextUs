@@ -34,8 +34,8 @@ async def get_users_route(
     Get all users with pagination and optional filtering.
     Only admin users can see all users.
     """
-    # Check if user is admin
-    if current_user.user_type != UserType.ADMIN:
+    # Check if user is admin or trainer
+    if current_user.user_type not in [UserType.ADMIN, UserType.TRAINER]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",

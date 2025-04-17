@@ -21,6 +21,7 @@ from app.routers import (
     auth_router,
     conversations_router,
     customers_router,
+    rubrics_router,
     scenarios_router,
     schemes_router,
     trainees_router,
@@ -121,6 +122,7 @@ app.include_router(conversations_router)
 app.include_router(ws_router)
 app.include_router(customers_router)
 app.include_router(trainees_router)
+app.include_router(rubrics_router)
 
 
 @app.get("/")

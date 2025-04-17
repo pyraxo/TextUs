@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 
 // Dummy data - replace with your actual data
 const customerInfo = {
-  name: "Aaron Tua",
+  name: "Admin User",
   caseId: "11-22-334-832D",
   startTime: "17 May 18:38 SGT",
   category: "Housing",
@@ -32,7 +32,7 @@ const customerInfo = {
     caseAssessment: "Lorem ipsum etc...",
     surveyReason: "Lorem ipsum etc...",
     enquiry: "Lorem ipsum etc...",
-    messagingUser: "Aaron Tua",
+    messagingUser: "Admin User",
     times: {
       start: "17 May 2025 18:31 SGT",
       end: "17 May 2025 20:32 SGT",
@@ -170,7 +170,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
 
         {/* Debug panel */}
         {showDebug && (
-          <div className="p-4 border-b bg-muted/20">
+          <div className="p-4 border-b bg-card/20">
             <h3 className="font-semibold mb-2">Debug Info</h3>
             <div className="space-y-2 text-xs">
               <div>
@@ -261,7 +261,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Subject</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.subject}
                 </p>
               </div>
@@ -298,35 +298,35 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Outcome Details</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.outcomeDetails}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Case Assessment</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.caseAssessment}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Survey Reason</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.surveyReason}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Enquiry</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.enquiry}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Messaging User</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.messagingUser}
                 </p>
               </div>
@@ -334,15 +334,15 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm">Times</h3>
                 <div className="grid gap-2">
-                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                  <div className="flex items-center justify-between text-sm bg-card p-3 rounded-lg">
                     <span>Start Time</span>
                     <span>{customerInfo.chatInfo.times.start}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                  <div className="flex items-center justify-between text-sm bg-card p-3 rounded-lg">
                     <span>End Time</span>
                     <span>{customerInfo.chatInfo.times.end}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                  <div className="flex items-center justify-between text-sm bg-card p-3 rounded-lg">
                     <span>Accept Time</span>
                     <span>{customerInfo.chatInfo.times.accept}</span>
                   </div>
@@ -351,7 +351,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Contact Info</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.contactInfo}
                 </p>
               </div>
@@ -359,7 +359,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm">Flags</h3>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                  <div className="flex items-center justify-between text-sm bg-card p-3 rounded-lg">
                     <span>Classified</span>
                     <Check
                       className={`h-4 w-4 ${
@@ -369,7 +369,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                       }`}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-sm bg-muted p-3 rounded-lg">
+                  <div className="flex items-center justify-between text-sm bg-card p-3 rounded-lg">
                     <span>Transferred by Officer</span>
                     <Check
                       className={`h-4 w-4 ${
@@ -384,14 +384,14 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Assigned Officer</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.assignedOfficer}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm">Scheme</h3>
-                <p className="text-sm bg-muted p-3 rounded-lg">
+                <p className="text-sm bg-card p-3 rounded-lg">
                   {customerInfo.chatInfo.scheme}
                 </p>
               </div>
@@ -424,7 +424,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                       </div>
                       <div className="space-y-1">
                         <h4 className="font-medium">Justification:</h4>
-                        <p className="text-sm bg-muted p-3 rounded-lg">
+                        <p className="text-sm bg-card p-3 rounded-lg">
                           {evaluation.evaluation_results.accuracy.justification}
                         </p>
                       </div>
@@ -434,7 +434,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                           <h4 className="font-medium">
                             Areas for Improvement:
                           </h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.accuracy
                                 .problematic_responses
@@ -446,7 +446,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                         .revised_response && (
                         <div className="space-y-1">
                           <h4 className="font-medium">Suggested Response:</h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.accuracy
                                 .revised_response
@@ -473,7 +473,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                       </div>
                       <div className="space-y-1">
                         <h4 className="font-medium">Justification:</h4>
-                        <p className="text-sm bg-muted p-3 rounded-lg">
+                        <p className="text-sm bg-card p-3 rounded-lg">
                           {
                             evaluation.evaluation_results.comprehension
                               .justification
@@ -486,7 +486,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                           <h4 className="font-medium">
                             Areas for Improvement:
                           </h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.comprehension
                                 .problematic_responses
@@ -498,7 +498,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                         .revised_response && (
                         <div className="space-y-1">
                           <h4 className="font-medium">Suggested Response:</h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.comprehension
                                 .revised_response
@@ -523,7 +523,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                       </div>
                       <div className="space-y-1">
                         <h4 className="font-medium">Justification:</h4>
-                        <p className="text-sm bg-muted p-3 rounded-lg">
+                        <p className="text-sm bg-card p-3 rounded-lg">
                           {evaluation.evaluation_results.tone.justification}
                         </p>
                       </div>
@@ -533,7 +533,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                           <h4 className="font-medium">
                             Areas for Improvement:
                           </h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.tone
                                 .problematic_responses
@@ -544,7 +544,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                       {evaluation.evaluation_results.tone.revised_response && (
                         <div className="space-y-1">
                           <h4 className="font-medium">Suggested Response:</h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.tone
                                 .revised_response
@@ -571,7 +571,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                       </div>
                       <div className="space-y-1">
                         <h4 className="font-medium">Justification:</h4>
-                        <p className="text-sm bg-muted p-3 rounded-lg">
+                        <p className="text-sm bg-card p-3 rounded-lg">
                           {
                             evaluation.evaluation_results.chat_handling
                               .justification
@@ -584,7 +584,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                           <h4 className="font-medium">
                             Areas for Improvement:
                           </h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.chat_handling
                                 .problematic_responses
@@ -596,7 +596,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                         .revised_response && (
                         <div className="space-y-1">
                           <h4 className="font-medium">Suggested Response:</h4>
-                          <p className="text-sm bg-muted p-3 rounded-lg">
+                          <p className="text-sm bg-card p-3 rounded-lg">
                             {
                               evaluation.evaluation_results.chat_handling
                                 .revised_response
@@ -619,14 +619,14 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <h3 className="font-semibold text-sm">General Feedback</h3>
-                  <p className="text-sm bg-muted p-3 rounded-lg">
+                  <p className="text-sm bg-card p-3 rounded-lg">
                     {customerInfo.feedback.general}
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="font-semibold text-sm">Scenario Feedback</h3>
-                  <p className="text-sm bg-muted p-3 rounded-lg">
+                  <p className="text-sm bg-card p-3 rounded-lg">
                     {customerInfo.feedback.scenario}
                   </p>
                 </div>
@@ -647,7 +647,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
 
                 <div className="space-y-2">
                   <h3 className="font-semibold text-sm">Team Lead Comments</h3>
-                  <p className="text-sm bg-muted p-3 rounded-lg">
+                  <p className="text-sm bg-card p-3 rounded-lg">
                     {customerInfo.feedback.tlComments}
                   </p>
                 </div>
@@ -852,7 +852,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                 </div>
 
                 {/* Total Score */}
-                <div className="bg-muted p-6 rounded-lg">
+                <div className="bg-card p-6 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-2xl font-bold text-primary">
@@ -1000,7 +1000,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                   </div>
                 </div>
 
-                <div className="bg-muted p-6 rounded-lg">
+                <div className="bg-card p-6 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-2xl font-bold text-primary">
@@ -1021,7 +1021,7 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
                   <div className="space-y-2">
                     {Object.entries(customerInfo.scores.metrics).map(
                       ([key, metric]) => (
-                        <div key={key} className="bg-muted p-3 rounded-lg">
+                        <div key={key} className="bg-card p-3 rounded-lg">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">
                               {metric.value}%

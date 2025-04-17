@@ -45,7 +45,6 @@ class ScenarioCustomer(ScenarioCustomerBase, table=True):
     )
 
     # TODO: user_ratings
-    feedback_ai: Optional[str] = None
 
     @property
     def expected_queries(self) -> List[str]:
@@ -67,7 +66,6 @@ class ScenarioCustomerRead(ScenarioCustomerBase):
     customer_id: UUID
     scenario_id: UUID
     expected_queries: Optional[List[str]] = None
-    feedback_ai: Optional[str] = None
 
 
 class ScenarioCustomerCreate(ScenarioCustomerBase):
@@ -84,5 +82,4 @@ class ScenarioCustomerUpdate(SQLModel):
     name: Optional[str] = None
     scenario_prompt: Optional[str] = None
     expected_queries: Optional[List[str]] = None
-    feedback_ai: Optional[str] = None
     temperature: Optional[float] = None

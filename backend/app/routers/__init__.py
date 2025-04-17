@@ -8,12 +8,14 @@ __all__ = [
     "trainees_router",
     "users_router",
     "ws_router",
+    "rubrics_router",
 ]
 
 from .admin import router as admin_router
 from .auth import router as auth_router
 from .conversations import router as conversations_router
 from .customers import router as customers_router
+from .rubrics import router as rubrics_router
 from .scenarios import router as scenarios_router
 from .schemes import router as schemes_router
 from .trainees import router as trainees_router

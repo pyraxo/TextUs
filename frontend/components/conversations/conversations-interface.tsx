@@ -1,26 +1,13 @@
 "use client";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useActiveSessionConversations } from "@/hooks/use-session-conversations";
 import { getConversation } from "@/lib/api/conversations";
 import { useWebSocket } from "@/lib/providers/websocket-provider";
-import { cn } from "@/lib/utils";
 import {
   Conversation,
   Message,
@@ -28,23 +15,23 @@ import {
   type ConversationResponse,
 } from "@/types/conversations.d";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Filter,
-  Paperclip,
-  SendHorizontal,
-  Wifi,
-  WifiOff,
-  X,
-} from "lucide-react";
+import { Filter } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ChatInput } from "./ChatInput";
+import { ConversationHeader } from "./ConversationHeader";
+import { ConversationsList } from "./ConversationsList";
+import { ConversationView } from "./ConversationView";
+import { TrainerFeedbackSection } from "./TrainerFeedbackSection";
 
 export function ConversationsInterface({
   activeSessionId,
   onConversationSelect,
+  readOnly = false,
 }: {
   activeSessionId: string;
   onConversationSelect?: (conversationId: string) => void;
+  readOnly?: boolean;
 }) {
   // Conversation list state
   const {
@@ -87,7 +74,17 @@ export function ConversationsInterface({
     unsubscribeFromConversation,
     getConversationState,
     markConversationAsRead,
-  } = useWebSocket();
+  } = readOnly
+    ? {
+        sendMessage: () => {},
+        lastMessage: null,
+        connectionState: "offline",
+        subscribeToConversation: () => {},
+        unsubscribeFromConversation: () => {},
+        getConversationState: () => null,
+        markConversationAsRead: () => {},
+      }
+    : useWebSocket();
 
   // Get conversation state for active conversation
   const activeConversationState = activeConversationId
@@ -496,6 +493,10 @@ export function ConversationsInterface({
     toast.success("Chat ended successfully");
   };
 
+  // Determine if user is a trainer
+  const isTrainer =
+    user?.user_type === "trainer" || user?.user_type === "admin";
+
   // Loading state
   if (isLoading) {
     return <ConversationsLoading />;
@@ -524,308 +525,104 @@ export function ConversationsInterface({
     <div className="flex h-full">
       {/* Conversation List */}
       <div className="w-80 border-r">
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <h2 className="text-xl font-semibold">All conversations</h2>
-              <p className="text-sm text-muted-foreground">
-                {isLoading || isSessionLoading
-                  ? "Loading conversations..."
-                  : displayConversations.length > 0
-                  ? `${displayConversations.length} conversations in this session`
-                  : "No conversations found"}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {connectionState !== "connected" ? (
-                <Badge variant="outline" className="gap-1">
-                  <WifiOff className="h-3 w-3" />
-                  <span className="text-xs">Offline</span>
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="gap-1">
-                  <Wifi className="h-3 w-3" />
-                  <span className="text-xs">Online</span>
-                </Badge>
-              )}
-              {/* <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-              </Button> */}
-            </div>
-          </div>
-          <Separator className="bg-muted" />
-          <ScrollArea className="flex-1">
-            {displayConversations.length > 0 ? (
-              displayConversations.map((conversation) => (
-                <button
-                  key={conversation.id}
-                  onClick={() => handleConversationSelect(conversation.id)}
-                  className={cn(
-                    "w-full flex flex-col gap-2 py-3 px-4 hover:bg-muted/20 text-left border-b border-border/50",
-                    activeConversationId === conversation.id && "bg-muted/20"
-                  )}
-                >
-                  <div className="flex flex-col min-w-0 w-full">
-                    {/* Top row: Name and time */}
-                    <div className="flex items-center justify-between w-full gap-2">
-                      <div className="min-w-0 flex-1">
-                        <span className="font-medium text-sm line-clamp-1">
-                          {conversation.scenario_name || "Unnamed Scenario"}
-                        </span>
-                      </div>
-                      <span className="text-xs text-muted-foreground shrink-0 w-[4rem] text-right">
-                        {formatListTime(
-                          conversation.latest_message_timestamp as string
-                        )}
-                      </span>
-                    </div>
-
-                    {/* Bottom row: Badges */}
-                    <div className="flex items-center gap-2 mt-1">
-                      {conversation.ended_at ||
-                      activeConversations.get(conversation.id)?.conversation
-                        ?.ended_at ? (
-                        <Badge
-                          variant="outline"
-                          className="text-xs text-muted-foreground"
-                        >
-                          Ended
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="text-xs text-green-600 border-green-200"
-                        >
-                          Active
-                        </Badge>
-                      )}
-                      {activeConversations.get(conversation.id)?.unreadCount ? (
-                        <Badge variant="default" className="text-xs">
-                          {
-                            activeConversations.get(conversation.id)
-                              ?.unreadCount
-                          }
-                        </Badge>
-                      ) : null}
-                    </div>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="p-6 text-center">
-                <p className="text-muted-foreground mb-2">
-                  No conversations found
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Your conversations will appear here once they become available
-                </p>
-              </div>
-            )}
-          </ScrollArea>
-        </div>
+        <ConversationsList
+          conversations={displayConversations}
+          activeConversationId={activeConversationId}
+          onSelect={handleConversationSelect}
+          activeConversationsMap={activeConversations}
+          isLoading={isLoading}
+          isSessionLoading={isSessionLoading}
+          connectionState={connectionState}
+        />
       </div>
 
       {/* Chat Interface */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col h-full">
         {activeConversation ? (
-          <div className="flex h-full flex-col">
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold">
-                  {activeConversation.conversation?.scenario_name || "Customer"}
-                </h2>
-                {!(
+          <>
+            <ConversationHeader
+              scenarioName={activeConversation.conversation?.scenario_name}
+              ended={
+                !!activeConversationState?.ended ||
+                !!activeConversation.conversation?.ended_at
+              }
+              endedAt={
+                activeConversationState?.ended
+                  ? activeConversationState.endedAt
+                  : activeConversation.conversation?.ended_at
+              }
+              onEndChat={handleEndChat}
+              showEndChat={
+                !readOnly &&
+                !(
                   activeConversationState?.ended ||
                   activeConversation.conversation?.ended_at
-                ) && (
-                  <>
-                    <AlertDialog
-                      open={isEndChatDialogOpen}
-                      onOpenChange={setIsEndChatDialogOpen}
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsEndChatDialogOpen(true)}
-                        className="gap-1 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 mr-10"
-                      >
-                        <X className="h-4 w-4" />
-                        End Chat
-                      </Button>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>End Chat</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to end this chat? This action
-                            cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleEndChat}
-                            className="bg-red-500 hover:bg-red-600 text-white"
-                          >
-                            End Chat
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </>
-                )}
-              </div>
-              {(activeConversationState?.ended ||
-                activeConversation.conversation?.ended_at) && (
-                <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                  <span>Chat ended</span>
-                  <time
-                    dateTime={
-                      activeConversationState?.ended
-                        ? activeConversationState.endedAt.toISOString()
-                        : new Date(
-                            activeConversation.conversation?.ended_at ||
-                              Date.now()
-                          ).toISOString()
+                )
+              }
+              connectionState={connectionState}
+              readOnly={readOnly}
+            />
+            <ConversationView
+              conversation={activeConversation.conversation}
+              messages={activeConversation.messages}
+              formatMessageTime={formatMessageTime}
+            />
+            {/* Input area: ChatInput for trainees, TrainerFeedbackSection for trainers on completed convos */}
+            {(() => {
+              const isEnded =
+                !!activeConversationState?.ended ||
+                !!activeConversation.conversation?.ended_at;
+              if (!readOnly && !isEnded) {
+                return (
+                  <ChatInput
+                    messageInput={messageInput}
+                    setMessageInput={setMessageInput}
+                    onSend={handleSendMessage}
+                    disabled={
+                      readOnly ||
+                      !!activeConversationState?.ended ||
+                      !!activeConversation.conversation?.ended_at
                     }
-                  >
-                    {formatMessageTime(
-                      activeConversationState?.ended
-                        ? activeConversationState.endedAt.toISOString()
-                        : new Date(
-                            activeConversation.conversation?.ended_at ||
-                              Date.now()
-                          ).toISOString()
-                    )}
-                  </time>
-                </div>
-              )}
-              {connectionState !== "connected" && (
-                <p className="text-sm text-yellow-500">Reconnecting...</p>
-              )}
-            </div>
-            <Separator className="bg-muted" />
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {activeConversation.messages.map((msg, index) => {
-                  // For bot messages, split content by double newlines
-                  const messageContents =
-                    msg.message_type === MessageType.BOT
-                      ? msg.content
-                          .split("\n\n")
-                          .filter((content) => content.trim())
-                      : [msg.content];
-
-                  return messageContents.map((content, contentIndex) => (
-                    <div
-                      key={`${msg.id || index}-${contentIndex}`}
-                      className={`flex ${
-                        msg.message_type === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                          msg.message_type === "user"
-                            ? "bg-cpf-light-teal text-primary-foreground"
-                            : "bg-card shadow-sm"
-                        }`}
-                      >
-                        <div className="flex items-baseline gap-2">
-                          <span
-                            className={`text-sm font-medium ${
-                              msg.message_type === "user"
-                                ? "text-foreground"
-                                : "text-card-foreground"
-                            }`}
-                          >
-                            {msg.message_type === "user" ? "You" : "Customer"}
-                          </span>
-                          <span
-                            className={`text-xs opacity-70 ${
-                              msg.message_type === "user"
-                                ? "text-foreground"
-                                : "text-card-foreground"
-                            }`}
-                          >
-                            {formatMessageTime(
-                              new Date(msg.timestamp).toISOString()
-                            )}
-                          </span>
-                        </div>
-                        <p
-                          className={`mt-1 text-sm ${
-                            msg.message_type === "user"
-                              ? "text-foreground"
-                              : "text-card-foreground"
-                          }`}
-                        >
-                          {content}
-                        </p>
-                      </div>
-                    </div>
-                  ));
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            <div className="border-t p-4">
-              <div className="flex gap-2">
-                {activeConversationState?.ended ||
-                activeConversation.conversation?.ended_at ? (
-                  <div className="flex flex-col w-full gap-2">
-                    <p className="text-sm text-muted-foreground">
-                      This conversation has ended
-                    </p>
-                    <Button
-                      onClick={() => (window.location.href = "/practice")}
-                      className="w-full"
-                    >
-                      Restart with New Scenario
-                    </Button>
-                  </div>
-                ) : (
-                  <Textarea
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    placeholder="Type your message..."
-                    className="min-h-[80px]"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
+                    connectionState={connectionState}
+                    ended={
+                      !!activeConversationState?.ended ||
+                      !!activeConversation.conversation?.ended_at
+                    }
+                    readOnly={readOnly}
+                  />
+                );
+              }
+              if (isEnded && isTrainer) {
+                return (
+                  <TrainerFeedbackSection
+                    conversationId={activeConversationId!}
+                    sessionId={activeSessionId}
+                    user={user}
+                    initialFeedback={
+                      activeConversation.conversation?.trainer_feedback || ""
+                    }
+                    onFeedbackSaved={(feedback) => {
+                      setActiveConversations((prev) => {
+                        const newMap = new Map(prev);
+                        const conv = newMap.get(activeConversationId!);
+                        if (conv && conv.conversation) {
+                          newMap.set(activeConversationId!, {
+                            ...conv,
+                            conversation: {
+                              ...conv.conversation,
+                              trainer_feedback: feedback,
+                            },
+                          });
+                        }
+                        return newMap;
+                      });
                     }}
                   />
-                )}
-                <div className="flex flex-col gap-2">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    disabled={
-                      !!activeConversationState?.ended ||
-                      !!activeConversation.conversation?.ended_at
-                    }
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    onClick={handleSendMessage}
-                    disabled={
-                      connectionState !== "connected" ||
-                      !messageInput.trim() ||
-                      !!activeConversationState?.ended ||
-                      !!activeConversation.conversation?.ended_at
-                    }
-                  >
-                    <SendHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+                );
+              }
+              return null;
+            })()}
+          </>
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">

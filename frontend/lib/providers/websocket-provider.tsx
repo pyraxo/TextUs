@@ -51,7 +51,30 @@ export const useWebSocket = () => {
   return context;
 };
 
-export function WebSocketProvider({ children }: { children: React.ReactNode }) {
+export function WebSocketProvider({
+  children,
+  readOnly = false,
+}: {
+  children: React.ReactNode;
+  readOnly?: boolean;
+}) {
+  if (readOnly) {
+    // Provide a no-op context
+    const noOpContext: WebSocketContextType = {
+      sendMessage: () => {},
+      connectionState: "disconnected",
+      lastMessage: null,
+      subscribeToConversation: () => {},
+      unsubscribeFromConversation: () => {},
+      getConversationState: () => undefined,
+      markConversationAsRead: () => {},
+    };
+    return (
+      <WebSocketContext.Provider value={noOpContext}>
+        {children}
+      </WebSocketContext.Provider>
+    );
+  }
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("disconnected");
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);

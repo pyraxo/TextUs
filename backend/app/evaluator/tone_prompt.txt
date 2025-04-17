@@ -81,6 +81,7 @@ Customer: Can I withdraw my CPF funds before turning 55?
 Agent: Unfortunately, we cannot process withdrawals for members under 55 years old unless they meet specific medical or exceptional conditions. You can refer to the CPF website for more details.
 
 Tone Score: 3/5
+
 Justification:
 
 The response is polite but feels a bit abrupt and impersonal.

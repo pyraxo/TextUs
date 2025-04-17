@@ -4,6 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -11,8 +20,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
 
-// Mock data for the transcript table
+const METRICS = [
+  { key: "accuracy", label: "Accuracy" },
+  { key: "comprehension", label: "Comprehension" },
+  { key: "tone", label: "Tone" },
+  { key: "chat_handling", label: "Chat Handling" },
+];
+const LEVELS = ["Lousy", "Poor", "Average", "Good", "Best"];
+
 const transcriptData = [
   { id: 1, name: "chat transcript #1", date: "25/12/24" },
   { id: 2, name: "chat transcript #2", date: "14/12/24" },
@@ -20,7 +38,107 @@ const transcriptData = [
   { id: 4, name: "chat transcript #4", date: "21/11/24" },
 ];
 
+const RUBRIC_API = "/api/rubrics";
+
+// Map rubric keys for tabs
+const rubricTabKeys = {
+  trainee: "Trainee's Replies Rubric",
+  simulator: "Simulator Performance Rubric",
+};
+
+// Map which metrics belong to which tab (assuming both tabs use the same metrics for now)
+const TAB_METRICS = {
+  trainee: METRICS,
+  simulator: METRICS,
+};
+
 export default function PromptEngineeringPage() {
+  // rubricsByTab: { trainee: { metric: rubric }, simulator: { metric: rubric } }
+  const [rubricsByTab, setRubricsByTab] = useState<any>({
+    trainee: {},
+    simulator: {},
+  });
+  const [activeTab, setActiveTab] = useState("trainee");
+  const [edit, setEdit] = useState<{
+    open: boolean;
+    metric: string;
+    level: number;
+    value: string;
+    tab: string;
+  }>({ open: false, metric: "", level: 0, value: "", tab: "" });
+  const [loading, setLoading] = useState(false);
+
+  // Fetch rubric data
+  useEffect(() => {
+    async function fetchRubrics() {
+      setLoading(true);
+      try {
+        const res = await fetch(RUBRIC_API);
+        const data = await res.json();
+        // For demo: assign all metrics to both tabs (customize as needed)
+        const byTab: any = { trainee: {}, simulator: {} };
+        data.forEach((r: any) => {
+          byTab.trainee[r.id] = r;
+          byTab.simulator[r.id] = r;
+        });
+        setRubricsByTab(byTab);
+      } catch (e) {
+        // handle error
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRubrics();
+  }, []);
+
+  // Open edit modal
+  function handleEdit(tab: string, metric: string, level: number) {
+    const rubric = rubricsByTab[tab]?.[metric];
+    if (!rubric) return;
+    setEdit({
+      open: true,
+      metric,
+      level,
+      value: rubric[`rubric_level_${level + 1}`],
+      tab,
+    });
+  }
+
+  // Save rubric edit
+  async function handleSave() {
+    const { tab, metric, level, value } = edit;
+    const rubric = rubricsByTab[tab]?.[metric];
+    if (!rubric) return;
+    const updated = { ...rubric };
+    updated[`rubric_level_${level + 1}`] = value;
+    setLoading(true);
+    try {
+      await fetch(`${RUBRIC_API}/${metric}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+      setRubricsByTab((prev: any) => ({
+        ...prev,
+        [tab]: { ...prev[tab], [metric]: updated },
+      }));
+      setEdit({ ...edit, open: false });
+    } catch (e) {
+      // handle error
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Color bar colors
+  const colorBarColors = [
+    "#e0edec",
+    "#a5c5c4",
+    "#6a9e9c",
+    "#2f7774",
+    "#004d4a",
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header content area */}
@@ -42,119 +160,136 @@ export default function PromptEngineeringPage() {
       <main className="container mx-auto p-6">
         <Card className="w-full border border-gray-200 rounded-lg">
           <CardContent className="p-6">
-            <div className="flex justify-between mb-6">
-              <div className="flex gap-6">
-                <span className="text-base font-medium">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="trainee">
                   Trainee's Replies Rubric
-                </span>
-                <span className="text-base font-medium text-gray-500">
+                </TabsTrigger>
+                <TabsTrigger value="simulator">
                   Simulator Performance Rubric
-                </span>
-              </div>
-              <Button
-                size="sm"
-                className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white h-8 px-4"
-              >
-                Edit
-              </Button>
-            </div>
-
-            <div className="flex">
-              {/* Gradient color bar */}
-              <div className="w-6 mr-4 rounded-sm overflow-hidden">
-                <div className="h-[52px] bg-[#e0edec]"></div>
-                <div className="h-[52px] bg-[#a5c5c4]"></div>
-                <div className="h-[52px] bg-[#6a9e9c]"></div>
-                <div className="h-[52px] bg-[#2f7774]"></div>
-                <div className="h-[52px] bg-[#004d4a]"></div>
-              </div>
-
-              <div className="flex-1 grid grid-cols-3 gap-4">
-                {/* Column Headers */}
-                <div>
-                  <div className="bg-[#0B6160] text-white font-semibold p-2 text-center mb-4 rounded-sm">
-                    Accuracy
+                </TabsTrigger>
+              </TabsList>
+              {Object.entries(rubricTabKeys).map(([tabKey, tabLabel]) => (
+                <TabsContent value={tabKey} key={tabKey}>
+                  <div className="flex mt-6">
+                    {/* Gradient color bar aligned with table rows */}
+                    <div
+                      className="flex flex-col mr-4 rounded-sm overflow-hidden self-stretch"
+                      style={{ height: "100%", minHeight: 0 }}
+                    >
+                      {colorBarColors.map((color, idx) => (
+                        <div
+                          key={color}
+                          style={{ background: color, flex: 1, minHeight: 0 }}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex-1">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr>
+                            {METRICS.map((m) => (
+                              <th
+                                key={m.key}
+                                className="bg-[#0B6160] text-white font-semibold p-2 text-center mb-4 rounded-sm"
+                              >
+                                {m.label}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {LEVELS.map((level, i) => (
+                            <tr key={level} style={{ height: "64px" }}>
+                              {METRICS.map((m) => (
+                                <td
+                                  key={m.key}
+                                  className="p-2 text-center align-middle"
+                                >
+                                  <Dialog
+                                    open={
+                                      edit.open &&
+                                      edit.metric === m.key &&
+                                      edit.level === i &&
+                                      edit.tab === tabKey
+                                    }
+                                    onOpenChange={(open) =>
+                                      !open &&
+                                      setEdit((e) => ({ ...e, open: false }))
+                                    }
+                                  >
+                                    <DialogTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        className="w-full h-16 border border-black rounded-sm font-semibold text-xl"
+                                        onClick={() =>
+                                          handleEdit(tabKey, m.key, i)
+                                        }
+                                        disabled={
+                                          loading ||
+                                          !rubricsByTab[tabKey][m.key]
+                                        }
+                                        style={{
+                                          cursor: rubricsByTab[tabKey][m.key]
+                                            ? "pointer"
+                                            : "not-allowed",
+                                        }}
+                                      >
+                                        {rubricsByTab[tabKey][m.key]?.[
+                                          `rubric_level_${i + 1}`
+                                        ] || level}
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>
+                                          Edit {m.label} - {level}
+                                        </DialogTitle>
+                                      </DialogHeader>
+                                      <input
+                                        className="w-full border p-2 rounded mb-4"
+                                        value={edit.value}
+                                        onChange={(e) =>
+                                          setEdit((prev) => ({
+                                            ...prev,
+                                            value: e.target.value,
+                                          }))
+                                        }
+                                        autoFocus
+                                      />
+                                      <DialogFooter>
+                                        <Button
+                                          onClick={handleSave}
+                                          disabled={loading}
+                                        >
+                                          Save
+                                        </Button>
+                                        <DialogClose asChild>
+                                          <Button variant="outline">
+                                            Cancel
+                                          </Button>
+                                        </DialogClose>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-4">
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Lousy
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Poor
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Average
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Good
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Best
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="bg-[#0B6160] text-white font-semibold p-2 text-center mb-4 rounded-sm">
-                    Comprehension
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Lousy
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Poor
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Average
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Good
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Best
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="bg-[#0B6160] text-white font-semibold p-2 text-center mb-4 rounded-sm">
-                    Tone
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Lousy
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Poor
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Average
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Good
-                    </div>
-                    <div className="border border-black rounded-sm p-2 text-center font-semibold">
-                      Best
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                </TabsContent>
+              ))}
+            </Tabs>
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4 mb-4">
-          <Button className="bg-[#FC5A5A] hover:bg-[#FC5A5A]/90 text-white px-6">
-            Cancel
-          </Button>
-          <Button className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white px-6">
-            Save Changes
-          </Button>
-        </div>
-
         <div>
-          <h2 className="text-3xl font-bold mb-4">Chat Transcript Database</h2>
+          <h2 className="text-2xl font-bold mb-4 mt-8">
+            Chat Transcript Database
+          </h2>
 
           <Card className="w-full border border-gray-200 rounded-lg">
             <CardContent className="p-0">

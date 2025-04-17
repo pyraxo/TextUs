@@ -47,6 +47,7 @@ class ConversationResponse(SQLModel):
     started_at: datetime
     ended_at: Optional[datetime] = None
     scenario_name: Optional[str] = None
+    trainer_feedback: Optional[str] = None
 
 
 class ConversationDetailResponse(SQLModel):
@@ -54,3 +55,19 @@ class ConversationDetailResponse(SQLModel):
 
     conversation: ConversationResponse
     messages: List[MessageResponse]
+
+
+class ScenarioBrief(SQLModel):
+    id: UUID
+    name: str
+
+
+class ScenarioSessionResponse(SQLModel):
+    id: UUID
+    user_id: UUID
+    scenario_id: UUID
+    start_timestamp: datetime
+    end_timestamp: Optional[datetime]
+    status: Optional[str]
+    metrics: Optional[dict]
+    scenario: Optional[ScenarioBrief]

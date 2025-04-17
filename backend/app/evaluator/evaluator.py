@@ -5,7 +5,8 @@ import instructor
 from openai import AsyncOpenAI
 
 from app.core.config import get_settings
-from app.evaluator.eval_types import ChatTranscript, EvaluationMetric, EvaluationResult
+from app.evaluator.eval_types import ChatTranscript, EvaluationResult
+from app.models.rubrics import EvaluationMetric
 from app.services.chroma_db import answer_query
 
 logging.basicConfig(

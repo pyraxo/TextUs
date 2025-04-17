@@ -28,13 +28,13 @@ export function useUsers(params?: {
   limit?: number;
   user_type?: 'admin' | 'trainer' | 'trainee';
 }) {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isTrainer } = useAuth();
 
   return useQuery({
     queryKey: userKeys.list(params || {}),
     queryFn: () => getUsers(params),
     // Only enabled if user is authenticated and is an admin
-    enabled: isAuthenticated && isAdmin,
+    enabled: isAuthenticated && isTrainer,
   });
 }
 

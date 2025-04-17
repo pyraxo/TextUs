@@ -3,7 +3,11 @@ from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends
 
 from app.core.common import parse_uuid
-from app.models.response import ConversationListResponse
+from app.models.response import (
+    ConversationListResponse,
+    ScenarioBrief,
+    ScenarioSessionResponse,
+)
 from app.models.scenario_session import ScenarioSession, SessionStatus
 from app.services.trainee_service import TraineeService
 
@@ -71,10 +75,28 @@ async def restart_scenario_session(
     )
 
 
-@router.get("/{trainee_id}/sessions")
+@router.get("/{trainee_id}/sessions", response_model=list[ScenarioSessionResponse])
 async def get_scenario_sessions(
     trainee_id: str,
     trainee_service: Annotated[TraineeService, Depends()],
-) -> list[ScenarioSession]:
+) -> list[ScenarioSessionResponse]:
     """Get all scenario sessions (completed and pending) for a trainee."""
-    return await trainee_service.get_scenario_sessions(parse_uuid(trainee_id))
+    sessions = await trainee_service.get_scenario_sessions(parse_uuid(trainee_id))
+
+    # Serialize scenario as nested object (id, name)
+    def serialize(session: ScenarioSession) -> ScenarioSessionResponse:
+        scenario = None
+        if session.scenario:
+            scenario = ScenarioBrief(id=session.scenario.id, name=session.scenario.name)
+        return ScenarioSessionResponse(
+            id=session.id,
+            user_id=session.user_id,
+            scenario_id=session.scenario_id,
+            start_timestamp=session.start_timestamp,
+            end_timestamp=session.end_timestamp,
+            status=session.status.value if session.status else None,
+            metrics=getattr(session, "metrics", None),
+            scenario=scenario,
+        )
+
+    return [serialize(s) for s in sessions]
