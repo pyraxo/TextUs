@@ -32,6 +32,8 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - Customizable customer profiles and scenarios
 - Real-time chat with WebSocket support
 - Prompt engineering controls for administrators
+- Rubrics management for structured trainee evaluation (admin/trainer)
+- Structured trainer feedback on sessions
 
 ### 2.3 User Classes and Characteristics
 
@@ -62,6 +64,7 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - The system shall support real-time chat with simulated customers
 - The system shall allow pausing and resuming practice sessions (when configured)
 - The system shall provide feedback on user performance after each session
+- The system shall allow trainers to provide structured feedback using rubrics after each session
 
 #### 3.1.4 Scenario Management
 

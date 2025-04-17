@@ -7,7 +7,8 @@ A training simulator designed to help CPF Board customer service officers master
 TextUs is a comprehensive training platform that enables customer service officers to:
 
 - Practice handling various customer inquiries in a safe, simulated environment
-- Receive real-time feedback on performance metrics (comprehension, tone, accuracy)
+- Receive real-time feedback on performance metrics (comprehension, tone, accuracy, rubrics)
+- Trainers can now provide structured feedback using rubrics after each session
 - Access a variety of scenarios covering different CPF-related topics
 - Track progress and improvements over time
 
@@ -77,6 +78,8 @@ See [frontend/README.md](./frontend/README.md) for detailed frontend setup and d
 - Customizable scenarios and customer profiles
 - Comprehensive analytics and reporting
 - Responsive web interface
+- Rubrics management for structured evaluation
+- Trainer feedback system for session reviews
 
 ## Contributing
 

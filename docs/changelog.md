@@ -18,6 +18,21 @@ Guidelines for maintaining this changelog:
 4. Keep entries clear and concise
 5. Reference relevant issue/PR numbers when applicable
 
+## [2025-04-17]
+
+### Added
+
+- Introduced rubrics management for structured evaluation of trainee sessions
+- Added RubricsSettings model and new database migrations
+- Implemented new /rubrics/ API endpoints for retrieving and updating rubric settings
+- Added trainer feedback mechanism for session reviews
+- Enhanced frontend with UI for rubrics management and trainer feedback
+
+### Enhanced
+
+- Updated conversations endpoints and models to support trainer feedback
+- Improved evaluation metrics and session review workflow
+
 ## [2025-03-31]
 
 ### Added
