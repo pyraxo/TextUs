@@ -84,4 +84,16 @@ export async function createMessage(
     body: JSON.stringify(payload),
     credentials: 'include',
   });
+}
+
+/**
+ * Update trainer feedback for a conversation
+ * @param conversationId - The conversation's ID
+ * @param content - The feedback content
+ */
+export async function updateTrainerFeedback(conversationId: string, content: string): Promise<any> {
+  return fetchApi<any>(`/conversations/${conversationId}/feedback`, {
+    method: 'PATCH',
+    body: JSON.stringify({ content }),
+  });
 } 

@@ -4,15 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -21,7 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect, useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { useRubrics } from "@/hooks/use-rubrics";
+import { useEffect, useMemo, useState } from "react";
 
 const METRICS = [
   { key: "accuracy", label: "Accuracy" },
@@ -29,7 +22,6 @@ const METRICS = [
   { key: "tone", label: "Tone" },
   { key: "chat_handling", label: "Chat Handling" },
 ];
-const LEVELS = ["Lousy", "Poor", "Average", "Good", "Best"];
 
 const transcriptData = [
   { id: 1, name: "chat transcript #1", date: "25/12/24" },
@@ -53,80 +45,45 @@ const TAB_METRICS = {
 };
 
 export default function PromptEngineeringPage() {
-  // rubricsByTab: { trainee: { metric: rubric }, simulator: { metric: rubric } }
-  const [rubricsByTab, setRubricsByTab] = useState<any>({
-    trainee: {},
-    simulator: {},
-  });
-  const [activeTab, setActiveTab] = useState("trainee");
-  const [edit, setEdit] = useState<{
-    open: boolean;
-    metric: string;
-    level: number;
-    value: string;
-    tab: string;
-  }>({ open: false, metric: "", level: 0, value: "", tab: "" });
-  const [loading, setLoading] = useState(false);
+  const { rubrics, loading, error, saving, saveRubricPrompt } = useRubrics();
+  const [selectedMetric, setSelectedMetric] = useState(METRICS[0].key);
+  const [text, setText] = useState("");
+  const [dirty, setDirty] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Fetch rubric data
+  // Find the rubric for the selected metric
+  const selectedRubric = useMemo(
+    () => rubrics.find((r) => r.id === selectedMetric),
+    [rubrics, selectedMetric]
+  );
+
+  // When metric or rubrics change, update textarea
   useEffect(() => {
-    async function fetchRubrics() {
-      setLoading(true);
-      try {
-        const res = await fetch(RUBRIC_API);
-        const data = await res.json();
-        // For demo: assign all metrics to both tabs (customize as needed)
-        const byTab: any = { trainee: {}, simulator: {} };
-        data.forEach((r: any) => {
-          byTab.trainee[r.id] = r;
-          byTab.simulator[r.id] = r;
-        });
-        setRubricsByTab(byTab);
-      } catch (e) {
-        // handle error
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchRubrics();
-  }, []);
+    setText(selectedRubric?.rubric_prompt || "");
+    setDirty(false);
+    setSaveSuccess(false);
+    setSaveError(null);
+  }, [selectedRubric]);
 
-  // Open edit modal
-  function handleEdit(tab: string, metric: string, level: number) {
-    const rubric = rubricsByTab[tab]?.[metric];
-    if (!rubric) return;
-    setEdit({
-      open: true,
-      metric,
-      level,
-      value: rubric[`rubric_level_${level + 1}`],
-      tab,
-    });
+  // Handle textarea change
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setText(e.target.value);
+    setDirty(e.target.value !== (selectedRubric?.rubric_prompt || ""));
+    setSaveSuccess(false);
+    setSaveError(null);
   }
 
-  // Save rubric edit
+  // Handle save
   async function handleSave() {
-    const { tab, metric, level, value } = edit;
-    const rubric = rubricsByTab[tab]?.[metric];
-    if (!rubric) return;
-    const updated = { ...rubric };
-    updated[`rubric_level_${level + 1}`] = value;
-    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(false);
     try {
-      await fetch(`${RUBRIC_API}/${metric}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      });
-      setRubricsByTab((prev: any) => ({
-        ...prev,
-        [tab]: { ...prev[tab], [metric]: updated },
-      }));
-      setEdit({ ...edit, open: false });
-    } catch (e) {
-      // handle error
-    } finally {
-      setLoading(false);
+      await saveRubricPrompt(selectedMetric, text);
+      setDirty(false);
+      setSaveSuccess(true);
+    } catch (e: any) {
+      setSaveError(e.message || "Failed to save");
     }
   }
 
@@ -158,127 +115,54 @@ export default function PromptEngineeringPage() {
       </div>
 
       <main className="container mx-auto p-6">
-        <Card className="w-full border border-gray-200 rounded-lg">
+        <Card className="w-full border border-gray-200 rounded-lg mb-8">
           <CardContent className="p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <h2 className="text-2xl font-bold mb-4">Evaluator Rubric Prompt</h2>
+            <Tabs
+              value={selectedMetric}
+              onValueChange={setSelectedMetric}
+              className="mb-6"
+            >
               <TabsList>
-                <TabsTrigger value="trainee">
-                  Trainee's Replies Rubric
-                </TabsTrigger>
-                <TabsTrigger value="simulator">
-                  Simulator Performance Rubric
-                </TabsTrigger>
+                {METRICS.map((m) => (
+                  <TabsTrigger key={m.key} value={m.key} className="capitalize">
+                    {m.label}
+                  </TabsTrigger>
+                ))}
               </TabsList>
-              {Object.entries(rubricTabKeys).map(([tabKey, tabLabel]) => (
-                <TabsContent value={tabKey} key={tabKey}>
-                  <div className="flex mt-6">
-                    {/* Gradient color bar aligned with table rows */}
-                    <div
-                      className="flex flex-col mr-4 rounded-sm overflow-hidden self-stretch"
-                      style={{ height: "100%", minHeight: 0 }}
-                    >
-                      {colorBarColors.map((color, idx) => (
-                        <div
-                          key={color}
-                          style={{ background: color, flex: 1, minHeight: 0 }}
+              {METRICS.map((m) => (
+                <TabsContent value={m.key} key={m.key}>
+                  <div>
+                    {loading ? (
+                      <div className="text-gray-500">Loading...</div>
+                    ) : error ? (
+                      <div className="text-red-500">{error}</div>
+                    ) : (
+                      <>
+                        <Textarea
+                          id="rubric-prompt-textarea"
+                          className="w-full mb-2 min-h-[400px]"
+                          value={text}
+                          onChange={handleChange}
+                          disabled={saving}
                         />
-                      ))}
-                    </div>
-                    <div className="flex-1">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr>
-                            {METRICS.map((m) => (
-                              <th
-                                key={m.key}
-                                className="bg-[#0B6160] text-white font-semibold p-2 text-center mb-4 rounded-sm"
-                              >
-                                {m.label}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {LEVELS.map((level, i) => (
-                            <tr key={level} style={{ height: "64px" }}>
-                              {METRICS.map((m) => (
-                                <td
-                                  key={m.key}
-                                  className="p-2 text-center align-middle"
-                                >
-                                  <Dialog
-                                    open={
-                                      edit.open &&
-                                      edit.metric === m.key &&
-                                      edit.level === i &&
-                                      edit.tab === tabKey
-                                    }
-                                    onOpenChange={(open) =>
-                                      !open &&
-                                      setEdit((e) => ({ ...e, open: false }))
-                                    }
-                                  >
-                                    <DialogTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        className="w-full h-16 border border-black rounded-sm font-semibold text-xl"
-                                        onClick={() =>
-                                          handleEdit(tabKey, m.key, i)
-                                        }
-                                        disabled={
-                                          loading ||
-                                          !rubricsByTab[tabKey][m.key]
-                                        }
-                                        style={{
-                                          cursor: rubricsByTab[tabKey][m.key]
-                                            ? "pointer"
-                                            : "not-allowed",
-                                        }}
-                                      >
-                                        {rubricsByTab[tabKey][m.key]?.[
-                                          `rubric_level_${i + 1}`
-                                        ] || level}
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>
-                                          Edit {m.label} - {level}
-                                        </DialogTitle>
-                                      </DialogHeader>
-                                      <input
-                                        className="w-full border p-2 rounded mb-4"
-                                        value={edit.value}
-                                        onChange={(e) =>
-                                          setEdit((prev) => ({
-                                            ...prev,
-                                            value: e.target.value,
-                                          }))
-                                        }
-                                        autoFocus
-                                      />
-                                      <DialogFooter>
-                                        <Button
-                                          onClick={handleSave}
-                                          disabled={loading}
-                                        >
-                                          Save
-                                        </Button>
-                                        <DialogClose asChild>
-                                          <Button variant="outline">
-                                            Cancel
-                                          </Button>
-                                        </DialogClose>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        <div className="flex gap-2 items-center">
+                          <Button
+                            onClick={handleSave}
+                            disabled={!dirty || saving}
+                            className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white"
+                          >
+                            {saving ? "Saving..." : "Save"}
+                          </Button>
+                          {saveSuccess && (
+                            <span className="text-green-600">Saved!</span>
+                          )}
+                          {saveError && (
+                            <span className="text-red-600">{saveError}</span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </TabsContent>
               ))}

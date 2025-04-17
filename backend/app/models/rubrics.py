@@ -22,3 +22,7 @@ class RubricsSettingsBase(SQLModel):
 
 class RubricsSettings(RubricsSettingsBase, table=True):
     __tablename__ = "rubrics_settings"
+
+
+class RubricSettingsUpdate(SQLModel):
+    rubric_prompt: str

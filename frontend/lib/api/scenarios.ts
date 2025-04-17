@@ -151,3 +151,11 @@ export async function updateScenarioCustomer(
     body: JSON.stringify(customerData),
   });
 }
+
+/**
+ * Fetch all scenario sessions for a trainee (user)
+ * @param userId - The user's ID
+ */
+export async function getUserScenarioSessions(userId: string): Promise<UserScenarioSession[]> {
+  return fetchApi<UserScenarioSession[]>(`/trainees/${userId}/sessions`);
+}
