@@ -21,6 +21,7 @@ These documents are maintained and updated by AI coding agents to ensure consist
 - Improved architectural documentation with new backend components
 - Updated changelog with latest development progress
 - Added planned features and future enhancements
+- Introduced rubrics management and trainer feedback features for improved evaluation and session review
 
 ## Quick Links
 

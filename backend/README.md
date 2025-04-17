@@ -160,6 +160,7 @@ backend/
 │   ├── routers/        # API endpoints
 │   ├── services/       # Business logic
 │   └── main.py         # Application entry point
+│   ├── rubrics/        # Rubrics management
 ├── data/               # SQLite database (dev)
 ├── scripts/            # Utility scripts
 ├── tests/              # Test suite
