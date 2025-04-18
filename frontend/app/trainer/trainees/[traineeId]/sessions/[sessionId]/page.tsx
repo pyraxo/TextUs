@@ -1,7 +1,7 @@
 "use client";
 
-import { ConversationsInterface } from "@/components/conversations/conversations-interface";
-import { CustomerInfo } from "@/components/conversations/customer-info";
+import { ConversationsInterface } from "@/components/conversations/ConversationInterface";
+import { CustomerInfo } from "@/components/conversations/CustomerInfo";
 import { Button } from "@/components/ui/button";
 import { useSessionConversations } from "@/hooks/use-conversations";
 import { WebSocketProvider } from "@/lib/providers/websocket-provider";

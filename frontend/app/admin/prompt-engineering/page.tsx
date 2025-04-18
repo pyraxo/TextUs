@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -14,8 +13,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useRubrics } from "@/hooks/use-rubrics";
+import { Edit, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-
 const METRICS = [
   { key: "accuracy", label: "Accuracy" },
   { key: "comprehension", label: "Comprehension" },
@@ -115,14 +114,10 @@ export default function PromptEngineeringPage() {
       </div>
 
       <main className="container mx-auto p-6">
-        <Card className="w-full border border-gray-200 rounded-lg mb-8">
+        <Card className="w-full border border-gray-200 rounded-lg">
           <CardContent className="p-6">
             <h2 className="text-2xl font-bold mb-4">Evaluator Rubric Prompt</h2>
-            <Tabs
-              value={selectedMetric}
-              onValueChange={setSelectedMetric}
-              className="mb-6"
-            >
+            <Tabs value={selectedMetric} onValueChange={setSelectedMetric}>
               <TabsList>
                 {METRICS.map((m) => (
                   <TabsTrigger key={m.key} value={m.key} className="capitalize">
@@ -141,7 +136,7 @@ export default function PromptEngineeringPage() {
                       <>
                         <Textarea
                           id="rubric-prompt-textarea"
-                          className="w-full mb-2 min-h-[400px]"
+                          className="w-full mb-4 min-h-[400px]"
                           value={text}
                           onChange={handleChange}
                           disabled={saving}
@@ -170,72 +165,65 @@ export default function PromptEngineeringPage() {
           </CardContent>
         </Card>
 
-        <div>
+        <div className="flex flex-row justify-start items-center">
           <h2 className="text-2xl font-bold mb-4 mt-8">
             Chat Transcript Database
           </h2>
-
-          <Card className="w-full border border-gray-200 rounded-lg">
-            <CardContent className="p-0">
-              <div className="flex justify-end gap-2 p-2">
-                <Button
-                  size="sm"
-                  className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white h-8"
-                >
-                  Export
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white h-8"
-                >
-                  Import
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-[#FC5A5A] hover:bg-[#FC5A5A]/90 text-white h-8"
-                >
-                  Delete
-                </Button>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-y border-gray-200">
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead className="font-medium text-sm">s/n</TableHead>
-                    <TableHead className="font-medium text-sm">
-                      file name
-                    </TableHead>
-                    <TableHead className="font-medium text-sm">
-                      upload date
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transcriptData.map((transcript) => (
-                    <TableRow
-                      key={transcript.id}
-                      className="border-b border-gray-200"
-                    >
-                      <TableCell className="pr-0 w-12">
-                        <Checkbox />
-                      </TableCell>
-                      <TableCell className="font-normal">
-                        {transcript.id}
-                      </TableCell>
-                      <TableCell className="font-normal">
-                        {transcript.name}
-                      </TableCell>
-                      <TableCell className="font-normal">
-                        {transcript.date}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <Button
+            size="sm"
+            className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white h-8 ml-4 mt-4"
+          >
+            Import
+          </Button>
         </div>
+
+        <Card className="w-full border border-gray-200 rounded-lg">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-y border-gray-200">
+                  <TableHead className="font-medium text-sm">
+                    File Name
+                  </TableHead>
+                  <TableHead className="font-medium text-sm">
+                    Upload Date
+                  </TableHead>
+                  <TableHead className="font-medium text-sm">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transcriptData.map((transcript) => (
+                  <TableRow
+                    key={transcript.id}
+                    className="border-b border-gray-200"
+                  >
+                    <TableCell className="font-normal">
+                      {transcript.name}
+                    </TableCell>
+                    <TableCell className="font-normal">
+                      {transcript.date}
+                    </TableCell>
+                    <TableCell className="font-normal">
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="h-8">
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-red-600 hover:bg-red-600/90 text-white h-8"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
