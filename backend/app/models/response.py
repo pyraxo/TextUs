@@ -60,6 +60,8 @@ class ConversationDetailResponse(SQLModel):
 class ScenarioBrief(SQLModel):
     id: UUID
     name: str
+    scheme_id: UUID
+    scheme_name: str
 
 
 class ScenarioSessionResponse(SQLModel):

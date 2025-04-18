@@ -8,6 +8,14 @@ import {
 import { DataTable } from "@/components/scenarios/data-table";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useActiveSession } from "@/hooks/use-active-session";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserScenarioSessions } from "@/hooks/use-scenario-sessions";
@@ -40,6 +48,8 @@ export default function SchemeDetailPage({
     user?.user_type === "trainer" || user?.user_type === "admin";
   const [pendingCurrentPage, setPendingCurrentPage] = useState(1);
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
+  const [recentlyCompletedCurrentPage, setRecentlyCompletedCurrentPage] =
+    useState(1);
   const itemsPerPage = 5;
 
   // Get scenarios data
@@ -374,6 +384,172 @@ export default function SchemeDetailPage({
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Recently Completed Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold">Recently Completed</h2>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Scenario</TableHead>
+                  <TableHead>Date Completed</TableHead>
+                  <TableHead className="text-center">Score</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(() => {
+                  const recentSessions = (sessions || [])
+                    .filter(
+                      (s) =>
+                        s.end_timestamp &&
+                        s.scenario &&
+                        s.scenario.scheme_id === scheme?.id
+                    )
+                    .sort(
+                      (a, b) =>
+                        new Date(b.end_timestamp!).getTime() -
+                        new Date(a.end_timestamp!).getTime()
+                    );
+                  const recentlyCompletedTotalPages = Math.ceil(
+                    recentSessions.length / itemsPerPage
+                  );
+                  const recentlyCompletedStartIndex =
+                    (recentlyCompletedCurrentPage - 1) * itemsPerPage;
+                  const recentlyCompletedEndIndex =
+                    recentlyCompletedStartIndex + itemsPerPage;
+                  const currentRecentlyCompletedSessions = recentSessions.slice(
+                    recentlyCompletedStartIndex,
+                    recentlyCompletedEndIndex
+                  );
+                  if (recentSessions.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell
+                          colSpan={4}
+                          className="text-center text-gray-500"
+                        >
+                          No recently completed sessions found for this scheme.
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return currentRecentlyCompletedSessions.map((session) => (
+                    <TableRow key={session.id}>
+                      <TableCell>
+                        {session.scenario?.name || session.scenario_id}
+                      </TableCell>
+                      <TableCell>
+                        {session.end_timestamp
+                          ? new Date(session.end_timestamp).toLocaleDateString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {session.metrics?.completion_rate !== undefined
+                          ? `${Math.round(
+                              session.metrics.completion_rate * 100
+                            )}%`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="link"
+                          className="p-0"
+                          onClick={() =>
+                            router.push(`/conversations/${session.id}`)
+                          }
+                        >
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ));
+                })()}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Pagination Controls for Recently Completed */}
+          {(() => {
+            const recentSessions = (sessions || []).filter(
+              (s) =>
+                s.end_timestamp &&
+                s.scenario &&
+                s.scenario.scheme_id === scheme?.id
+            );
+            const recentlyCompletedTotalPages = Math.ceil(
+              recentSessions.length / itemsPerPage
+            );
+            if (recentSessions.length > itemsPerPage) {
+              return (
+                <div className="flex justify-center items-center gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    disabled={recentlyCompletedCurrentPage === 1}
+                    onClick={() =>
+                      setRecentlyCompletedCurrentPage(
+                        recentlyCompletedCurrentPage - 1
+                      )
+                    }
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex gap-2">
+                    {generatePageNumbers(
+                      recentlyCompletedCurrentPage,
+                      recentlyCompletedTotalPages
+                    ).map((page: number | string, index: number) =>
+                      page === "..." ? (
+                        <span
+                          key={`ellipsis-recent-${index}`}
+                          className="px-2 py-2 text-sm"
+                        >
+                          ...
+                        </span>
+                      ) : (
+                        <Button
+                          key={`recent-page-${page}`}
+                          variant={
+                            recentlyCompletedCurrentPage === page
+                              ? "default"
+                              : "outline"
+                          }
+                          className={
+                            recentlyCompletedCurrentPage === page
+                              ? "bg-primary text-primary-foreground text-sm"
+                              : "text-sm"
+                          }
+                          onClick={() =>
+                            setRecentlyCompletedCurrentPage(page as number)
+                          }
+                        >
+                          {page}
+                        </Button>
+                      )
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    disabled={
+                      recentlyCompletedCurrentPage ===
+                      recentlyCompletedTotalPages
+                    }
+                    onClick={() =>
+                      setRecentlyCompletedCurrentPage(
+                        recentlyCompletedCurrentPage + 1
+                      )
+                    }
+                  >
+                    Next
+                  </Button>
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
       </div>
     </div>

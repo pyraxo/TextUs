@@ -58,7 +58,7 @@ export function ConversationHeader({
         </div>
       )}
       {connectionState !== "connected" && !readOnly && (
-        <p className="text-sm text-yellow-500">Reconnecting...</p>
+        <p className="text-sm text-yellow-500 ml-4">Reconnecting...</p>
       )}
       <Separator className="bg-muted mt-2 w-full" />
     </div>

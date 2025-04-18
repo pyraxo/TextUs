@@ -14,8 +14,12 @@ export function useUserScenarioSessions(userId?: string, schemeId?: string) {
     queryFn: async () => {
       if (!userId) return [];
       const data = await getUserScenarioSessions(userId);
-      // Optionally filter by schemeId if needed in the future
-      return data;
+      // Sort by end_timestamp descending (most recent first)
+      return data.sort((a, b) => {
+        const aTime = a.end_timestamp ? new Date(a.end_timestamp).getTime() : 0;
+        const bTime = b.end_timestamp ? new Date(b.end_timestamp).getTime() : 0;
+        return bTime - aTime;
+      });
     },
     enabled: !!userId,
   });

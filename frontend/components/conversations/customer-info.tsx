@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   EvaluationResponse,
+  getConversation,
   getConversationEvaluation,
 } from "@/lib/api/conversations";
 import { useWebSocket } from "@/lib/providers/websocket-provider";
@@ -76,13 +77,35 @@ const customerInfo = {
 interface CustomerInfoProps {
   conversationId?: string | null;
   onChatEnd?: () => void;
+  trainerFeedback?: string | null;
 }
 
-export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
+export function CustomerInfo({
+  conversationId,
+  onChatEnd,
+  trainerFeedback: propTrainerFeedback,
+}: CustomerInfoProps) {
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { lastMessage } = useWebSocket();
   const [showDebug, setShowDebug] = useState(false);
+  const [fetchedTrainerFeedback, setFetchedTrainerFeedback] = useState<
+    string | null
+  >(null);
+
+  // Fetch conversation details (for trainer_feedback) when conversationId changes
+  useEffect(() => {
+    if (!conversationId) {
+      setFetchedTrainerFeedback(null);
+      return;
+    }
+    getConversation(conversationId)
+      .then((data) => {
+        console.log("CustomerInfo fetched conversation:", data.conversation);
+        setFetchedTrainerFeedback(data.conversation.trainer_feedback || null);
+      })
+      .catch(() => setFetchedTrainerFeedback(null));
+  }, [conversationId]);
 
   // Function to fetch evaluation data
   const fetchEvaluation = async () => {
@@ -402,6 +425,17 @@ export function CustomerInfo({ conversationId, onChatEnd }: CustomerInfoProps) {
         {/* Feedback Content */}
         <TabsContent value="feedback" className="p-6">
           <ScrollArea className="h-full w-full pr-4">
+            {/* Trainer Feedback at the top if present */}
+            {(fetchedTrainerFeedback || propTrainerFeedback) && (
+              <div className="space-y-2 mb-6">
+                <h3 className="font-semibold text-md text-primary">
+                  Trainer Feedback
+                </h3>
+                <p className="text-sm bg-primary/10 text-primary p-3 rounded-lg whitespace-pre-line">
+                  {fetchedTrainerFeedback || propTrainerFeedback}
+                </p>
+              </div>
+            )}
             {loading ? (
               <div className="flex items-center justify-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

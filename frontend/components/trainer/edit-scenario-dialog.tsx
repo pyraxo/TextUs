@@ -4,6 +4,7 @@ import { useUpdateScenario } from "@/hooks/use-scenarios";
 import { cn } from "@/lib/utils";
 import { Scenario, ScenarioUpdate } from "@/types/scenario";
 import { Bot, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { FC, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
@@ -17,7 +18,6 @@ import {
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
-
 interface EditScenarioDialogProps {
   scenario: Scenario;
   open: boolean;
@@ -41,6 +41,8 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
   );
   const [isPausable, setIsPausable] = useState(scenario.is_pausable);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const router = useRouter();
 
   // Track unsaved changes
   useEffect(() => {
@@ -188,7 +190,9 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
             variant="outline"
             className="w-full mt-2 bg-cpf-teal text-white"
             disabled={isPending || hasUnsavedChanges}
-            onClick={() => {}}
+            onClick={() =>
+              router.push(`/admin/agents?scenarioId=${scenario.id}`)
+            }
           >
             <Bot size={20} />
             Manage Archetypes
