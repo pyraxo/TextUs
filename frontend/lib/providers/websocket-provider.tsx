@@ -243,22 +243,34 @@ export function WebSocketProvider({
         console.log("WebSocket closed:", event.code, event.reason);
         setConnectionState("disconnected");
         webSocketRef.current = null;
-
-        // Don't attempt to reconnect if it was a clean closure or user is not logged in
-        if (!event.wasClean && user) {
+        // Only reconnect if not ended and not a clean closure
+        const endedConvos = Array.from(conversationStates.values()).filter(
+          (s) => s.ended
+        );
+        if (!event.wasClean && user && endedConvos.length === 0) {
           const delay = calculateReconnectDelay();
           console.log(`Reconnecting in ${delay}ms...`);
           reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
+        } else {
+          console.log(
+            "WebSocket closed for ended conversation or clean closure, not reconnecting."
+          );
         }
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
         setConnectionState("error");
-
-        // Close the connection on error to trigger reconnect
-        if (webSocketRef.current) {
+        // Only close/reconnect if not ended
+        const endedConvos = Array.from(conversationStates.values()).filter(
+          (s) => s.ended
+        );
+        if (endedConvos.length === 0 && webSocketRef.current) {
           webSocketRef.current.close();
+        } else {
+          console.log(
+            "WebSocket error for ended conversation, not reconnecting."
+          );
         }
       };
     } catch (error) {
@@ -315,6 +327,14 @@ export function WebSocketProvider({
 
   // Send message through WebSocket
   const sendMessage = (message: WebSocketMessage) => {
+    // Prevent sending messages to ended conversations
+    const state = getConversationState(message.conversationId);
+    if (state && state.ended) {
+      console.warn(
+        `Not sending message to ended conversation: ${message.conversationId}`
+      );
+      return;
+    }
     if (webSocketRef.current?.readyState === WebSocket.OPEN) {
       webSocketRef.current.send(JSON.stringify(message));
     } else {
@@ -335,21 +355,21 @@ export function WebSocketProvider({
 
   // Subscribe to a conversation
   const subscribeToConversation = (conversationId: string) => {
+    const state = getConversationState(conversationId);
+    if (state && state.ended) {
+      console.warn(`Not subscribing to ended conversation: ${conversationId}`);
+      return;
+    }
     activeConversations.current.add(conversationId);
-
     setConversationStates((prev) => {
       const newStates = new Map(prev);
       const existingState = newStates.get(conversationId);
-
-      // If the conversation exists and is already marked as ended,
-      // don't change its ended state
       if (existingState) {
         newStates.set(conversationId, {
           ...existingState,
           isActive: true,
         });
       } else {
-        // New conversation state
         newStates.set(conversationId, {
           isActive: true,
           lastSeenMessageId: null,
@@ -359,7 +379,6 @@ export function WebSocketProvider({
       }
       return newStates;
     });
-
     if (connectionState === "connected") {
       sendMessage({
         type: "MESSAGE",
