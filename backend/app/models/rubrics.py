@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
+from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 
@@ -26,3 +27,11 @@ class RubricsSettings(RubricsSettingsBase, table=True):
 
 class RubricSettingsUpdate(SQLModel):
     rubric_prompt: str
+
+
+class RubricEvaluation(BaseModel):
+    metric: EvaluationMetric
+    score: float
+    justification: str
+    problematic_response: str
+    revised_response: str

@@ -1,12 +1,13 @@
 import logging
-import os
 
 import instructor
 from openai import AsyncOpenAI
+from sqlmodel import select
 
 from app.core.config import get_settings
+from app.core.db import get_session
 from app.evaluator.eval_types import ChatTranscript, EvaluationResult
-from app.models.rubrics import EvaluationMetric
+from app.models.rubrics import EvaluationMetric, RubricsSettings
 from app.services.chroma_db import answer_query
 
 logging.basicConfig(
@@ -27,13 +28,24 @@ EVALUATION_METRICS: list[EvaluationMetric] = [
 ]
 
 
-def load_prompt(metric: str) -> str:
-    """Load the evaluation prompt for a specific metric."""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    prompt_path = os.path.join(script_dir, f"{metric}_prompt.txt")
+# def load_prompt(metric: str) -> str:
+#     """Load the evaluation prompt for a specific metric."""
+#     script_dir = os.path.dirname(os.path.abspath(__file__))
+#     prompt_path = os.path.join(script_dir, f"{metric}_prompt.txt")
+#     with open(prompt_path, "r", encoding="utf-8") as file:
+#         return file.read()
 
-    with open(prompt_path, "r", encoding="utf-8") as file:
-        return file.read()
+
+async def fetch_prompt_from_db(metric: EvaluationMetric) -> str:
+    """Fetch the evaluation prompt for a specific metric from the database."""
+    async for session in get_session():
+        result = await session.exec(
+            select(RubricsSettings).where(RubricsSettings.id == metric)
+        )
+        rubric = result.one_or_none()
+        if rubric and rubric.rubric_prompt:
+            return rubric.rubric_prompt
+        raise ValueError(f"No rubric prompt found for metric: {metric}")
 
 
 async def evaluate_chat_transcript(
@@ -73,7 +85,7 @@ async def evaluate_chat_transcript(
         for metric in EVALUATION_METRICS:
             logging.info(f"Evaluating {metric}...")
 
-            prompt = load_prompt(metric)
+            prompt = await fetch_prompt_from_db(metric)
             system_message = prompt  # Default system message
 
             # RAG retrieval only for accuracy

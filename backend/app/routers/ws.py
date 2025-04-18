@@ -25,6 +25,7 @@ from app.core.ws_manager import manager
 from app.evaluator.eval_types import ChatTranscript
 from app.evaluator.evaluator import evaluate_chat_transcript
 from app.models.chat import ChatConversation, ChatEvaluation, ChatMessage, MessageType
+from app.models.rubrics import EvaluationMetric, RubricEvaluation
 from app.models.user import User
 
 # Set up logger for websockets with concise formatting
@@ -161,9 +162,16 @@ async def end_chat(
     # Only evaluate if no evaluation exists
     if not existing_evaluation:
         # Evaluate the chat
-        evaluation_results = await evaluate_chat_transcript(
+        evaluation_results: dict[
+            EvaluationMetric, RubricEvaluation
+        ] = await evaluate_chat_transcript(
             ChatTranscript(text="\n".join([msg.content for msg in chat_transcript]))
         )
+
+        total_score = 0.0
+        for metric in evaluation_results:
+            total_score += evaluation_results[metric].get("score", 0.0)
+        total_score /= len(evaluation_results)
 
         # Save evaluation results
         new_evaluation = ChatEvaluation(
@@ -171,6 +179,7 @@ async def end_chat(
             trainee_id=conversation.trainee_id,
             session_id=conversation.scenario_session_id,
             evaluation_results=evaluation_results,
+            score=total_score,
         )
         session.add(new_evaluation)
         await session.commit()

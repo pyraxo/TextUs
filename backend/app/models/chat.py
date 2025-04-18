@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, Optional
@@ -83,26 +82,12 @@ class ChatConversation(ChatConversationBase, table=True):
     )
     trainee: Optional["User"] = Relationship(back_populates="chat_conversations")
 
-    evaluations: Optional["ChatEvaluation"] = Relationship(
-        back_populates="conversation"
-    )
-
-    # Store chat history as JSON string
-    messages_json: Optional[str] = Field(
-        default=None, sa_column_kwargs={"name": "messages"}
-    )
+    evaluation: Optional["ChatEvaluation"] = Relationship(back_populates="conversation")
 
     @property
     def chat_history(self) -> List[str]:
         """Get the chat history as a list."""
-        if self.messages_json is None:
-            return []
-        return json.loads(self.messages_json)
-
-    @chat_history.setter
-    def chat_history(self, value: List[str]):
-        """Set the chat history from a list."""
-        self.messages_json = json.dumps(value)
+        return [message.content for message in self.messages]
 
 
 class ChatEvaluation(SQLModel, table=True):
@@ -113,28 +98,14 @@ class ChatEvaluation(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     evaluation_results: Any = Field(sa_column=Column(JSON))
 
-    @property
-    def evaluation_results_dict(self) -> dict:
-        """Get the evaluation results as a dictionary."""
-        if isinstance(self.evaluation_results, dict):
-            return self.evaluation_results
-        return (
-            json.loads(self.evaluation_results)
-            if isinstance(self.evaluation_results, str)
-            else {}
-        )
-
-    @evaluation_results_dict.setter
-    def evaluation_results_dict(self, value: dict):
-        """Set the evaluation results from a dictionary."""
-        self.evaluation_results = json.dumps(value) if value else None
+    score: Optional[float] = Field(default=0.0)
 
     conversation_id: UUID = Field(foreign_key="chat_conversations.id")
     session_id: UUID = Field(foreign_key="scenario_sessions.id")
     trainee_id: UUID = Field(foreign_key="users.id")
 
     conversation: Optional["ChatConversation"] = Relationship(
-        back_populates="evaluations"
+        back_populates="evaluation"
     )
     session: Optional["ScenarioSession"] = Relationship(back_populates="evaluations")
     trainee: Optional["User"] = Relationship(back_populates="evaluations")

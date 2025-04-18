@@ -239,7 +239,7 @@ class TraineeService:
         # Get and validate session
         trainee_uuid = parse_uuid(trainee_id)
         session_uuid = parse_uuid(session_id)
-        scenario_session = await self.session.get(
+        scenario_session: ScenarioSession | None = await self.session.get(
             ScenarioSession, session_uuid, ScenarioSession.user_id == trainee_uuid
         )
 
@@ -269,8 +269,15 @@ class TraineeService:
         scenario_session.status = status  # Store the completion status
 
         # Calculate and store final metrics
-        # metrics = await self.get_session_metrics(session_id)
-        # scenario_session.metrics = metrics  # This will use our new property setter
+        print("Calculating session metrics")
+        session_metrics = await self.get_session_metrics(session_id)
+        metrics_dict = session_metrics.model_dump()
+        metrics_dict = self._convert_uuids_to_str(metrics_dict)
+        print(f"Saving session metrics: {metrics_dict}")
+        scenario_session.metrics = metrics_dict
+        conversation_ids = [
+            str(conv.id) for conv in scenario_session.chat_conversations
+        ]
 
         self.session.add(scenario_session)
         await self.session.commit()
@@ -337,6 +344,9 @@ class TraineeService:
                 selectinload(ScenarioSession.chat_conversations).selectinload(
                     ChatConversation.messages
                 ),
+                selectinload(ScenarioSession.chat_conversations).selectinload(
+                    ChatConversation.evaluation
+                ),
                 selectinload(ScenarioSession.scenario).selectinload(
                     Scenario.scenario_customers
                 ),
@@ -356,7 +366,8 @@ class TraineeService:
             "conversations": len(user_session.chat_conversations),
             "avg_response_time": None,
             "completion_rate": 0.0,
-            "score": 0.0,
+            "score": 0.0,  # Will be updated below
+            "scenario_session_id": str(user_session.id),
         }
 
         # Calculate message metrics and response times
@@ -364,6 +375,7 @@ class TraineeService:
         response_count = 0
         last_message_time = None
 
+        conversation_scores = []
         for conversation in user_session.chat_conversations:
             # Sort messages by timestamp for accurate response time calculation
             messages = sorted(conversation.messages, key=lambda m: m.timestamp)
@@ -386,6 +398,10 @@ class TraineeService:
 
                 last_message_time = message.timestamp
 
+            # Only append score if evaluation and score are present
+            if conversation.evaluation and conversation.evaluation.score is not None:
+                conversation_scores.append(conversation.evaluation.score)
+
         # Calculate average response time if we have responses
         if response_count > 0:
             metrics["avg_response_time"] = total_response_time / response_count
@@ -402,6 +418,12 @@ class TraineeService:
         metrics["completion_rate"] = (
             completed_conversations / total_scenarios if total_scenarios > 0 else 0.0
         )
+
+        # Calculate session score as average of conversation scores
+        if conversation_scores:
+            metrics["score"] = sum(conversation_scores) / len(conversation_scores)
+        else:
+            metrics["score"] = 0.0
 
         return SessionMetrics(**metrics)
 
@@ -462,6 +484,10 @@ class TraineeService:
 
                 # Store metrics in memory while we have database access
                 session_metrics = await self.get_session_metrics(session_id)
+                metrics_dict = session_metrics.model_dump()
+                metrics_dict = self._convert_uuids_to_str(metrics_dict)
+                print(f"Saving session metrics: {metrics_dict}")
+                scenario_session.metrics = metrics_dict
                 conversation_ids = [
                     str(conv.id) for conv in scenario_session.chat_conversations
                 ]
@@ -476,7 +502,7 @@ class TraineeService:
                     "user_id": str(scenario_session.user_id),
                     "scenario_id": str(scenario_session.scenario_id),
                     "status": scenario_session.status,
-                    "metrics": session_metrics.dict(),
+                    "metrics": session_metrics.model_dump(),
                     "conversation_ids": conversation_ids,
                 }
 
@@ -674,3 +700,13 @@ class TraineeService:
         )
         results = (await self.session.exec(statement)).all()
         return results
+
+    def _convert_uuids_to_str(self, obj):
+        if isinstance(obj, dict):
+            return {k: self._convert_uuids_to_str(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_uuids_to_str(i) for i in obj]
+        elif isinstance(obj, UUID):
+            return str(obj)
+        else:
+            return obj

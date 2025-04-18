@@ -36,7 +36,7 @@ class ConnectionManager:
             for connection in self.active_connections[conversation_id]:
                 try:
                     logging.info("Broadcasting message to connection")
-                    await connection.send_json(message)
+                    await connection.send_json(self.convert_uuids(message))
                 except WebSocketDisconnect:
                     disconnected.add(connection)
                 except Exception as e:
@@ -46,6 +46,16 @@ class ConnectionManager:
             # Clean up disconnected clients
             for connection in disconnected:
                 self.disconnect(connection, conversation_id)
+
+    def convert_uuids(self, obj):
+        if isinstance(obj, dict):
+            return {k: self.convert_uuids(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.convert_uuids(i) for i in obj]
+        elif isinstance(obj, UUID):
+            return str(obj)
+        else:
+            return obj
 
 
 # Global instance

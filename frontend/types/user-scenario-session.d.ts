@@ -11,13 +11,13 @@ export interface UserScenarioSession {
 
   // Metrics
   metrics?: {
-    duration_seconds?: number;
     total_messages: number;
     user_messages: number;
     bot_messages: number;
     conversations: number;
     avg_response_time?: number;
     completion_rate: number;
+    score: number;
   };
 
   // Relationships
