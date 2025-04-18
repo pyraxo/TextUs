@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from app.core.common import parse_uuid
 from app.models.response import (
     ConversationListResponse,
+    DashboardSummaryResponse,
     ScenarioBrief,
     ScenarioSessionResponse,
 )
@@ -105,3 +106,83 @@ async def get_scenario_sessions(
         )
 
     return [serialize(s) for s in sessions]
+
+
+@router.get("/{trainee_id}/dashboard-summary", response_model=DashboardSummaryResponse)
+async def get_dashboard_summary(
+    trainee_id: str,
+    trainee_service: Annotated[TraineeService, Depends()],
+) -> DashboardSummaryResponse:
+    """Get dashboard summary for a trainee: latest attempt, scenario progression, total sessions, and lifetime metrics."""
+    sessions = await trainee_service.get_scenario_sessions(parse_uuid(trainee_id))
+    if not sessions:
+        return DashboardSummaryResponse(
+            latest_attempt=None,
+            scenario_progression=0,
+            total_practice_sessions=0,
+            metrics={
+                "comprehension": 0,
+                "tone": 0,
+                "accuracy": 0,
+                "chatHandling": 0,
+                "averageScore": 0,
+            },
+        )
+
+    # Latest attempt: most recent completed session
+    completed_sessions = [s for s in sessions if s.status == SessionStatus.COMPLETED]
+    latest_attempt = (
+        max(completed_sessions, key=lambda s: s.end_timestamp)
+        if completed_sessions
+        else None
+    )
+
+    # Scenario progression: unique scenarios completed
+    scenario_progression = len(set(s.scenario_id for s in completed_sessions))
+
+    # Total practice sessions: all completed sessions
+    total_practice_sessions = len(completed_sessions)
+
+    # Lifetime metrics: average of each metric across all completed sessions
+    metric_keys = ["comprehension", "tone", "accuracy", "chatHandling", "averageScore"]
+    metric_sums = {k: 0 for k in metric_keys}
+    metric_counts = {k: 0 for k in metric_keys}
+    for s in completed_sessions:
+        m = s.metrics or {}
+        for k in metric_keys:
+            v = m.get(k)
+            if v is not None:
+                metric_sums[k] += v
+                metric_counts[k] += 1
+    metrics = {
+        k: (metric_sums[k] / metric_counts[k] if metric_counts[k] else 0)
+        for k in metric_keys
+    }
+
+    # Serialize latest attempt
+    def serialize(session: ScenarioSession) -> ScenarioSessionResponse:
+        scenario = None
+        if session.scenario:
+            scenario = ScenarioBrief(
+                id=session.scenario.id,
+                name=session.scenario.name,
+                scheme_id=session.scenario.scheme_id,
+                scheme_name=session.scenario.name,
+            )
+        return ScenarioSessionResponse(
+            id=session.id,
+            user_id=session.user_id,
+            scenario_id=session.scenario_id,
+            start_timestamp=session.start_timestamp,
+            end_timestamp=session.end_timestamp,
+            status=session.status.value if session.status else None,
+            metrics=getattr(session, "metrics", None),
+            scenario=scenario,
+        )
+
+    return DashboardSummaryResponse(
+        latest_attempt=serialize(latest_attempt) if latest_attempt else None,
+        scenario_progression=scenario_progression,
+        total_practice_sessions=total_practice_sessions,
+        metrics=metrics,
+    )

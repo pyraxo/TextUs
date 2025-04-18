@@ -73,3 +73,10 @@ class ScenarioSessionResponse(SQLModel):
     status: Optional[str]
     metrics: Optional[dict]
     scenario: Optional[ScenarioBrief]
+
+
+class DashboardSummaryResponse(SQLModel):
+    latest_attempt: Optional[ScenarioSessionResponse]
+    scenario_progression: int
+    total_practice_sessions: int
+    metrics: dict

@@ -63,4 +63,8 @@ export async function deleteUser(id: string): Promise<void> {
   return fetchApi<void>(`/users/${id}`, {
     method: 'DELETE',
   });
+}
+
+export async function getDashboardSummary(traineeId: string) {
+  return fetchApi(`/trainees/${traineeId}/dashboard-summary`);
 } 

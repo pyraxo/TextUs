@@ -2,10 +2,22 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Sliders, Users } from "lucide-react";
+import { Bot, Contact, Sliders, Users } from "lucide-react";
 import Link from "next/link";
 
 const adminOptions = [
+  {
+    title: "Scenario Management",
+    description: "Manage learning schemes and scenarios",
+    href: "/admin/schemes",
+    icon: <Bot className="h-8 w-8 text-card-foreground stroke-[2px]" />,
+  },
+  {
+    title: "AI Customer Management",
+    description: "Manage AI customer archetypes",
+    href: "/admin/customers",
+    icon: <Contact className="h-8 w-8 text-card-foreground stroke-[2px]" />,
+  },
   {
     title: "User Management",
     description: "Manage system users",
@@ -17,12 +29,6 @@ const adminOptions = [
     description: "Configure AI prompt engineering settings",
     href: "/admin/prompt-engineering",
     icon: <Sliders className="h-8 w-8 text-card-foreground stroke-[2px]" />,
-  },
-  {
-    title: "Content Management",
-    description: "Manage knowledge base and training content",
-    href: "/admin/content-management",
-    icon: <BookOpen className="h-8 w-8 text-card-foreground stroke-[2px]" />,
   },
 ];
 

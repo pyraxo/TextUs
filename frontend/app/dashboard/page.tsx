@@ -5,48 +5,73 @@ import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { PerformanceMetrics } from "@/components/dashboard/performance-metrics";
 import { Welcome } from "@/components/dashboard/welcome";
 import { useAuth } from "@/hooks/use-auth";
-
-// Mock data for demonstration
-const performanceData = {
-  metrics: {
-    comprehension: 85,
-    tone: 92,
-    accuracy: 78,
-    averageScore: 85,
-    chatHandling: 90,
-  },
-  average: 85,
-};
-
-const lastAttemptData = {
-  scheme: "Customer Service Excellence",
-  timeTaken: "45 minutes",
-  score: 85,
-  scenario: "Handling a difficult customer complaint",
-  customerProfile: "Frustrated Premium Customer",
-  feedback: "Good handling of the situation with clear communication",
-  completion: 90,
-};
+import { useDashboardSummary } from "@/hooks/use-dashboard-summary";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { data, isLoading, error } = useDashboardSummary();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading dashboard...
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  // Fallbacks for missing data
+  const metrics = data?.metrics || {
+    comprehension: 0,
+    tone: 0,
+    accuracy: 0,
+    averageScore: 0,
+    chatHandling: 0,
+  };
+  const lastAttempt = data?.latest_attempt || null;
+  const totalPracticeSessions = data?.total_practice_sessions || 0;
+  const scenarioProgression = data?.scenario_progression || 0;
+
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8">
         <Welcome
           userName={user?.name || null}
-          lastLoginDate="12 March 2024"
-          lastLoginTime="09:30 AM"
+          lastLoginDate={
+            user?.last_login
+              ? new Date(user.last_login).toLocaleDateString()
+              : ""
+          }
+          lastLoginTime={
+            user?.last_login
+              ? new Date(user.last_login).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : ""
+          }
         />
 
         <div className="mt-6">
-          <PerformanceMetrics metrics={performanceData.metrics} />
+          <PerformanceMetrics metrics={metrics} />
         </div>
 
         <div className="grid grid-cols-2 gap-6 mt-6">
           <div className="space-y-6">
             {/* <Assignments newAssignments={2} /> */}
-            <LastAttempt {...lastAttemptData} />
+            {lastAttempt ? (
+              <LastAttempt {...lastAttempt} />
+            ) : (
+              <div className="bg-card text-card-foreground p-6 rounded min-h-[260px] flex items-center justify-center">
+                No attempts yet.
+              </div>
+            )}
           </div>
           <Leaderboard />
         </div>
@@ -57,7 +82,9 @@ export default function DashboardPage() {
               Total Practice Sessions
             </h3>
             <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-primary">24</span>
+              <span className="text-3xl font-bold text-primary">
+                {totalPracticeSessions}
+              </span>
               <span className="text-sm text-muted-foreground ml-2">
                 sessions
               </span>
@@ -66,10 +93,12 @@ export default function DashboardPage() {
 
           <div className="bg-card text-card-foreground p-6 rounded">
             <h3 className="text-[20px] font-semibold mb-2">
-              Schemes Progression
+              Scenario Progression
             </h3>
             <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-primary">8/12</span>
+              <span className="text-3xl font-bold text-primary">
+                {scenarioProgression}
+              </span>
               <span className="text-sm text-muted-foreground ml-2">
                 completed
               </span>
