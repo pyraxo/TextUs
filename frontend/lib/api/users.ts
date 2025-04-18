@@ -65,6 +65,11 @@ export async function deleteUser(id: string): Promise<void> {
   });
 }
 
+/**
+ * Get the dashboard summary for a trainee
+ * @param traineeId - The ID of the trainee
+ * @returns The dashboard summary
+ */
 export async function getDashboardSummary(traineeId: string) {
   return fetchApi(`/trainees/${traineeId}/dashboard-summary`);
 } 

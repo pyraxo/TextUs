@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .chat import ChatConversation, ChatEvaluation, ChatMessage
+    from .file_uploads import FileUpload
     from .scenario_session import ScenarioSession
 
 
@@ -43,6 +44,7 @@ class User(UserBase, table=True):
         back_populates="trainee"
     )
     evaluations: List["ChatEvaluation"] = Relationship(back_populates="trainee")
+    file_uploads: List["FileUpload"] = Relationship(back_populates="uploaded_by")
 
 
 class UserRead(UserBase):
