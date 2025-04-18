@@ -87,7 +87,12 @@ async def get_scenario_sessions(
     def serialize(session: ScenarioSession) -> ScenarioSessionResponse:
         scenario = None
         if session.scenario:
-            scenario = ScenarioBrief(id=session.scenario.id, name=session.scenario.name)
+            scenario = ScenarioBrief(
+                id=session.scenario.id,
+                name=session.scenario.name,
+                scheme_id=session.scenario.scheme_id,
+                scheme_name=session.scenario.name,
+            )
         return ScenarioSessionResponse(
             id=session.id,
             user_id=session.user_id,

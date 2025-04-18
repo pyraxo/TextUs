@@ -20,6 +20,7 @@ export function TrainerFeedbackInput({
   const unchanged = feedback.trim() === initialFeedback.trim();
   return (
     <div className="border-t p-4">
+      <h3 className="text-lg font-semibold mb-2">Trainer Feedback</h3>
       <div className="flex flex-col gap-2">
         <Textarea
           value={feedback}

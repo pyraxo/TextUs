@@ -55,6 +55,7 @@ async def get_conversation(
         "started_at": conv.started_at.isoformat(),
         "ended_at": conv.ended_at.isoformat() if conv.ended_at else None,
         "scenario_name": conv.scenario_customer.name,
+        "trainer_feedback": conv.trainer_feedback,
     }
 
     # Format messages

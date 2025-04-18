@@ -28,10 +28,12 @@ export function ConversationsInterface({
   activeSessionId,
   onConversationSelect,
   readOnly = false,
+  onTrainerFeedback,
 }: {
   activeSessionId: string;
   onConversationSelect?: (conversationId: string) => void;
   readOnly?: boolean;
+  onTrainerFeedback?: (feedback: string | null) => void;
 }) {
   // Conversation list state
   const {
@@ -131,6 +133,11 @@ export function ConversationsInterface({
           return newMap;
         });
 
+        // Ensure trainer feedback is updated in parent after loading
+        if (onTrainerFeedback) {
+          onTrainerFeedback(data.conversation.trainer_feedback || null);
+        }
+
         // Subscribe to conversation and mark latest message as read
         subscribeToConversation(conversationId);
         if (data.messages.length > 0) {
@@ -144,7 +151,12 @@ export function ConversationsInterface({
         toast.error("Failed to load conversation. Please try again.");
       }
     },
-    [subscribeToConversation, markConversationAsRead, getConversationState]
+    [
+      subscribeToConversation,
+      markConversationAsRead,
+      getConversationState,
+      onTrainerFeedback,
+    ]
   );
 
   // Handle conversation selection
@@ -160,6 +172,12 @@ export function ConversationsInterface({
       // Call the onConversationSelect callback if provided
       if (onConversationSelect) {
         onConversationSelect(conversationId);
+      }
+
+      // If onTrainerFeedback is provided, pass the trainer_feedback for this conversation (if loaded)
+      const conv = activeConversations.get(conversationId);
+      if (onTrainerFeedback) {
+        onTrainerFeedback(conv?.conversation?.trainer_feedback || null);
       }
 
       if (!activeConversations.has(conversationId)) {
@@ -193,6 +211,7 @@ export function ConversationsInterface({
       loadConversation,
       markConversationAsRead,
       onConversationSelect,
+      onTrainerFeedback,
     ]
   );
 
@@ -572,6 +591,7 @@ export function ConversationsInterface({
               const isEnded =
                 !!activeConversationState?.ended ||
                 !!activeConversation.conversation?.ended_at;
+              // 1. Trainee view: show chat textarea if ongoing
               if (!readOnly && !isEnded) {
                 return (
                   <ChatInput
@@ -592,7 +612,26 @@ export function ConversationsInterface({
                   />
                 );
               }
-              if (isEnded && isTrainer) {
+              // 2. Trainee view: show ended message if ended
+              if (!readOnly && isEnded) {
+                return (
+                  <div className="flex gap-2 p-4 border-t">
+                    <div className="flex flex-col w-full gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        This conversation has ended
+                      </p>
+                      <Button
+                        onClick={() => (window.location.href = "/practice")}
+                        className="w-full"
+                      >
+                        Restart with New Scenario
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+              // 3. Trainer session view: show feedback if ended
+              if (readOnly && isTrainer && isEnded) {
                 return (
                   <TrainerFeedbackSection
                     conversationId={activeConversationId!}
@@ -616,10 +655,14 @@ export function ConversationsInterface({
                         }
                         return newMap;
                       });
+                      if (onTrainerFeedback) {
+                        onTrainerFeedback(feedback);
+                      }
                     }}
                   />
                 );
               }
+              // 4. All other cases: show nothing
               return null;
             })()}
           </>

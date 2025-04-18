@@ -350,19 +350,14 @@ class TraineeService:
 
         # Initialize metrics
         metrics = {
-            "duration_seconds": None,
             "total_messages": 0,
             "user_messages": 0,
             "bot_messages": 0,
             "conversations": len(user_session.chat_conversations),
             "avg_response_time": None,
             "completion_rate": 0.0,
+            "score": 0.0,
         }
-
-        # Calculate duration if session is completed
-        if user_session.end_timestamp:
-            duration = user_session.end_timestamp - user_session.start_timestamp
-            metrics["duration_seconds"] = duration.total_seconds()
 
         # Calculate message metrics and response times
         total_response_time = 0.0

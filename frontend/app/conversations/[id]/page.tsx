@@ -17,6 +17,7 @@ export default function ConversationsPage({
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
+  const [trainerFeedback, setTrainerFeedback] = useState<string | null>(null);
 
   return (
     <div className="h-full flex overflow-hidden relative">
@@ -27,9 +28,12 @@ export default function ConversationsPage({
       >
         <ConversationsInterface
           activeSessionId={params.id}
-          onConversationSelect={(conversationId) =>
-            setActiveConversationId(conversationId)
-          }
+          onConversationSelect={(conversationId) => {
+            setActiveConversationId(conversationId);
+          }}
+          onTrainerFeedback={(feedback) => {
+            setTrainerFeedback(feedback);
+          }}
         />
       </div>
       <Button
@@ -51,7 +55,10 @@ export default function ConversationsPage({
           isSidebarOpen ? "translate-x-[-400px]" : "translate-x-0"
         }`}
       >
-        <CustomerInfo conversationId={activeConversationId} />
+        <CustomerInfo
+          conversationId={activeConversationId}
+          trainerFeedback={trainerFeedback}
+        />
       </div>
     </div>
   );
