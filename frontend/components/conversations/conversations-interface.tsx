@@ -108,6 +108,7 @@ export function ConversationsInterface({
 
         // Get the current state from the WebSocket provider
         const conversationState = getConversationState(conversationId);
+        const isEnded = conversationState?.ended || data.conversation.ended_at;
 
         // Calculate latest message timestamp
         const latestMessageTimestamp = new Date(
@@ -139,7 +140,9 @@ export function ConversationsInterface({
         }
 
         // Subscribe to conversation and mark latest message as read
-        subscribeToConversation(conversationId);
+        if (!isEnded) {
+          subscribeToConversation(conversationId);
+        }
         if (data.messages.length > 0) {
           markConversationAsRead(
             conversationId,
@@ -163,10 +166,9 @@ export function ConversationsInterface({
   const handleConversationSelect = useCallback(
     (conversationId: string) => {
       console.log("Selecting conversation:", conversationId);
-      console.log(
-        "Conversation state from WebSocket:",
-        getConversationState(conversationId)
-      );
+      const state = getConversationState(conversationId);
+      const isEnded = state?.ended;
+      console.log("Conversation state from WebSocket:", state);
 
       setActiveConversationId(conversationId);
       // Call the onConversationSelect callback if provided
@@ -205,6 +207,10 @@ export function ConversationsInterface({
           return newMap;
         });
       }
+      // Do not subscribe if ended
+      if (!isEnded) {
+        subscribeToConversation(conversationId);
+      }
     },
     [
       activeConversations,
@@ -212,6 +218,8 @@ export function ConversationsInterface({
       markConversationAsRead,
       onConversationSelect,
       onTrainerFeedback,
+      subscribeToConversation,
+      getConversationState,
     ]
   );
 
@@ -434,12 +442,15 @@ export function ConversationsInterface({
   // Handle sending a message
   const handleSendMessage = () => {
     if (!messageInput.trim() || !activeConversationId) return;
-
+    const state = getConversationState(activeConversationId);
+    if (state?.ended) {
+      toast.error("This conversation has ended. You cannot send messages.");
+      return;
+    }
     if (!user?.id) {
       toast.error("You must be logged in to send messages");
       return;
     }
-
     const wsMessage = {
       type: "MESSAGE" as const,
       conversationId: activeConversationId,
@@ -451,9 +462,7 @@ export function ConversationsInterface({
       },
       timestamp: new Date().toISOString(),
     };
-
     console.log("Sending WebSocket message:", wsMessage);
-
     sendWebSocketMessage(wsMessage);
     setMessageInput("");
   };
@@ -461,10 +470,13 @@ export function ConversationsInterface({
   // Handle ending a chat
   const handleEndChat = () => {
     if (!activeConversationId) return;
-
+    const state = getConversationState(activeConversationId);
+    if (state?.ended) {
+      toast.error("This conversation is already ended.");
+      return;
+    }
     console.log("Ending chat for conversation:", activeConversationId);
     const timestamp = new Date();
-
     // Send end chat message via WebSocket
     const endChatMessage = {
       type: "END_CHAT" as const,
@@ -473,7 +485,6 @@ export function ConversationsInterface({
         timestamp: timestamp.toISOString(),
       },
     };
-
     // Update local state immediately to reflect ended status
     setActiveConversations((prev) => {
       const newMap = new Map(prev);
@@ -483,7 +494,6 @@ export function ConversationsInterface({
           conversationId: activeConversationId,
           timestamp: timestamp.toISOString(),
         });
-
         newMap.set(activeConversationId, {
           ...conv,
           conversation: {
@@ -495,19 +505,15 @@ export function ConversationsInterface({
       }
       return newMap;
     });
-
     // Clear the active session in the query cache
     if (user?.id) {
       console.log("Clearing active session in query cache");
       queryClient.setQueryData(["active-session", user.id], null);
     }
-
     // Send the WebSocket message after updating local state
     sendWebSocketMessage(endChatMessage);
-
     // Trigger a refresh of the conversations list to sync with server
     debouncedRefresh();
-
     setIsEndChatDialogOpen(false);
     toast.success("Chat ended successfully");
   };
