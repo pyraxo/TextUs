@@ -302,10 +302,9 @@ export default function ManageTrainees() {
                                     : "-"}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  {session.metrics?.completion_rate !==
-                                  undefined
+                                  {session.metrics?.score !== undefined
                                     ? `${Math.round(
-                                        session.metrics.completion_rate * 100
+                                        (session.metrics.score / 5) * 100
                                       )}%`
                                     : "-"}
                                 </TableCell>

@@ -1,11 +1,10 @@
-import json
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .chat import ChatConversation, ChatEvaluation
@@ -29,9 +28,6 @@ class FeedbackRequest(BaseModel):
 class SessionMetrics(SQLModel):
     """Metrics for a scenario session."""
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    scenario_session_id: UUID = Field(foreign_key="scenario_sessions.id")
-
     total_messages: int
     user_messages: int
     bot_messages: int
@@ -49,20 +45,7 @@ class ScenarioSessionBase(SQLModel):
     start_timestamp: datetime = Field(default_factory=datetime.now)
     end_timestamp: Optional[datetime] = Field(default=None)
     status: Optional[SessionStatus] = Field(default=None)
-    metrics_json: Optional[str] = Field(default=None)
-
-    @property
-    def metrics(self) -> Optional[SessionMetrics]:
-        """Get the session metrics."""
-        if not self.metrics_json:
-            return None
-        metrics_dict = json.loads(self.metrics_json)
-        return SessionMetrics(**metrics_dict)
-
-    @metrics.setter
-    def metrics(self, value: SessionMetrics):
-        """Set the session metrics."""
-        self.metrics_json = json.dumps(value.model_dump())
+    metrics: Optional[SessionMetrics] = Field(default=None, sa_column=Column(JSON))
 
 
 class ScenarioSession(ScenarioSessionBase, table=True):

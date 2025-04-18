@@ -270,7 +270,7 @@ async def end_chat(state: State, config: RunnableConfig):
     """End the chat"""
     end_chat_func = config.get("configurable").get("end_chat_func", None)
 
-    await sleep(1)
+    # await sleep(1)
 
     await end_chat_func(
         conversation_id=state.get("conversation_id"),
