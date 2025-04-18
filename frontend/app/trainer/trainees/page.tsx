@@ -298,7 +298,13 @@ export default function ManageTrainees() {
                                   {session.end_timestamp
                                     ? new Date(
                                         session.end_timestamp
-                                      ).toLocaleDateString()
+                                      ).toLocaleString(undefined, {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
                                     : "-"}
                                 </TableCell>
                                 <TableCell className="text-center">

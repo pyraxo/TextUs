@@ -8,10 +8,12 @@ __all__ = [
     "User",
     "ScenarioSession",
     "RubricsSettings",
+    "FileUpload",
 ]
 
 from .chat import ChatConversation, ChatMessage
 from .customer import Customer
+from .file_uploads import FileUpload
 from .rubrics import RubricsSettings
 from .scenario import Scenario
 from .scenario_customer import ScenarioCustomer

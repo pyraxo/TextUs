@@ -1,8 +1,7 @@
-import json
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .chat import ChatConversation
@@ -29,9 +28,7 @@ class ScenarioCustomer(ScenarioCustomerBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Store expected queries as JSON string
-    expected_queries_json: Optional[str] = Field(
-        default=None, sa_column_kwargs={"name": "expected_queries"}
-    )
+    expected_queries: Optional[List[str]] = Field(default=None, sa_column=Column(JSON))
 
     # Foreign keys
     customer_id: UUID = Field(foreign_key="customers.id")
@@ -45,18 +42,6 @@ class ScenarioCustomer(ScenarioCustomerBase, table=True):
     )
 
     # TODO: user_ratings
-
-    @property
-    def expected_queries(self) -> List[str]:
-        """Get the expected queries as a list."""
-        if self.expected_queries_json is None:
-            return []
-        return json.loads(self.expected_queries_json)
-
-    @expected_queries.setter
-    def expected_queries(self, value: List[str]):
-        """Set the expected queries from a list."""
-        self.expected_queries_json = json.dumps(value) if value else None
 
 
 class ScenarioCustomerRead(ScenarioCustomerBase):

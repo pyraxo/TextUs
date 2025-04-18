@@ -18,10 +18,13 @@ export async function fetchApi<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const isFormData = options.body instanceof FormData;
   const response = await fetch(url, {
     credentials: 'include', // Include cookies for authentication
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData
+        ? {} // Let browser set Content-Type for FormData
+        : { 'Content-Type': 'application/json' }),
       ...options.headers,
     },
     ...options,
@@ -46,4 +49,4 @@ export async function fetchApi<T>(
   }
 
   return response.json();
-} 
+}

@@ -443,7 +443,16 @@ export default function SchemeDetailPage({
                       </TableCell>
                       <TableCell>
                         {session.end_timestamp
-                          ? new Date(session.end_timestamp).toLocaleDateString()
+                          ? new Date(session.end_timestamp).toLocaleString(
+                              undefined,
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
                           : "-"}
                       </TableCell>
                       <TableCell className="text-center">
