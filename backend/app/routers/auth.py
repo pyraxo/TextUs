@@ -68,7 +68,8 @@ async def login(
         httponly=True,
         max_age=settings.access_token_expire_minutes * 60,
         expires=settings.access_token_expire_minutes * 60,
-        secure=False,  # Set to True in production with HTTPS
+        secure=settings.environment
+        == "production",  # Set to True in production with HTTPS
         samesite="lax",
     )
 
@@ -88,7 +89,8 @@ async def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=False,  # Set to True in production with HTTPS
+        secure=settings.environment
+        == "production",  # Set to True in production with HTTPS
         samesite="lax",
     )
     return {"message": "Successfully logged out"}
