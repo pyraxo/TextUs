@@ -25,3 +25,10 @@ export interface UserScenarioSession {
   scenario?: Scenario;
   chat_conversations: ChatConversation[];
 }
+
+export interface LatestAttemptResponse {
+  score: number;
+  time_taken: number;
+  scenario_name: string;
+  scheme_name: string;
+}

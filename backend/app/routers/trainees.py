@@ -1,11 +1,15 @@
 from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Depends
+from sqlmodel import Session, select
 
 from app.core.common import parse_uuid
+from app.core.db import get_session
+from app.models.chat import ChatEvaluation
 from app.models.response import (
     ConversationListResponse,
     DashboardSummaryResponse,
+    LatestAttemptResponse,
     ScenarioBrief,
     ScenarioSessionResponse,
 )
@@ -112,6 +116,7 @@ async def get_scenario_sessions(
 async def get_dashboard_summary(
     trainee_id: str,
     trainee_service: Annotated[TraineeService, Depends()],
+    session: Annotated[Session, Depends(get_session)],
 ) -> DashboardSummaryResponse:
     """Get dashboard summary for a trainee: latest attempt, scenario progression, total sessions, and lifetime metrics."""
     sessions = await trainee_service.get_scenario_sessions(parse_uuid(trainee_id))
@@ -124,14 +129,14 @@ async def get_dashboard_summary(
                 "comprehension": 0,
                 "tone": 0,
                 "accuracy": 0,
-                "chatHandling": 0,
+                "chat_handling": 0,
                 "averageScore": 0,
             },
         )
 
     # Latest attempt: most recent completed session
     completed_sessions = [s for s in sessions if s.status == SessionStatus.COMPLETED]
-    latest_attempt = (
+    latest_attempt: Optional[ScenarioSession] = (
         max(completed_sessions, key=lambda s: s.end_timestamp)
         if completed_sessions
         else None
@@ -143,41 +148,52 @@ async def get_dashboard_summary(
     # Total practice sessions: all completed sessions
     total_practice_sessions = len(completed_sessions)
 
-    # Lifetime metrics: average of each metric across all completed sessions
-    metric_keys = ["comprehension", "tone", "accuracy", "chatHandling", "averageScore"]
+    # Lifetime metrics: average of each metric across all ChatEvaluation records for this trainee
+    metric_keys = ["comprehension", "tone", "accuracy", "chat_handling"]
     metric_sums = {k: 0 for k in metric_keys}
     metric_counts = {k: 0 for k in metric_keys}
-    for s in completed_sessions:
-        m = s.metrics or {}
+
+    chat_evaluations: List[ChatEvaluation] = (
+        await session.exec(
+            select(ChatEvaluation).where(
+                ChatEvaluation.trainee_id == parse_uuid(trainee_id)
+            )
+        )
+    ).all()
+    for evaluation in chat_evaluations:
+        results = evaluation.evaluation_results or {}
         for k in metric_keys:
-            v = m.get(k)
-            if v is not None:
-                metric_sums[k] += v
+            v = results.get(k)
+            score = None
+            if isinstance(v, dict) and "score" in v:
+                score = v["score"]
+            elif isinstance(v, (int, float)):
+                score = v
+            if isinstance(score, (int, float)):
+                metric_sums[k] += score
                 metric_counts[k] += 1
     metrics = {
         k: (metric_sums[k] / metric_counts[k] if metric_counts[k] else 0)
         for k in metric_keys
     }
+    metrics["averageScore"] = sum(metrics.values()) / len(metrics)
 
     # Serialize latest attempt
-    def serialize(session: ScenarioSession) -> ScenarioSessionResponse:
-        scenario = None
-        if session.scenario:
-            scenario = ScenarioBrief(
-                id=session.scenario.id,
-                name=session.scenario.name,
-                scheme_id=session.scenario.scheme_id,
-                scheme_name=session.scenario.name,
+    def serialize(session: ScenarioSession) -> LatestAttemptResponse:
+        if not session.scenario:
+            return LatestAttemptResponse(
+                score=0,
+                time_taken=0,
+                scenario_name="",
+                scheme_name="",
             )
-        return ScenarioSessionResponse(
-            id=session.id,
-            user_id=session.user_id,
-            scenario_id=session.scenario_id,
-            start_timestamp=session.start_timestamp,
-            end_timestamp=session.end_timestamp,
-            status=session.status.value if session.status else None,
-            metrics=getattr(session, "metrics", None),
-            scenario=scenario,
+        return LatestAttemptResponse(
+            score=session.metrics.get("score", 0),
+            time_taken=int(
+                (session.end_timestamp - session.start_timestamp).total_seconds()
+            ),
+            scenario_name=session.scenario.name,
+            scheme_name="",  # TODO: Fetch scheme name
         )
 
     return DashboardSummaryResponse(

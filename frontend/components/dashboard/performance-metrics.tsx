@@ -6,7 +6,7 @@ interface PerformanceMetricsProps {
     tone: number;
     accuracy: number;
     averageScore: number;
-    chatHandling: number;
+    chat_handling: number;
   };
 }
 
@@ -14,11 +14,13 @@ const CircleProgress: FC<{ value: number; label: string }> = ({
   value,
   label,
 }) => {
+  const percentageValue = (value / 5) * 100;
   const size = 144; // w-36 = 9rem = 144px
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (value / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (percentageValue / 100) * circumference;
 
   return (
     <div className="flex flex-col items-center">
@@ -48,7 +50,7 @@ const CircleProgress: FC<{ value: number; label: string }> = ({
         </svg>
         {/* Percentage text */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold">{value}%</span>
+          <span className="text-2xl font-bold">{percentageValue}%</span>
         </div>
       </div>
       <span className="mt-3 text-base font-medium">{label}</span>
@@ -66,11 +68,11 @@ export const PerformanceMetrics: FC<PerformanceMetricsProps> = ({
           <CircleProgress value={metrics.comprehension} label="Comprehension" />
           <CircleProgress value={metrics.tone} label="Tone" />
           <CircleProgress value={metrics.accuracy} label="Accuracy" />
-          <CircleProgress value={metrics.chatHandling} label="Chat Handling" />
+          <CircleProgress value={metrics.chat_handling} label="Chat Handling" />
         </div>
         <div className="border-l pl-12">
           <div className="text-cpf-teal text-[56px] font-bold leading-tight">
-            {metrics.averageScore}%
+            {(metrics.averageScore / 5) * 100}%
           </div>
           <div className="text-muted-foreground text-lg">Average Score</div>
         </div>
