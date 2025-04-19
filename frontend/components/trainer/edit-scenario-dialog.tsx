@@ -1,12 +1,22 @@
 "use client";
 
 import { useUpdateScenario } from "@/hooks/use-scenarios";
+import { useUploads } from "@/hooks/use-uploads";
 import { cn } from "@/lib/utils";
 import { Scenario, ScenarioUpdate } from "@/types/scenario";
 import { Bot, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FC, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../ui/command";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +27,9 @@ import {
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Textarea } from "../ui/textarea";
+
 interface EditScenarioDialogProps {
   scenario: Scenario;
   open: boolean;
@@ -36,25 +48,27 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
   const [systemPrompt, setSystemPrompt] = useState<string | null>(
     scenario.system_prompt
   );
-  const [temperature, setTemperature] = useState(
-    scenario.temperature?.toString() || "0.7"
-  );
-  const [isPausable, setIsPausable] = useState(scenario.is_pausable);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [fileComboOpen, setFileComboOpen] = useState(false);
 
   const router = useRouter();
+  const { data: uploads, loading: uploadsLoading } = useUploads();
+  const [selectedFileIds, setSelectedFileIds] = useState<string[]>(
+    scenario.file_uploads?.map((f) => f.id) || []
+  );
 
-  // Track unsaved changes
   useEffect(() => {
     const hasChanges =
       title !== scenario.name ||
       description !== (scenario.description || "") ||
       systemPrompt !== scenario.system_prompt ||
-      temperature !== (scenario.temperature?.toString() || "0.7") ||
-      isPausable !== scenario.is_pausable;
+      JSON.stringify(selectedFileIds.sort()) !==
+        JSON.stringify(
+          (scenario.file_uploads?.map((f: any) => f.id) || []).sort()
+        );
 
     setHasUnsavedChanges(hasChanges);
-  }, [title, description, systemPrompt, temperature, isPausable, scenario]);
+  }, [title, description, systemPrompt, selectedFileIds, scenario]);
 
   const { mutate: updateScenario, isPending } = useUpdateScenario();
 
@@ -65,19 +79,28 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
         name: title,
         description,
         system_prompt: systemPrompt || undefined,
-        temperature: parseFloat(temperature),
-        is_pausable: isPausable,
+        file_upload_ids: selectedFileIds,
       };
 
       updateScenario(
         { scenarioId: scenario.id, updates },
         {
           onSuccess: () => {
+            console.log(`Save successful at ${Date.now()}, closing dialog.`);
             setHasUnsavedChanges(false);
             onOpenChange(false);
           },
+          onError: (error) => {
+            console.error(`Save failed at ${Date.now()}:`, error);
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Failed to update scenario"
+            );
+          },
         }
       );
+      console.log(`Save mutation initiated at ${Date.now()}.`);
     }
   };
 
@@ -147,41 +170,107 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="temperature">Temperature</Label>
-              <Input
-                id="temperature"
-                type="number"
-                min="0"
-                max="1"
-                step="0.1"
-                value={temperature}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (isNaN(value)) {
-                    setTemperature("");
-                  } else {
-                    setTemperature(Math.min(Math.max(value, 0), 1).toString());
-                  }
-                }}
-                placeholder="0.7"
-                disabled={isPending}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>Assign Files</Label>
+            <Popover open={fileComboOpen} onOpenChange={setFileComboOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !selectedFileIds.length && "text-muted-foreground"
+                  )}
+                  disabled={uploadsLoading || isPending}
+                >
+                  {selectedFileIds.length === 0
+                    ? "Select files..."
+                    : (() => {
+                        console.log("[Dialog Render] Scenario Prop:", scenario);
+                        console.log(
+                          "[Dialog Render] scenario.file_uploads:",
+                          scenario.file_uploads
+                        );
+                        console.log(
+                          "[Dialog Render] selectedFileIds State:",
+                          selectedFileIds
+                        );
 
-            <div className="space-y-2">
-              <Label>Settings</Label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isPausable}
-                  onChange={(e) => setIsPausable(e.target.checked)}
-                  className="form-checkbox h-4 w-4"
-                  disabled={isPending}
-                />
-                <span className="text-sm">Allow Pausing</span>
-              </label>
+                        // Use scenario.file_uploads for initial display if available
+                        const initialFiles = scenario.file_uploads?.filter(
+                          (f) => selectedFileIds.includes(f.id)
+                        );
+
+                        let names: string[] = [];
+                        if (
+                          initialFiles &&
+                          initialFiles.length === selectedFileIds.length
+                        ) {
+                          // If initial data covers all selected IDs, use it
+                          names = initialFiles.map((f) => f.file_name);
+                        } else {
+                          // Fallback to using the uploads list (might be empty initially)
+                          names =
+                            uploads
+                              ?.filter((f) => selectedFileIds.includes(f.id))
+                              .map((f) => f.file_name) || [];
+                        }
+
+                        console.log(
+                          "[Dialog Render] Initial Files Used:",
+                          initialFiles
+                        );
+                        console.log("[Dialog Render] Calculated Names:", names);
+
+                        // Display logic remains the same
+                        const joined = names.join(", ");
+                        return joined.length > 40
+                          ? `${joined.slice(0, 40)}... (${names.length} files)`
+                          : joined;
+                      })()}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search files..." />
+                  <CommandList>
+                    <CommandEmpty>No files found.</CommandEmpty>
+                    <CommandGroup>
+                      {uploads?.map((file) => (
+                        <CommandItem
+                          key={file.id}
+                          onSelect={() => {
+                            setSelectedFileIds((prev) =>
+                              prev.includes(file.id)
+                                ? prev.filter((id) => id !== file.id)
+                                : [...prev, file.id]
+                            );
+                          }}
+                          className={cn(
+                            "cursor-pointer flex items-center justify-between",
+                            selectedFileIds.includes(file.id) && "bg-accent"
+                          )}
+                        >
+                          <span>{file.file_name}</span>
+                          {selectedFileIds.includes(file.id) && (
+                            <span className="ml-2 text-xs text-cpf-teal">
+                              Selected
+                            </span>
+                          )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <div className="text-xs text-gray-500 mt-1">
+              {selectedFileIds.length === 0
+                ? "No files assigned."
+                : `Assigned: ${uploads
+                    ?.filter((f) => selectedFileIds.includes(f.id))
+                    .map((f) => f.file_name)
+                    .join(", ")}`}
             </div>
           </div>
 

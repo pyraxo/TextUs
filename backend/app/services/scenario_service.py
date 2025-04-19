@@ -1,12 +1,14 @@
 from typing import List
 
 from fastapi import Depends, HTTPException
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.common import parse_uuid
 from app.core.db import get_session
 from app.models.customer import Customer
+from app.models.file_uploads import FileUpload
 from app.models.scenario import (
     Scenario,
     ScenarioAddCustomer,
@@ -25,14 +27,41 @@ class ScenarioService:
 
     async def get_scenarios(self):
         """Get all scenarios."""
-        statement = select(Scenario)
+        statement = select(Scenario).options(selectinload(Scenario.file_uploads))
         results = (await self.session.exec(statement)).all()
         return results
 
     async def create_scenario(self, scenario_data: ScenarioCreate) -> Scenario:
         """Create a new scenario."""
-        # Create the scenario with the settings
-        scenario = Scenario.model_validate(scenario_data)
+        scenario = Scenario()
+        # Assign fields directly
+        if scenario_data.name is not None:
+            scenario.name = scenario_data.name
+        if scenario_data.description is not None:
+            scenario.description = scenario_data.description
+        if scenario_data.is_pausable is not None:
+            scenario.is_pausable = scenario_data.is_pausable
+        if scenario_data.system_prompt is not None:
+            scenario.system_prompt = scenario_data.system_prompt
+        if scenario_data.created_by_id is not None:
+            scenario.created_by_id = scenario_data.created_by_id
+        if scenario_data.scheme_id is not None:
+            scenario.scheme_id = scenario_data.scheme_id
+        if (
+            hasattr(scenario_data, "temperature")
+            and scenario_data.temperature is not None
+        ):
+            scenario.temperature = scenario_data.temperature
+
+        # Handle file uploads if provided
+        file_upload_ids = getattr(scenario_data, "file_upload_ids", None)
+        if file_upload_ids:
+            file_uploads = []
+            for file_id in file_upload_ids:
+                file_upload = await self.session.get(FileUpload, file_id)
+                if file_upload:
+                    file_uploads.append(file_upload)
+            scenario.file_uploads = file_uploads
 
         self.session.add(scenario)
         await self.session.commit()
@@ -43,7 +72,11 @@ class ScenarioService:
         """Get a scenario by ID."""
         # Convert string to UUID
         scenario_uuid = parse_uuid(scenario_id)
-        statement = select(Scenario).where(Scenario.id == scenario_uuid)
+        statement = (
+            select(Scenario)
+            .options(selectinload(Scenario.file_uploads))
+            .where(Scenario.id == scenario_uuid)
+        )
         scenario = (await self.session.exec(statement)).first()
         if not scenario:
             raise HTTPException(status_code=404, detail="Scenario not found")
@@ -89,9 +122,32 @@ class ScenarioService:
         """Update a scenario."""
         scenario = await self.get_scenario(scenario_id)
 
-        # Update scenario fields
-        for key, value in scenario_data.model_dump(exclude_unset=True).items():
-            setattr(scenario, key, value)
+        # Assign fields directly
+        if scenario_data.name is not None:
+            scenario.name = scenario_data.name
+        if scenario_data.description is not None:
+            scenario.description = scenario_data.description
+        if scenario_data.system_prompt is not None:
+            scenario.system_prompt = scenario_data.system_prompt
+        if scenario_data.is_pausable is not None:
+            scenario.is_pausable = scenario_data.is_pausable
+        if scenario_data.scheme_id is not None:
+            scenario.scheme_id = scenario_data.scheme_id
+        if (
+            hasattr(scenario_data, "temperature")
+            and scenario_data.temperature is not None
+        ):
+            scenario.temperature = scenario_data.temperature
+
+        # Handle file uploads if provided
+        file_upload_ids = getattr(scenario_data, "file_upload_ids", None)
+        if file_upload_ids is not None:
+            file_uploads = []
+            for file_id in file_upload_ids:
+                file_upload = await self.session.get(FileUpload, file_id)
+                if file_upload:
+                    file_uploads.append(file_upload)
+            scenario.file_uploads = file_uploads
 
         scenario.update_timestamp()
         self.session.add(scenario)

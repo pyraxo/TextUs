@@ -1,4 +1,4 @@
-import { createScenario, deleteScenario, getScenarios, updateScenario } from '@/lib/api/scenarios';
+import { createScenario, deleteScenario, getScenario, getScenarios, updateScenario } from '@/lib/api/scenarios';
 import { Scenario, ScenarioCreate, ScenarioUpdate } from '@/types/scenario';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -7,6 +7,8 @@ export const scenarioKeys = {
   all: ['scenarios'] as const,
   lists: () => [...scenarioKeys.all, 'list'] as const,
   list: (schemeId?: string) => [...scenarioKeys.lists(), { schemeId }] as const,
+  details: () => [...scenarioKeys.all, 'detail'] as const,
+  detail: (id: string) => [...scenarioKeys.details(), id] as const,
 };
 
 /**
@@ -27,6 +29,19 @@ export function useScenarios(schemeIdOrSlug?: string) {
  */
 export function useSchemeScenarios(schemeIdOrSlug: string) {
   return useScenarios(schemeIdOrSlug);
+}
+
+/**
+ * Hook to fetch a single scenario by ID
+ * @param scenarioId - The scenario's ID
+ */
+export function useScenario(scenarioId: string | null | undefined) {
+  return useQuery<Scenario>({
+    queryKey: scenarioKeys.detail(scenarioId!), // Use non-null assertion, handled by enabled flag
+    queryFn: () => getScenario(scenarioId!),      // Use non-null assertion, handled by enabled flag
+    enabled: !!scenarioId, // Only run the query if scenarioId is truthy
+    retry: false,
+  });
 }
 
 /**
@@ -57,6 +72,8 @@ export function useUpdateScenario() {
     onSuccess: (_data, { scenarioId }) => {
       // Invalidate all scenario queries to refetch with updated data
       queryClient.invalidateQueries({ queryKey: scenarioKeys.all });
+      // ALSO invalidate the specific scenario detail query
+      queryClient.invalidateQueries({ queryKey: scenarioKeys.detail(scenarioId) });
     },
   });
 }
