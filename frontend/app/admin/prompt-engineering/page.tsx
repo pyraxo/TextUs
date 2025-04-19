@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -160,11 +170,11 @@ export default function PromptEngineeringPage() {
       </div>
 
       <main className="container mx-auto p-6">
-        <Card className="w-full border border-gray-200 rounded-lg">
+        <Card className="w-full border-0 rounded-lg">
           <CardContent className="p-6">
             <h2 className="text-2xl font-bold mb-4">Evaluator Rubric Prompt</h2>
             <Tabs value={selectedMetric} onValueChange={setSelectedMetric}>
-              <TabsList>
+              <TabsList className="bg-cpf-light-teal">
                 {METRICS.map((m) => (
                   <TabsTrigger key={m.key} value={m.key} className="capitalize">
                     {m.label}
@@ -191,7 +201,7 @@ export default function PromptEngineeringPage() {
                           <Button
                             onClick={handleSave}
                             disabled={!dirty || saving}
-                            className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white"
+                            className="bg-cpf-teal hover:bg-cpf-teal/90 text-white"
                           >
                             {saving ? "Saving..." : "Save"}
                           </Button>
@@ -217,14 +227,14 @@ export default function PromptEngineeringPage() {
           </h2>
           <Button
             size="sm"
-            className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white h-8 ml-4 mt-4"
+            className="bg-cpf-teal hover:bg-cpf-teal/90 h-8 ml-4 mt-4"
             onClick={() => setImportOpen(true)}
           >
             Import
           </Button>
         </div>
 
-        <Card className="w-full border border-gray-200 rounded-lg">
+        <Card className="w-full border-0 rounded-lg">
           <CardContent className="p-0">
             {uploadsLoading ? (
               <div className="p-4 text-gray-500">Loading...</div>
@@ -408,7 +418,7 @@ export default function PromptEngineeringPage() {
               Cancel
             </Button>
             <Button
-              className="bg-[#0B6160] hover:bg-[#0B6160]/90 text-white"
+              className="bg-cpf-teal hover:bg-cpf-teal/90 text-white"
               onClick={async () => {
                 if (!selectedFile) return;
                 setEditLoading(true);
@@ -440,7 +450,7 @@ export default function PromptEngineeringPage() {
       </Dialog>
 
       {/* Delete Dialog */}
-      <Dialog
+      <AlertDialog
         open={deleteDialogOpen}
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
@@ -450,26 +460,22 @@ export default function PromptEngineeringPage() {
           }
         }}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete File</DialogTitle>
-          </DialogHeader>
-          <div className="mb-4">
-            Are you sure you want to delete{" "}
-            <span className="font-semibold">{selectedFile?.file_name}</span>?
-          </div>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete File</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{selectedFile?.file_name}</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           {deleteError && (
             <div className="text-red-600 text-sm mb-2">{deleteError}</div>
           )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={deleteLoading}
-            >
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>
               Cancel
-            </Button>
-            <Button
+            </AlertDialogCancel>
+            <AlertDialogAction
               className="bg-red-600 hover:bg-red-600/90 text-white"
               onClick={async () => {
                 if (!selectedFile) return;
@@ -490,10 +496,10 @@ export default function PromptEngineeringPage() {
               disabled={deleteLoading}
             >
               {deleteLoading ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

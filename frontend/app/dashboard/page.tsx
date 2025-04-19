@@ -32,7 +32,7 @@ export default function DashboardPage() {
     tone: 0,
     accuracy: 0,
     averageScore: 0,
-    chatHandling: 0,
+    chat_handling: 0,
   };
   const lastAttempt = data?.latest_attempt || null;
   const totalPracticeSessions = data?.total_practice_sessions || 0;
@@ -66,7 +66,7 @@ export default function DashboardPage() {
           <div className="space-y-6">
             {/* <Assignments newAssignments={2} /> */}
             {lastAttempt ? (
-              <LastAttempt {...lastAttempt} />
+              <LastAttempt lastAttempt={lastAttempt} />
             ) : (
               <div className="bg-card text-card-foreground p-6 rounded min-h-[260px] flex items-center justify-center">
                 No attempts yet.

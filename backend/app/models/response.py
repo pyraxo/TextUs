@@ -75,8 +75,15 @@ class ScenarioSessionResponse(SQLModel):
     scenario: Optional[ScenarioBrief]
 
 
+class LatestAttemptResponse(SQLModel):
+    score: float
+    time_taken: int
+    scenario_name: str
+    scheme_name: str
+
+
 class DashboardSummaryResponse(SQLModel):
-    latest_attempt: Optional[ScenarioSessionResponse]
+    latest_attempt: Optional[LatestAttemptResponse]
     scenario_progression: int
     total_practice_sessions: int
     metrics: dict
