@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "3001:3001"
+      - "8000:8000"
     env_file:
       - backend/.env
     depends_on:

@@ -178,5 +178,5 @@ cython_debug/
 # SQLite database
 data/
 
-*.xlsx
-*.csv
+#*.xlsx
+#*.csv
