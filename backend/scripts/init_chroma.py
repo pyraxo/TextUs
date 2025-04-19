@@ -2,4 +2,6 @@
 
 import nltk
 
-nltk.download("punkt_tab")
+
+def init_chroma():
+    nltk.download("punkt_tab")
