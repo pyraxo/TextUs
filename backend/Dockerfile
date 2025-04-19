@@ -32,7 +32,5 @@ COPY backend/alembic.ini /alembic.ini
 COPY backend/alembic /alembic
 COPY backend/scripts /scripts
 
-ENV DATABASE_URL=postgresql://admin:password@postgres:5432/cpf
-
 RUN alembic upgrade head
 RUN python /scripts/init_all.py
