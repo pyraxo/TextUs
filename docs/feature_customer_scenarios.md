@@ -4,6 +4,8 @@
 
 This document details the implementation of the "Running Customer Scenarios" feature in the CPF Board TextUs application. The goal of this feature is to simulate a realistic training environment where a Customer Service Officer (Trainee) interacts with multiple AI-driven "Scenario Customers" concurrently within a single training scenario. Each Scenario Customer represents a unique persona with specific queries or issues related to the scenario's topic.
 
+**Recent updates:** Scenarios now support linking to uploaded files (e.g., reference documents, rubrics) and are evaluated using structured rubrics and trainer feedback for each session.
+
 ## 2. User Flow
 
 1. **Scenario Start:** The Trainee initiates a training scenario.
@@ -24,7 +26,7 @@ This document details the implementation of the "Running Customer Scenarios" fea
 
 ## 3. Technical Implementation
 
-The feature relies on the interplay between the `ConversationScheduler` and the `ChatBot` state machine.
+The feature relies on the interplay between the `ConversationScheduler` and the `ChatBot` state machine. **Scenario configuration can now include file uploads, and session evaluation uses the rubrics management system.**
 
 ### 3.1 Core Components
 

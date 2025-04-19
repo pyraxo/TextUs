@@ -17,15 +17,18 @@ These documents are maintained and updated by AI coding agents to ensure consist
 
 ## Recent Updates
 
-- Enhanced product features including RAG integration and trainer functionality
-- Improved architectural documentation with new backend components
-- Updated changelog with latest development progress
-- Added planned features and future enhancements
-- Introduced rubrics management and trainer feedback features for improved evaluation and session review
+- Added file upload support and many-to-many relationship between scenarios and file uploads
+- Introduced rubrics management and structured trainer feedback for session evaluation
+- Migrated and refactored prompt files to the `docs/prompts/` directory
+- Added backend scripts for data conversion and rubric initialization
+- Enhanced dashboard and analytics with new metrics and live data fetching
+- Improved customer scenario management and chat handling logic
+- Updated changelog and PRD to reflect new features and architecture
 
 ## Quick Links
 
 - [Product Requirements Document](prd.md)
 - [Changelog](changelog.md)
+- [Customer Scenarios Feature](feature_customer_scenarios.md)
 
 For more information about the project setup and development guidelines, please refer to the root-level README.

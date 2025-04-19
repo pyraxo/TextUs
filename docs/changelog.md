@@ -18,6 +18,34 @@ Guidelines for maintaining this changelog:
 4. Keep entries clear and concise
 5. Reference relevant issue/PR numbers when applicable
 
+## [2025-04-19]
+
+### Added
+
+- File upload support with many-to-many relationship between scenarios and file uploads (backend and frontend)
+- Rubrics management for structured evaluation and new trainer feedback features
+- Backend scripts: data converter and rubric initialization
+- New prompt files migrated and refactored into `docs/prompts/`
+
+### Enhanced
+
+- Dashboard and analytics with new metrics and live data fetching
+- Customer scenario management and chat handling logic
+- Scenario and file upload UI improvements
+
+### Changed
+
+- Refactored prompt files and updated documentation structure
+- Updated PRD and documentation to reflect new features and architecture
+
+### Fixed
+
+- Various bug fixes in chat handling, dashboard data fetch, and websocket errors
+
+### Removed
+
+- Deprecated evaluator prompt and dataconverter files from old locations
+
 ## [2025-04-17]
 
 ### Added
