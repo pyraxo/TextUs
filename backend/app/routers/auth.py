@@ -68,9 +68,8 @@ async def login(
         httponly=True,
         max_age=settings.access_token_expire_minutes * 60,
         expires=settings.access_token_expire_minutes * 60,
-        secure=settings.environment
-        == "production",  # Set to True in production with HTTPS
-        samesite="lax",
+        secure=settings.environment == "production",
+        samesite="none",
     )
 
     return UserRead(
@@ -89,9 +88,8 @@ async def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=settings.environment
-        == "production",  # Set to True in production with HTTPS
-        samesite="lax",
+        secure=settings.environment == "production",
+        samesite="none",
     )
     return {"message": "Successfully logged out"}
 
@@ -101,6 +99,7 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     """Get current authenticated user."""
+
     return UserRead(
         id=current_user.id,
         name=current_user.name,
