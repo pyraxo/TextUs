@@ -16,7 +16,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Set the environment variables
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
