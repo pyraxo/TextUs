@@ -21,7 +21,7 @@ export const LastAttempt: FC<LastAttemptProps> = ({ lastAttempt }) => {
     scheme_name: scheme,
   } = lastAttempt;
   return (
-    <Card>
+    <Card className="border-0">
       <CardHeader className="flex flex-row items-center justify-between mb-0 pb-4">
         <CardTitle className="text-[20px] font-semibold">
           Last Attempt
