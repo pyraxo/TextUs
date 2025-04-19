@@ -11,7 +11,9 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 sys.path.append(str(PROJECT_ROOT))
 
+from init_chroma import init_chroma
 from init_customers import init_customers
+from init_rubrics import init_rubrics
 from init_scenarios import init_scenarios
 from init_schemes import init_schemes
 from init_users import init_users
@@ -32,10 +34,12 @@ async def run_initialization() -> None:
     4. Scenarios
     """
     initialization_steps: List[tuple[str, Callable[[], Awaitable[None]]]] = [
+        ("Chroma", init_chroma),
         ("Users", init_users),
         ("Schemes", init_schemes),
         ("Customers", init_customers),
         ("Scenarios", init_scenarios),
+        ("Rubrics", init_rubrics),
     ]
 
     for step_name, init_func in initialization_steps:
