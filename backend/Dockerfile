@@ -32,5 +32,5 @@ COPY backend/alembic.ini /alembic.ini
 COPY backend/alembic /alembic
 COPY backend/scripts /scripts
 
-RUN python /scripts/init_all.py
 RUN alembic upgrade head
+RUN python /scripts/init_all.py
