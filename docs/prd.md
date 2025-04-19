@@ -32,6 +32,7 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - Customizable customer profiles and scenarios
 - Real-time chat with WebSocket support
 - Prompt engineering controls for administrators
+- File upload support and scenario-file linking
 - Rubrics management for structured trainee evaluation (admin/trainer)
 - Structured trainer feedback on sessions
 
@@ -87,6 +88,18 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - The system shall analyze user performance across multiple dimensions
 - The system shall generate reports on individual and team performance
 
+#### 3.1.7 File Uploads
+
+- The system shall allow users (admins/trainers) to upload files relevant to scenarios
+- The system shall support linking multiple files to scenarios (many-to-many)
+- The system shall provide a UI for managing uploaded files
+
+#### 3.1.8 Rubrics and Trainer Feedback
+
+- The system shall allow trainers to evaluate sessions using structured rubrics
+- The system shall store and display trainer feedback for each session
+- The system shall provide a UI for rubrics management and feedback review
+
 ### 3.2 Non-Functional Requirements
 
 #### 3.2.1 Performance
@@ -118,6 +131,7 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - Includes customizable icons for visual identification
   - Supports slug-based routing for better URL readability
 - **Scenario**: Represents specific training situations within a scheme, with configuration settings
+  - Can be linked to multiple FileUploads
 - **Customer**: Represents base AI customer profiles with:
   - Basic information (name, description)
   - Personality traits and temperament
@@ -141,6 +155,11 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - Tracks conversation progress
   - Manages transition conditions
   - Stores checkpoint data
+- **FileUpload**: Represents files uploaded to the system, which can be linked to multiple scenarios
+  - Includes file metadata (name, type, upload date, uploader)
+  - Supports many-to-many relationship with Scenario
+- **Scenario Session**: Represents a trainee's attempt at a scenario
+  - Stores evaluation results, rubrics, and trainer feedback
 
 ### 4.2 Entity Relationships
 
@@ -171,6 +190,12 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - Scenarios
   - Customers
   - ScenarioCustomer adaptations
+
+#### File Uploads
+
+- Scenarios can have multiple FileUploads (many-to-many)
+- FileUploads can be linked to multiple Scenarios
+- Scenario Sessions store rubrics and feedback from trainers
 
 ### 4.3 Data Flow
 
@@ -207,6 +232,8 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - Chat interface for practice sessions
 - Scenario management interface
 - Customer profile management interface
+- File upload management interface
+- Rubrics management and feedback review screens
 - Analytics and reporting screens
 
 ## 6. Technical Architecture
@@ -237,6 +264,7 @@ The CPF Board TextUs application is a standalone training system that simulates 
   - WebSocket support for real-time chat
   - Rate limiting middleware
   - Comprehensive testing framework
+  - Backend scripts for data conversion and rubric initialization
 - SQLModel for database operations
   - Type-safe database interactions
   - Automatic schema generation
@@ -249,6 +277,7 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - JWT-based authentication with password hashing
 - OpenAI integration for AI chat simulation
 - RAG system for improved response accuracy
+- Prompt management with dedicated prompt files
 - LangGraph-based conversation management:
   - State-driven workflow engine
   - Checkpoint-based conversation resumption
@@ -326,6 +355,8 @@ The CPF Board TextUs application is a standalone training system that simulates 
 - Integration with learning management systems
 - Enhanced prompt engineering capabilities
 - Advanced RAG features for context-aware responses
+- Expanded file management and document annotation
+- Automated evaluation and feedback improvements
 
 ## 8. Appendices
 

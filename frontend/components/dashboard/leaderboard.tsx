@@ -16,10 +16,9 @@ interface LeaderboardEntry {
 }
 
 const leaderboardEntries = [
-  { name: "John Smith", schemes: 12, score: 95 },
-  { name: "Sarah Johnson", schemes: 10, score: 92 },
-  { name: "Michael Brown", schemes: 8, score: 88 },
-  { name: "Emily Davis", schemes: 7, score: 85 },
+  { name: "Admin User", schemes: 12, score: 95 },
+  { name: "Test User", schemes: 10, score: 92 },
+  { name: "Trainer User", schemes: 8, score: 88 },
 ];
 
 export const Leaderboard: FC = () => {
