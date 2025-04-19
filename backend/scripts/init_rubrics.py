@@ -415,7 +415,7 @@ def get_prompt_text(metric):
     }[metric]
 
 
-def init_rubrics():
+async def init_rubrics():
     with Session(engine) as session:
         for metric in EvaluationMetric:
             # Check if rubric already exists

@@ -3,5 +3,5 @@
 import nltk
 
 
-def init_chroma():
+async def init_chroma():
     nltk.download("punkt_tab")
