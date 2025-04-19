@@ -33,19 +33,15 @@ const SemiCircleGauge = ({
   label: string;
   color: string;
 }) => {
-  // Calculate the path for a perfect semicircle
   const width = 120;
   const height = 60;
   const strokeWidth = 10;
 
-  // Calculate the arc path
-  // Start from the left end, draw a semicircle to the right end
   const radius = (width - strokeWidth) / 2;
   const arcPath = `M ${strokeWidth / 2},${height} A ${radius},${radius} 0 0 1 ${
     width - strokeWidth / 2
   },${height}`;
 
-  // Calculate the length of the path for the progress indicator
   const pathLength = Math.PI * radius;
   const progressLength = pathLength * (value / 100);
 

@@ -11,7 +11,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useDeleteScenario, useUpdateScenario } from "@/hooks/use-scenarios";
+import {
+  useDeleteScenario,
+  useScenario,
+  useUpdateScenario,
+} from "@/hooks/use-scenarios";
 import { Scenario, ScenarioUpdate } from "@/types/scenario";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
@@ -23,8 +27,58 @@ import { ManageScenarioCustomersDialog } from "./manage-scenario-customers-dialo
 
 export type ScenarioTableItem = Scenario;
 
+// Wrapper component to fetch full scenario data before rendering the dialog
+const EditScenarioLoader: React.FC<{
+  scenarioId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onScenarioEdit: (scenarioId: string, updates: ScenarioUpdate) => void;
+}> = ({ scenarioId, open, onOpenChange, onScenarioEdit }) => {
+  const { data: scenario, isLoading, error } = useScenario(scenarioId);
+
+  // Log hook state on every render
+  console.log(
+    `[EditScenarioLoader] ID: ${scenarioId}, isLoading: ${isLoading}, error: ${error}`
+  );
+  console.log(`[EditScenarioLoader] Scenario data from hook:`, scenario);
+
+  if (isLoading) {
+    console.log(
+      "[EditScenarioLoader] Returning null because isLoading is true"
+    );
+    // Optional: Render a loading indicator within a Dialog structure
+    // Or return null if the parent handles loading appearance
+    return null;
+  }
+
+  if (error || !scenario) {
+    // Handle error, maybe show a toast and close
+    console.error("Failed to load scenario for editing:", error);
+    toast.error("Failed to load scenario data.");
+    onOpenChange(false); // Close if loading failed
+    return null;
+  }
+
+  // Log the final scenario data before passing to dialog
+  console.log(
+    "[EditScenarioLoader] Rendering EditScenarioDialog with scenario:",
+    scenario
+  );
+
+  return (
+    <EditScenarioDialog
+      scenario={scenario} // Pass the fully loaded scenario
+      open={open}
+      onOpenChange={onOpenChange}
+      onScenarioEdit={onScenarioEdit}
+    />
+  );
+};
+
 export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
-  const [editingScenario, setEditingScenario] = useState<Scenario | null>(null);
+  const [editingScenarioId, setEditingScenarioId] = useState<string | null>(
+    null
+  );
   const [managingCustomersScenario, setManagingCustomersScenario] =
     useState<Scenario | null>(null);
   const [deletingScenario, setDeletingScenario] = useState<Scenario | null>(
@@ -39,7 +93,7 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
       {
         onSuccess: () => {
           toast.success("Scenario updated successfully");
-          setEditingScenario(null);
+          setEditingScenarioId(null);
         },
         onError: (error) => {
           toast.error(
@@ -105,7 +159,7 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
             <Button
               variant="outline"
               className="mb-[-4px] mt-[-4px]"
-              onClick={() => setEditingScenario(row.original)}
+              onClick={() => setEditingScenarioId(row.original.id)}
               disabled={isPending}
             >
               <Pencil size={20} />
@@ -130,11 +184,12 @@ export const getScenarioColumns = (): ColumnDef<ScenarioTableItem>[] => {
             </Button>
           </div>
 
-          {editingScenario && (
-            <EditScenarioDialog
-              scenario={editingScenario}
+          {/* Render the loader component when an ID is set */}
+          {editingScenarioId && (
+            <EditScenarioLoader
+              scenarioId={editingScenarioId}
               open={true}
-              onOpenChange={(open) => !open && setEditingScenario(null)}
+              onOpenChange={(open) => !open && setEditingScenarioId(null)}
               onScenarioEdit={handleScenarioEdit}
             />
           )}

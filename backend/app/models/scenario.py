@@ -5,7 +5,10 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 from sqlmodel import Field, Relationship, SQLModel
 
+from .file_uploads import FileUploadRead, ScenarioFileUploadLink
+
 if TYPE_CHECKING:
+    from .file_uploads import FileUpload
     from .scenario_customer import ScenarioCustomer
     from .scenario_session import ScenarioSession
     from .scheme import Scheme
@@ -50,6 +53,11 @@ class Scenario(ScenarioBase, table=True):
     )
     scenario_sessions: List["ScenarioSession"] = Relationship(back_populates="scenario")
 
+    # Many-to-many relationship to FileUpload
+    file_uploads: List["FileUpload"] = Relationship(
+        back_populates="scenarios", link_model=ScenarioFileUploadLink
+    )
+
     def update_timestamp(self):
         """Update the updated_at timestamp."""
         self.updated_at = datetime.now()
@@ -61,6 +69,7 @@ class ScenarioRead(ScenarioBase):
     id: UUID
     created_by_id: Optional[UUID] = None
     scheme_id: Optional[UUID] = None
+    file_uploads: List[FileUploadRead] = []
 
 
 class ScenarioCreate(ScenarioBase):
@@ -78,6 +87,7 @@ class ScenarioUpdate(SQLModel):
     system_prompt: Optional[str] = None
     is_pausable: Optional[bool] = None
     scheme_id: Optional[UUID] = None
+    file_upload_ids: Optional[List[UUID]] = None
 
 
 class ScenarioAddCustomer(SQLModel):

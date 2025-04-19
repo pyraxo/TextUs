@@ -7,6 +7,7 @@ from app.models.scenario import (
     Scenario,
     ScenarioAddCustomer,
     ScenarioCreate,
+    ScenarioRead,
     ScenarioRemoveCustomer,
     ScenarioStart,
     ScenarioUpdate,
@@ -36,7 +37,7 @@ async def create_scenario(
     return await scenario_service.create_scenario(scenario_data)
 
 
-@router.get("/{scenario_id}")
+@router.get("/{scenario_id}", response_model=ScenarioRead)
 async def get_scenario(
     scenario_id: str,
     scenario_service: Annotated[ScenarioService, Depends()],

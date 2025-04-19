@@ -1,3 +1,5 @@
+import { FileUpload } from "./file-upload";
+
 export interface Scenario {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface Scenario {
   temperature: number | null;
   created_by_id: UUID | null;
   scheme_id: UUID | null;
+  file_uploads?: FileUpload[];
 }
 
 export interface ScenarioCreate {
@@ -27,4 +30,5 @@ export interface ScenarioUpdate {
   temperature?: number;
   is_pausable?: boolean;
   scheme_id?: string;
+  file_upload_ids?: string[];
 } 
