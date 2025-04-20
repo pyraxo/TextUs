@@ -12,7 +12,7 @@ async function getActiveSession(traineeId: string) {
   if (!traineeId) return null;
 
   try {
-    const response = await fetch(`${API_URL}/trainees/${traineeId}/session`, {
+    const response = await fetch(`/api/trainees/${traineeId}/session`, {
       credentials: 'include',
     });
 
