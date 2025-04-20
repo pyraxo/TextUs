@@ -89,7 +89,11 @@ rag_chain = (
 )
 
 
-def answer_query(query: str) -> str:
+def init_chroma():
     if not os.path.exists(DB_PATH):
         load_fixed_csv_to_chroma()
+
+
+def answer_query(query: str) -> str:
+    init_chroma()
     return rag_chain.invoke(query)
