@@ -68,10 +68,8 @@ async def login(
         httponly=True,
         max_age=settings.access_token_expire_minutes * 60,
         expires=settings.access_token_expire_minutes * 60,
-        secure=settings.environment == "production",
-        samesite="none" if settings.environment == "production" else "lax",
-        domain=None if settings.environment != "production" else settings.domain,
-        path="/",
+        secure=True,
+        samesite="none",
     )
 
     return UserRead(
@@ -90,11 +88,8 @@ async def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=settings.environment == "production",
-        samesite="none" if settings.environment == "production" else "lax",
-        # Match cookie domain and path when deleting
-        domain=None if settings.environment != "production" else settings.domain,
-        path="/",
+        secure=True,
+        samesite="none",
     )
     return {"message": "Successfully logged out"}
 
