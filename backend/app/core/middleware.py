@@ -4,6 +4,10 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
+from app.core.config import get_settings
+
+settings = get_settings()
+
 
 class AuthCookieMiddleware(BaseHTTPMiddleware):
     """Middleware to extract JWT token from cookies and add to request headers."""
@@ -44,3 +48,28 @@ class AuthCookieMiddleware(BaseHTTPMiddleware):
 
         # Continue processing the request
         return await call_next(request)
+
+
+class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
+    """Middleware to ensure redirects use HTTPS in production environment."""
+
+    def __init__(self, app: ASGIApp):
+        super().__init__(app)
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        response = await call_next(request)
+
+        # Only modify redirects in production environment
+        if settings.environment == "production" and response.status_code in (
+            301,
+            302,
+            307,
+            308,
+        ):
+            redirect_url = response.headers.get("location")
+            if redirect_url and redirect_url.startswith("http://"):
+                # Replace http:// with https:// in redirect URL
+                https_url = "https://" + redirect_url[7:]
+                response.headers["location"] = https_url
+
+        return response
