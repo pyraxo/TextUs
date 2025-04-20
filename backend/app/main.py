@@ -28,6 +28,7 @@ from app.routers import (
     users_router,
     ws_router,
 )
+from app.services.chroma_db import init_chroma
 
 # Configure logging to reduce verbosity
 logging.basicConfig(
@@ -48,6 +49,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Lifespan for the FastAPI app."""
+    init_chroma()
     yield
     await close_db()
 
