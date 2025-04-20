@@ -50,7 +50,9 @@ const CircleProgress: FC<{ value: number; label: string }> = ({
         </svg>
         {/* Percentage text */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold">{percentageValue}%</span>
+          <span className="text-2xl font-bold">
+            {percentageValue.toFixed(0)}%
+          </span>
         </div>
       </div>
       <span className="mt-3 text-base font-medium">{label}</span>
