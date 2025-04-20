@@ -10,7 +10,8 @@ export type WebSocketMessage = {
     | "TYPING"
     | "STATUS_CHANGE"
     | "END_CHAT"
-    | "EVALUATION_COMPLETED";
+    | "EVALUATION_COMPLETED"
+    | "ERROR";
   conversationId: string;
   payload: any;
   timestamp?: string;
@@ -108,7 +109,11 @@ export function WebSocketProvider({
       const wsUrl = isHttps
         ? API_URL?.replace("https", "wss")
         : API_URL?.replace("http", "ws");
-      const wsEndpoint = `${wsUrl}/ws/conversations`;
+
+      // Add user ID as query parameter instead of using credential-based auth
+      const wsEndpoint = user
+        ? `${wsUrl}/ws/conversations?user_id=${encodeURIComponent(user.id)}`
+        : `${wsUrl}/ws/conversations`;
       console.log(`Attempting to connect to WebSocket: ${wsEndpoint}`);
 
       // Create WebSocket connection
@@ -144,6 +149,13 @@ export function WebSocketProvider({
 
           console.log("Received packet:", message);
           console.log("Message type:", message.type);
+
+          // Handle ERROR messages
+          if (message.type === "ERROR") {
+            console.error("WebSocket error from server:", message.payload);
+            return;
+          }
+
           console.log("Message format check:", {
             hasType: !!message.type,
             hasConversationId: !!message.conversationId,
