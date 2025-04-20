@@ -100,10 +100,12 @@ export function WebSocketProvider({
 
       setConnectionState("connecting");
 
+      const isHttps = process.env.NEXT_PUBLIC_API_URL?.startsWith("https");
+
       // Convert HTTP URL to WebSocket URL and use the proper endpoint
-      const wsUrl =
-        process.env.NEXT_PUBLIC_API_URL?.replace(/^http[s]?/, "ws") ||
-        "ws://localhost:8000";
+      const wsUrl = isHttps
+        ? process.env.NEXT_PUBLIC_API_URL?.replace("https", "wss")
+        : process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws");
       const wsEndpoint = `${wsUrl}/ws/conversations`;
 
       // Create WebSocket connection
