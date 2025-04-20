@@ -69,7 +69,7 @@ async def login(
         max_age=settings.access_token_expire_minutes * 60,
         expires=settings.access_token_expire_minutes * 60,
         secure=settings.environment == "production",
-        samesite="none",
+        samesite="none" if settings.environment == "production" else "lax",
     )
 
     return UserRead(
@@ -89,7 +89,7 @@ async def logout(response: Response):
         key="access_token",
         httponly=True,
         secure=settings.environment == "production",
-        samesite="none",
+        samesite="none" if settings.environment == "production" else "lax",
     )
     return {"message": "Successfully logged out"}
 

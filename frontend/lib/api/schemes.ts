@@ -5,7 +5,7 @@ import { CreateSchemeInput, Scheme, UpdateSchemeInput } from '@/types/scheme';
  * Fetch all schemes
  */
 export async function getSchemes(): Promise<Scheme[]> {
-  return fetchApi<Scheme[]>('/schemes');
+  return fetchApi<Scheme[]>('/schemes/');
 }
 
 /**
