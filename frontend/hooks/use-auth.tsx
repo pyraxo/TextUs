@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAuth = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/auth/me`, {
+      const response = await fetch(`/api/auth/me`, {
         method: "GET",
         credentials: "include", // Include cookies in the request
       });
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      await fetch(`${API_URL}/auth/logout`, {
+      await fetch(`/api/auth/logout`, {
         method: "POST",
         credentials: "include", // Include cookies in the request
       });
