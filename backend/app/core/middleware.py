@@ -23,10 +23,8 @@ class AuthCookieMiddleware(BaseHTTPMiddleware):
         # If token exists in cookie and not in header, add it to header
         # This allows the standard OAuth2 code to work with cookies
         if access_token_cookie and "authorization" not in request.headers:
-            # Remove "Bearer " prefix if it exists (we'll add it back in the header)
+            # Always add 'Bearer ' prefix to the token from the cookie
             token = access_token_cookie
-            if token.startswith("Bearer "):
-                token = token[7:]
 
             # Clone and update headers with the token
             # FastAPI doesn't allow direct header modification
