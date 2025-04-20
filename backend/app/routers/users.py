@@ -22,6 +22,7 @@ class UserUpdate(BaseModel):
     user_type: Optional[UserType] = None
 
 
+@router.get("", response_model=List[UserRead], include_in_schema=False)
 @router.get("/", response_model=List[UserRead])
 async def get_users_route(
     current_user: Annotated[User, Depends(get_current_user)],
