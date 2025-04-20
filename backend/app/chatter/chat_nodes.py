@@ -41,10 +41,9 @@ termination_chain = termination_prompt | objective_llm
 def load_excel_data(file_path, column_name):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-        input_dir = os.path.join(backend_dir, "input")
-        full_path = os.path.join(input_dir, file_path)
+        input_dir = os.path.join(current_dir, "..", "..", "input")
 
+        full_path = os.path.join(input_dir, file_path)
         df = pd.read_excel(full_path)
         df.columns = df.columns.str.strip()
         if column_name not in df.columns:
