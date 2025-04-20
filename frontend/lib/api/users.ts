@@ -34,7 +34,7 @@ export async function getUsers(params?: {
   }
 
   const queryString = queryParams.toString();
-  const endpoint = `/users${queryString ? `?${queryString}` : ''}`;
+  const endpoint = `/users/${queryString ? `?${queryString}` : ''}`;
 
   return fetchApi<User[]>(endpoint);
 }
