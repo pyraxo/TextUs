@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application code
 COPY backend/app /app
+COPY backend/input /input
 
 # Expose the port that matches docker-compose
 EXPOSE 8000
