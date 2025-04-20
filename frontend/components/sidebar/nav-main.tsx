@@ -67,7 +67,7 @@ const navAdmin = [
   },
   {
     title: "Manage Archetypes",
-    url: "/admin/agents",
+    url: "/admin/archetypes",
     icon: Contact,
   },
   {
