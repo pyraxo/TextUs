@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     # Environment
     environment: str = "development"  # "development" or "production"
+    domain: str = ""
 
     # SQLModel settings
     # For SQLite (local development)
