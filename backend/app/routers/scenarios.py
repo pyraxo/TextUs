@@ -20,7 +20,7 @@ from app.services.trainee_service import TraineeService
 router = APIRouter(prefix="/scenarios", tags=["Scenarios"])
 
 
-@router.get("/")
+@router.get("", response_model=List[Scenario])
 async def get_scenarios(
     scenario_service: Annotated[ScenarioService, Depends()],
 ) -> list[Scenario]:
@@ -28,7 +28,7 @@ async def get_scenarios(
     return await scenario_service.get_scenarios()
 
 
-@router.post("/")
+@router.post("", response_model=Scenario)
 async def create_scenario(
     scenario_data: ScenarioCreate,
     scenario_service: Annotated[ScenarioService, Depends()],
