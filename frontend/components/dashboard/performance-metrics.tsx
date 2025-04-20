@@ -74,7 +74,7 @@ export const PerformanceMetrics: FC<PerformanceMetricsProps> = ({
         </div>
         <div className="border-l pl-12">
           <div className="text-cpf-teal text-[56px] font-bold leading-tight">
-            {(metrics.averageScore / 5) * 100}%
+            {((metrics.averageScore / 5) * 100).toFixed(0)}%
           </div>
           <div className="text-muted-foreground text-lg">Average Score</div>
         </div>

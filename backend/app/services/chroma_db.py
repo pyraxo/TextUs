@@ -48,11 +48,13 @@ def load_fixed_csv_to_chroma():
                     },
                 )
             )
+    print(f"Loaded {len(documents)} documents")
     splitter = NLTKTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = splitter.split_documents(documents)
     Chroma.from_documents(
         documents=chunks, embedding=embedding_model, persist_directory=DB_PATH
     )
+    print(f"Loaded {len(chunks)} chunks")
 
 
 chat_template = ChatPromptTemplate.from_messages(
