@@ -52,7 +52,7 @@ async def lifespan(_app: FastAPI):
     await close_db()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
 
 # Exception handlers for cleaner error output

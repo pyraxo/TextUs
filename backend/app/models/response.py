@@ -36,6 +36,7 @@ class ConversationListResponse(SQLModel):
     ended_at: Optional[datetime] = None
     scenario_name: Optional[str] = None
     latest_message_timestamp: datetime
+    trainer_feedback: Optional[str] = None
 
 
 class ConversationResponse(SQLModel):
