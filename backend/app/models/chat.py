@@ -54,7 +54,7 @@ class ChatConversationBase(SQLModel):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     scenario_customer_id: UUID
     trainee_id: UUID
-    trainer_feedback: Optional[str] = None
+    trainer_feedback: Optional[str] = Field(default=None)
 
 
 class ChatConversation(ChatConversationBase, table=True):
