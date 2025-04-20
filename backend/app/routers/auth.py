@@ -61,10 +61,10 @@ async def login(
 
     token = await auth_service.create_access_token_for_user(user)
 
-    # Set HTTP-only cookie with the JWT token
+    # Set HTTP-only cookie with the JWT token (store only the raw token, not 'Bearer <token>')
     response.set_cookie(
         key="access_token",
-        value=f"Bearer {token.access_token}",
+        value=token.access_token,
         httponly=True,
         max_age=settings.access_token_expire_minutes * 60,
         expires=settings.access_token_expire_minutes * 60,

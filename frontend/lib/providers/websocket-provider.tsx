@@ -102,7 +102,7 @@ export function WebSocketProvider({
 
       // Convert HTTP URL to WebSocket URL and use the proper endpoint
       const wsUrl =
-        process.env.NEXT_PUBLIC_API_URL?.replace(/^http/, "ws") ||
+        process.env.NEXT_PUBLIC_API_URL?.replace(/^http[s]?/, "ws") ||
         "ws://localhost:8000";
       const wsEndpoint = `${wsUrl}/ws/conversations`;
 
