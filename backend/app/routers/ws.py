@@ -20,7 +20,7 @@ from app.chatter.workflow import resume_chatbot
 from app.core.common import parse_uuid
 from app.core.db import get_session
 from app.core.events import EventType, event_bus
-from app.core.security import get_settings, jwt
+from app.core.security import get_settings
 from app.core.ws_manager import manager
 from app.evaluator.eval_types import ChatTranscript
 from app.evaluator.evaluator import evaluate_chat_transcript
@@ -76,32 +76,26 @@ async def get_current_user_ws(
     )
 
     try:
-        # Get the cookie from the WebSocket connection
-        cookies = dict(websocket.cookies)
-        access_token = cookies.get("access_token")
+        # Get user_id from query parameters
+        user_id = websocket.query_params.get("user_id")
 
-        if not access_token:
+        ws_logger.info(f"WebSocket connection attempt with user_id: {user_id}")
+
+        if not user_id:
+            ws_logger.error("No user_id provided in WebSocket connection")
             raise credentials_exception
-
-        # Remove "Bearer " prefix if it exists
-        if access_token.startswith("Bearer "):
-            access_token = access_token[7:]
-
-        # Decode and validate the JWT token
-        payload = jwt.decode(
-            access_token, settings.secret_key, algorithms=[settings.algorithm]
-        )
-        user_id: str = payload.get("sub")
 
         # Get the user from the database
         user = await session.get(User, parse_uuid(user_id))
         if user is None:
+            ws_logger.error(f"User not found in database for ID: {user_id}")
             raise credentials_exception
 
+        ws_logger.info(f"WebSocket authentication successful for user: {user.name}")
         return user
 
-    except (jwt.JWTError, Exception) as e:
-        ws_logger.error(f"Authentication error: {e}")
+    except Exception as e:
+        ws_logger.error(f"Authentication error: {type(e).__name__}: {str(e)}")
         raise credentials_exception from e
 
 
@@ -307,15 +301,33 @@ async def websocket_endpoint(
     conversation_id = None
     user = None
     try:
-        # Authenticate the user before accepting the connection
-        user = await get_current_user_ws(websocket, session)
-
-        # Accept the connection only after successful authentication
+        # Accept connection first so we can send error messages if needed
         await websocket.accept()
-        ws_logger.info(f"WebSocket connection accepted for user {user.name}")
+        ws_logger.info("WebSocket connection accepted, authenticating user...")
+
+        # Authenticate the user after accepting the connection
+        try:
+            user = await get_current_user_ws(websocket, session)
+        except Exception as auth_error:
+            ws_logger.error(f"Authentication failed: {auth_error}")
+            try:
+                await websocket.send_json(
+                    {
+                        "type": "ERROR",
+                        "payload": {
+                            "message": "Authentication failed",
+                            "code": "AUTH_ERROR",
+                        },
+                    }
+                )
+            except Exception as send_error:
+                ws_logger.error(f"Failed to send error message: {send_error}")
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
 
         # Serialize user to dict once
         user_dict = {"id": str(user.id), "name": user.name}
+        ws_logger.info(f"WebSocket authenticated for user {user.name}")
 
         while True:
             # Wait for messages
