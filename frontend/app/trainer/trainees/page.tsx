@@ -24,6 +24,11 @@ import { useEffect, useMemo, useState } from "react";
 
 // Session details pages are located at /trainer/trainees/[traineeId]/sessions/[sessionId]/page.tsx
 
+const renderScore = (score: number | undefined) => {
+  if (score === undefined) return "-";
+  return `${((score / 5) * 100).toFixed(0)}%`;
+};
+
 const SemiCircleGauge = ({
   value,
   label,
@@ -119,14 +124,8 @@ export default function ManageTrainees() {
     // Example: average score, chats completed, etc.
     const completedSessions = sessions.filter((s) => s.end_timestamp);
     const averageScore =
-      completedSessions.length > 0
-        ? Math.round(
-            completedSessions.reduce(
-              (sum, s) => sum + (s.metrics?.completion_rate || 0) * 100,
-              0
-            ) / completedSessions.length
-          )
-        : 0;
+      sessions.reduce((sum, s) => sum + (s.metrics?.score ?? 0), 0) /
+      sessions.length;
     return {
       scenariosAttempted: sessions.length,
       averageScore,
@@ -178,7 +177,7 @@ export default function ManageTrainees() {
                   </div>
                   <div>
                     <div className="text-4xl font-bold text-teal-700">
-                      {metrics?.averageScore ?? "-"}%
+                      {renderScore(metrics?.averageScore)}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Average Score
@@ -253,7 +252,7 @@ export default function ManageTrainees() {
                   {/* Average Score */}
                   <div className="ml-8 flex flex-col items-start">
                     <span className="text-4xl font-extrabold text-cpf-teal leading-none">
-                      {metrics?.averageScore ?? "-"}%
+                      {renderScore(metrics?.averageScore)}
                     </span>
                     <span className="text-md font-medium text-foreground">
                       Average Score
