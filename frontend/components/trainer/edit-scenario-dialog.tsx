@@ -279,9 +279,7 @@ export const EditScenarioDialog: FC<EditScenarioDialogProps> = ({
             variant="outline"
             className="w-full mt-2 bg-cpf-teal text-white"
             disabled={isPending || hasUnsavedChanges}
-            onClick={() =>
-              router.push(`/admin/agents?scenarioId=${scenario.id}`)
-            }
+            onClick={() => router.push(`/admin/archetypes}`)}
           >
             <Bot size={20} />
             Manage Archetypes
