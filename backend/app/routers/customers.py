@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[CustomerRead])
+@router.get("", response_model=List[CustomerRead])
 async def get_customers_route(
     customers_service: CustomersService = Depends(CustomersService),
 ) -> List[CustomerRead]:
@@ -28,7 +28,7 @@ async def get_customer_route(
     return await customers_service.get_customer(parse_uuid(customer_id))
 
 
-@router.post("/", response_model=CustomerRead)
+@router.post("", response_model=CustomerRead)
 async def create_customer_route(
     customer: CustomerCreate,
     customers_service: CustomersService = Depends(CustomersService),
