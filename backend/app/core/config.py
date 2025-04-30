@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     # Environment
     environment: str = "development"  # "development" or "production"
+    domain: str = ""
 
     # SQLModel settings
     # For SQLite (local development)
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     db_user: str = ""
     db_password: str = ""
     db_name: str = "sds_cpf"
+    db_type: str = "sqlite"
 
     # JWT Authentication
     secret_key: str = "supersecretkey"  # Should be set in .env for production
@@ -35,7 +37,7 @@ class Settings(BaseSettings):
     # Database URL (will be constructed based on environment)
     @property
     def database_url(self) -> str:
-        if self.environment == "development":
+        if self.environment == "development" or self.db_type == "sqlite":
             # Create the SQLite directory if it doesn't exist
             os.makedirs(self.sqlite_dir, exist_ok=True)
             return f"sqlite+aiosqlite:///{self.sqlite_dir}/{self.sqlite_db_name}"

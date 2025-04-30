@@ -11,7 +11,7 @@ from app.models.rubrics import EvaluationMetric, RubricSettingsUpdate, RubricsSe
 router = APIRouter(prefix="/rubrics", tags=["rubrics"])
 
 
-@router.get("/", response_model=List[RubricsSettings])
+@router.get("", response_model=List[RubricsSettings])
 async def get_all_rubrics(session: AsyncSession = Depends(get_session)):
     result = await session.exec(select(RubricsSettings))
     return result.all()

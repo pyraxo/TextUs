@@ -16,7 +16,8 @@ from app.core.config import get_settings
 settings = get_settings()
 
 BASE_DIR = "./data"
-CSV_FILE_PATH = os.path.join(BASE_DIR, "faq_cat_for_embed.csv")
+INPUT_DIR = "./input"
+CSV_FILE_PATH = os.path.join(INPUT_DIR, "faq_cat_for_embed.csv")
 DB_PATH = os.path.join(BASE_DIR, "chroma_db")
 
 os.environ["GOOGLE_API_KEY"] = settings.google_api_key
@@ -47,11 +48,13 @@ def load_fixed_csv_to_chroma():
                     },
                 )
             )
+    print(f"Loaded {len(documents)} documents")
     splitter = NLTKTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = splitter.split_documents(documents)
     Chroma.from_documents(
         documents=chunks, embedding=embedding_model, persist_directory=DB_PATH
     )
+    print(f"Loaded {len(chunks)} chunks")
 
 
 chat_template = ChatPromptTemplate.from_messages(
@@ -86,7 +89,11 @@ rag_chain = (
 )
 
 
-def answer_query(query: str) -> str:
+def init_chroma():
     if not os.path.exists(DB_PATH):
         load_fixed_csv_to_chroma()
+
+
+def answer_query(query: str) -> str:
+    init_chroma()
     return rag_chain.invoke(query)

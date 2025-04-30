@@ -15,7 +15,7 @@ const adminOptions = [
   {
     title: "AI Customer Management",
     description: "Manage AI customer archetypes",
-    href: "/admin/customers",
+    href: "/admin/archetypes",
     icon: <Contact className="h-8 w-8 text-card-foreground stroke-[2px]" />,
   },
   {

@@ -13,7 +13,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import get_settings
 from app.core.db import close_db, get_session
-from app.core.middleware import AuthCookieMiddleware
+from app.core.middleware import AuthCookieMiddleware, HTTPSRedirectMiddleware
 from app.core.rate_limiter import RateLimiter
 from app.models.user import User
 from app.routers import (
@@ -28,6 +28,7 @@ from app.routers import (
     users_router,
     ws_router,
 )
+from app.services.chroma_db import init_chroma
 
 # Configure logging to reduce verbosity
 logging.basicConfig(
@@ -48,11 +49,12 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Lifespan for the FastAPI app."""
+    init_chroma()
     yield
     await close_db()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
 
 # Exception handlers for cleaner error output
@@ -111,6 +113,9 @@ app.add_middleware(RateLimiter)
 
 # Add authentication cookie middleware
 app.add_middleware(AuthCookieMiddleware)
+
+# Add HTTPS redirect middleware
+app.add_middleware(HTTPSRedirectMiddleware)
 
 # Include routers
 app.include_router(auth_router)

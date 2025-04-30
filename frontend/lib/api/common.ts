@@ -1,5 +1,5 @@
 // API base URL
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // API Error class
 export class ApiError extends Error {
@@ -17,7 +17,7 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `/api${endpoint}`;
   const isFormData = options.body instanceof FormData;
   const response = await fetch(url, {
     credentials: 'include', // Include cookies for authentication

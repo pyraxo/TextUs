@@ -10,7 +10,8 @@ export type WebSocketMessage = {
     | "TYPING"
     | "STATUS_CHANGE"
     | "END_CHAT"
-    | "EVALUATION_COMPLETED";
+    | "EVALUATION_COMPLETED"
+    | "ERROR";
   conversationId: string;
   payload: any;
   timestamp?: string;
@@ -41,6 +42,8 @@ type WebSocketContextType = {
 };
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Custom hook to use WebSocket context
 export const useWebSocket = () => {
@@ -100,11 +103,18 @@ export function WebSocketProvider({
 
       setConnectionState("connecting");
 
+      const isHttps = API_URL?.startsWith("https");
+
       // Convert HTTP URL to WebSocket URL and use the proper endpoint
-      const wsUrl =
-        process.env.NEXT_PUBLIC_API_URL?.replace(/^http/, "ws") ||
-        "ws://localhost:8000";
-      const wsEndpoint = `${wsUrl}/ws/conversations`;
+      const wsUrl = isHttps
+        ? API_URL?.replace("https", "wss")
+        : API_URL?.replace("http", "ws");
+
+      // Add user ID as query parameter instead of using credential-based auth
+      const wsEndpoint = user
+        ? `${wsUrl}/ws/conversations?user_id=${encodeURIComponent(user.id)}`
+        : `${wsUrl}/ws/conversations`;
+      console.log(`Attempting to connect to WebSocket: ${wsEndpoint}`);
 
       // Create WebSocket connection
       const ws = new WebSocket(wsEndpoint);
@@ -139,6 +149,13 @@ export function WebSocketProvider({
 
           console.log("Received packet:", message);
           console.log("Message type:", message.type);
+
+          // Handle ERROR messages
+          if (message.type === "ERROR") {
+            console.error("WebSocket error from server:", message.payload);
+            return;
+          }
+
           console.log("Message format check:", {
             hasType: !!message.type,
             hasConversationId: !!message.conversationId,
@@ -259,7 +276,13 @@ export function WebSocketProvider({
       };
 
       ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        // Log the full error event object for more details
+        console.error("WebSocket error event:", error);
+        // Attempt to log specific error properties if available
+        if (error instanceof Error) {
+          console.error("WebSocket error message:", error.message);
+          console.error("WebSocket error stack:", error.stack);
+        }
         setConnectionState("error");
         // Only close/reconnect if not ended
         const endedConvos = Array.from(conversationStates.values()).filter(

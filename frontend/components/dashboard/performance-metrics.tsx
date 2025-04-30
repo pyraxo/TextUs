@@ -50,7 +50,9 @@ const CircleProgress: FC<{ value: number; label: string }> = ({
         </svg>
         {/* Percentage text */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold">{percentageValue}%</span>
+          <span className="text-2xl font-bold">
+            {percentageValue.toFixed(0)}%
+          </span>
         </div>
       </div>
       <span className="mt-3 text-base font-medium">{label}</span>
@@ -72,7 +74,7 @@ export const PerformanceMetrics: FC<PerformanceMetricsProps> = ({
         </div>
         <div className="border-l pl-12">
           <div className="text-cpf-teal text-[56px] font-bold leading-tight">
-            {(metrics.averageScore / 5) * 100}%
+            {((metrics.averageScore / 5) * 100).toFixed(0)}%
           </div>
           <div className="text-muted-foreground text-lg">Average Score</div>
         </div>

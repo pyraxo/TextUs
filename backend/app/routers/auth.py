@@ -61,15 +61,15 @@ async def login(
 
     token = await auth_service.create_access_token_for_user(user)
 
-    # Set HTTP-only cookie with the JWT token
+    # Set HTTP-only cookie with the JWT token (store only the raw token, not 'Bearer <token>')
     response.set_cookie(
         key="access_token",
-        value=f"Bearer {token.access_token}",
+        value=token.access_token,
         httponly=True,
         max_age=settings.access_token_expire_minutes * 60,
         expires=settings.access_token_expire_minutes * 60,
-        secure=False,  # Set to True in production with HTTPS
-        samesite="lax",
+        secure=True,
+        samesite="none",
     )
 
     return UserRead(
@@ -88,8 +88,8 @@ async def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=False,  # Set to True in production with HTTPS
-        samesite="lax",
+        secure=True,
+        samesite="none",
     )
     return {"message": "Successfully logged out"}
 
@@ -99,6 +99,7 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     """Get current authenticated user."""
+
     return UserRead(
         id=current_user.id,
         name=current_user.name,

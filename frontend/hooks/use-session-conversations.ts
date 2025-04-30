@@ -5,14 +5,14 @@ import { useSessionConversations } from "@/hooks/use-conversations";
 import { useQuery } from "@tanstack/react-query";
 
 // API URL from environment variable or default
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Function to fetch the active session
 async function getActiveSession(traineeId: string) {
   if (!traineeId) return null;
 
   try {
-    const response = await fetch(`${API_URL}/trainees/${traineeId}/session`, {
+    const response = await fetch(`/api/trainees/${traineeId}/session`, {
       credentials: 'include',
     });
 

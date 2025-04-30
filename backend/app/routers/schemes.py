@@ -9,7 +9,7 @@ from app.services.scheme_service import SchemeService
 router = APIRouter(prefix="/schemes", tags=["schemes"])
 
 
-@router.get("/", response_model=List[SchemeRead])
+@router.get("", response_model=List[SchemeRead])
 async def get_schemes(
     scheme_service: Annotated[SchemeService, Depends()],
 ):
@@ -17,7 +17,7 @@ async def get_schemes(
     return await scheme_service.get_schemes()
 
 
-@router.post("/", response_model=SchemeRead, status_code=201)
+@router.post("", response_model=SchemeRead, status_code=201)
 async def create_scheme(
     scheme: SchemeCreate, scheme_service: Annotated[SchemeService, Depends()]
 ):

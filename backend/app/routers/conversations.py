@@ -15,7 +15,7 @@ from app.services.conversation_service import ConversationService
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
-@router.get("/", response_model=List[ConversationListResponse])
+@router.get("", response_model=List[ConversationListResponse])
 async def get_conversations(
     conversation_service: Annotated[ConversationService, Depends()],
 ):
